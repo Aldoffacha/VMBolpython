@@ -11,6 +11,7 @@ const LINKS = [
   { icon: "📈", label: "Reportes",      href: "/admin/reportes" },
   { icon: "📋", label: "Auditoría",     href: "/admin/auditoria" },
   { icon: "⚙️", label: "Configuración", href: "/admin/configuracion" },
+  { icon: "🌐", label: "Prod. Externos", href: "/admin/productos-externos" },
 ];
 
 export default function AdminSidebar({ user }) {
