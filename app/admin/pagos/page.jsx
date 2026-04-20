@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import AdminSidebar from "@/components/AdminSidebar";
+
 
 const API = "http://localhost:8000";
 
@@ -91,7 +91,7 @@ export default function AdminPagos() {
       {toast && <div style={s.toast}>{toast}</div>}
 
       {/* SIDEBAR */}
-      <AdminSidebar user={user} />
+      
 
       {/* MAIN */}
       <main style={s.main}>

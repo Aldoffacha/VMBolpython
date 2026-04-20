@@ -79,7 +79,7 @@ export default function AdminDashboard() {
   return (
     <div style={styles.page}>
       {/* SIDEBAR */}
-      <AdminSidebar user={user} />
+      
 
       {/* MAIN */}
       <main style={styles.main}>
@@ -171,7 +171,7 @@ export default function AdminDashboard() {
             {/* Pie chart */}
             <div style={styles.card}>
               <div style={styles.cardHeader}>
-                <span style={styles.cardTitle}>🥧 Estado de Pedidos</span>
+                <span style={styles.cardTitle}> Estado de Pedidos</span>
               </div>
               <PieChart width={260} height={200} style={{ margin: "0 auto" }}>
                 <Pie data={pieData} cx={130} cy={90} innerRadius={55} outerRadius={85}
@@ -183,9 +183,9 @@ export default function AdminDashboard() {
               </PieChart>
               <div style={styles.pieStats}>
                 {[
-                  { icon: "⏳", label: "Pendientes", value: stats.pendientes, color: "#f59e0b" },
-                  { icon: "✅", label: "Pagados",    value: stats.pagados,    color: "#3b82f6" },
-                  { icon: "🚚", label: "Enviados",   value: stats.enviados,   color: "#10b981" },
+                  { icon: "", label: "Pendientes", value: stats.pendientes, color: "#f59e0b" },
+                  { icon: "", label: "Pagados",    value: stats.pagados,    color: "#3b82f6" },
+                  { icon: "", label: "Enviados",   value: stats.enviados,   color: "#10b981" },
                 ].map(s => (
                   <div key={s.label} style={styles.pieStat}>
                     <span style={{ fontSize: 22 }}>{s.icon}</span>
@@ -372,6 +372,7 @@ const styles = {
   spinner: { width: 40, height: 40, border: "3px solid rgba(154,3,30,0.3)", borderTop: "3px solid #9a031e", borderRadius: "50%", animation: "spin 0.8s linear infinite" },
 
   // Sidebar
+  
   sidebar: { width: 240, background: "#0d0f12", borderRight: "2px solid #9a031e", display: "flex", flexDirection: "column", position: "sticky", top: 0, height: "100vh" },
   sidebarLogo: { padding: "24px 20px", display: "flex", alignItems: "center", gap: 10, borderBottom: "1px solid rgba(154,3,30,0.3)" },
   logoIcon: { fontSize: 24 },

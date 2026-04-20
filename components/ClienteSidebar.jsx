@@ -1,20 +1,24 @@
 "use client";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { useTheme } from "@/context/ThemeContext"; // 👈 NUEVO
 
 const API = "http://localhost:8000";
 
-const C = {
-  pageBg:  "#121418",
-  cardBg:  "#1f2429",
-  accent:  "#2563eb",
-  accent2: "#3b82f6",
-  text:    "#d9d9d9",
-  muted:   "#a0a0a0",
-  success: "#10b981",
-  warning: "#f59e0b",
-  danger:  "#ef4444",
-};
+// 👇 REEMPLAZA el objeto C fijo por esta función
+function getColors(isDark) {
+  return {
+    pageBg:  isDark ? "#121418" : "#f0f2f5",
+    cardBg:  isDark ? "#1f2429" : "#ffffff",
+    accent:  "#2563eb",
+    accent2: isDark ? "#3b82f6" : "#1d4ed8",
+    text:    isDark ? "#d9d9d9" : "#111827",
+    muted:   isDark ? "#a0a0a0" : "#6b7280",
+    success: isDark ? "#10b981" : "#059669",
+    warning: "#f59e0b",
+    danger:  "#ef4444",
+  };
+}
 
 const LINKS = [
   { href: "/cliente/dashboard",    icon: "🏠", label: "Dashboard" },
@@ -43,14 +47,15 @@ const IconLogout = ({ size = 16 }) => (
 );
 
 // ── Dropdown de notificaciones ────────────────────────────────────────────────
-function NotifDropdown({ token }) {
+function NotifDropdown({ token}) { 
+  const { theme } = useTheme();   
+  const C = getColors(theme === "dark"); // 👈 recibe C como prop
   const [open,     setOpen]     = useState(false);
   const [notifs,   setNotifs]   = useState([]);
   const [noLeidas, setNoLeidas] = useState(0);
   const [loading,  setLoading]  = useState(false);
-  // pos guarda dónde pintar el dropdown en coordenadas de viewport
   const [pos,      setPos]      = useState({ top: 0, left: 0 });
-  const btnRef = useRef(null);
+  const btnRef   = useRef(null);
   const panelRef = useRef(null);
 
   const cargar = useCallback(async () => {
@@ -70,7 +75,6 @@ function NotifDropdown({ token }) {
     return () => clearInterval(iv);
   }, [cargar]);
 
-  // Cerrar al click fuera
   useEffect(() => {
     function handler(e) {
       if (
@@ -82,7 +86,6 @@ function NotifDropdown({ token }) {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Al abrir, calculamos la posición del botón en el viewport
   function handleToggle() {
     if (!open && btnRef.current) {
       const rect = btnRef.current.getBoundingClientRect();
@@ -122,7 +125,6 @@ function NotifDropdown({ token }) {
 
   return (
     <>
-      {/* Botón campana */}
       <button
         ref={btnRef}
         onClick={handleToggle}
@@ -145,24 +147,13 @@ function NotifDropdown({ token }) {
           }}>{noLeidas > 9 ? "9+" : noLeidas}</span>
         )}
       </button>
-
-      {/* Panel — position:fixed para escapar de cualquier overflow:hidden del padre */}
       {open && (
-        <div
-          ref={panelRef}
-          style={{
-            position: "fixed",
-            top: pos.top,
-            left: pos.left,
-            width: "320px",
-            background: C.cardBg,
-            borderRadius: "12px",
-            border: `2px solid ${C.accent}`,
-            boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
-            zIndex: 9999,
-            overflow: "hidden",
-          }}>
-          {/* Header */}
+        <div ref={panelRef} style={{
+          position: "fixed", top: pos.top, left: pos.left,
+          width: "320px", background: C.cardBg, borderRadius: "12px",
+          border: `2px solid ${C.accent}`, boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
+          zIndex: 9999, overflow: "hidden",
+        }}>
           <div style={{
             display: "flex", justifyContent: "space-between", alignItems: "center",
             padding: "12px 16px", borderBottom: `2px solid ${C.accent}`, background: C.pageBg,
@@ -187,7 +178,6 @@ function NotifDropdown({ token }) {
             </div>
           </div>
 
-          {/* Lista */}
           <div style={{ maxHeight: "360px", overflowY: "auto" }}>
             {notifs.length === 0
               ? (
@@ -198,27 +188,21 @@ function NotifDropdown({ token }) {
               )
               : notifs.map((n, i) => (
                 <div key={n.id_notificacion}>
-                  <div
-                    onClick={() => { if (!n.leido) marcarLeida(n.id_notificacion); }}
-                    style={{
-                      padding: "12px 16px", cursor: n.leido ? "default" : "pointer",
-                      background: n.leido ? "transparent" : `rgba(37,99,235,0.07)`,
-                      borderLeft: n.leido ? "3px solid transparent" : `3px solid ${C.accent}`,
-                      transition: "background 0.2s",
-                    }}>
+                  <div onClick={() => { if (!n.leido) marcarLeida(n.id_notificacion); }} style={{
+                    padding: "12px 16px", cursor: n.leido ? "default" : "pointer",
+                    background: n.leido ? "transparent" : `rgba(37,99,235,0.07)`,
+                    borderLeft: n.leido ? "3px solid transparent" : `3px solid ${C.accent}`,
+                    transition: "background 0.2s",
+                  }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px" }}>
                       <div style={{ display: "flex", gap: "8px", flex: 1, minWidth: 0 }}>
-                        <span style={{ fontSize: "16px", flexShrink: 0 }}>
-                          {TIPO_ICON[n.tipo] || "📣"}
-                        </span>
+                        <span style={{ fontSize: "16px", flexShrink: 0 }}>{TIPO_ICON[n.tipo] || "📣"}</span>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "3px" }}>
                             <span style={{
                               color: C.text, fontSize: "12px", fontWeight: "700",
                               overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                            }}>
-                              {n.titulo}
-                            </span>
+                            }}>{n.titulo}</span>
                             {!n.leido && (
                               <span style={{
                                 background: C.accent, color: "#fff",
@@ -228,12 +212,10 @@ function NotifDropdown({ token }) {
                             )}
                           </div>
                           <p style={{
-                            color: C.muted, fontSize: "11px", margin: 0,
-                            lineHeight: "1.4", overflow: "hidden",
-                            display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
-                          }}>
-                            {n.mensaje}
-                          </p>
+                            color: C.muted, fontSize: "11px", margin: 0, lineHeight: "1.4",
+                            overflow: "hidden", display: "-webkit-box",
+                            WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+                          }}>{n.mensaje}</p>
                         </div>
                       </div>
                       <span style={{ color: C.muted, fontSize: "10px", flexShrink: 0, marginTop: "2px" }}>
@@ -249,7 +231,6 @@ function NotifDropdown({ token }) {
             }
           </div>
 
-          {/* Footer */}
           <div style={{ padding: "10px 16px", borderTop: `1px solid rgba(37,99,235,0.15)`, background: C.pageBg }}>
             <a href="/cliente/notificaciones" style={{
               display: "block", textAlign: "center", padding: "7px",
@@ -268,13 +249,40 @@ function NotifDropdown({ token }) {
 export default function ClienteSidebar({ user, carritoCount = 0 }) {
   const router   = useRouter();
   const pathname = usePathname();
-  const [token, setToken] = useState("");
+  const { theme, toggleTheme } = useTheme(); // 👈 NUEVO
+  const C = getColors(theme === "dark");     // 👈 NUEVO — C ahora reacciona al tema
+
+  const [token,     setToken]     = useState("");
+  const [collapsed, setCollapsed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("sidebar_collapsed") === "true";
+  });
 
   useEffect(() => {
     const t = document.cookie.split(";")
       .find(c => c.trim().startsWith("access_token="))?.split("=")[1] || "";
     setToken(t);
   }, []);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (!collapsed) {
+        const sidebar = document.querySelector(".sidebar-nav");
+        if (sidebar && !sidebar.contains(e.target)) {
+          setCollapsed(true);
+          localStorage.setItem("sidebar_collapsed", "true");
+        }
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [collapsed]);
+
+  function toggleSidebar() {
+    const next = !collapsed;
+    setCollapsed(next);
+    localStorage.setItem("sidebar_collapsed", String(next));
+  }
 
   function logout() {
     document.cookie = "access_token=; Max-Age=0; path=/";
@@ -283,127 +291,259 @@ export default function ClienteSidebar({ user, carritoCount = 0 }) {
   }
 
   return (
-    <nav style={{
-      width: "260px",
-      height: "100vh",
-      flexShrink: 0,
-      overflowY: "auto",
-      background: `linear-gradient(180deg,#0d1117 0%,${C.pageBg} 100%)`,
-      borderRight: `2px solid ${C.accent}`,
-      display: "flex",
-      flexDirection: "column",
-    }}>
+    <>
+      <style>{`
+        @keyframes slideIn {
+          from { transform: translateX(-100%); opacity: 0; }
+          to   { transform: translateX(0);     opacity: 1; }
+        }
+        .sidebar-nav {
+          transition: width 0.3s cubic-bezier(0.4,0,0.2,1),
+                      min-width 0.3s cubic-bezier(0.4,0,0.2,1);
+        }
+        .sidebar-label {
+          transition: opacity 0.2s ease, width 0.3s ease;
+          white-space: nowrap;
+          overflow: hidden;
+        }
+        .sidebar-toggle-btn:hover {
+          background: rgba(37,99,235,0.15) !important;
+        }
+        .theme-btn:hover {
+          background: rgba(37,99,235,0.12) !important;
+        }
+      `}</style>
 
-      {/* ── Logo ── */}
-      <div style={{
-        display: "flex", alignItems: "center", gap: "12px",
-        padding: "22px 20px", borderBottom: `1px solid rgba(37,99,235,0.2)`,
-      }}>
-        <div style={{
-          width: "42px", height: "42px", flexShrink: 0,
-          background: `linear-gradient(135deg,${C.accent},${C.accent2})`,
-          borderRadius: "10px", display: "flex", alignItems: "center",
-          justifyContent: "center", fontFamily: "Cinzel,serif",
-          fontWeight: "700", color: "#fff", fontSize: "14px",
-          boxShadow: `0 2px 8px rgba(37,99,235,0.4)`,
-        }}>VM</div>
-        <div>
-          <div style={{ fontFamily: "Cinzel,serif", fontSize: "13px", fontWeight: "700", color: C.text }}>
-            VMBol en Red
-          </div>
-          <div style={{ fontSize: "10px", color: C.accent2, fontWeight: "600", letterSpacing: "1px", textTransform: "uppercase" }}>
-            Panel Cliente
-          </div>
-        </div>
-      </div>
+      <nav
+        className="sidebar-nav"
+        style={{
+          width: "260px",
+          height: "100vh",
+          position: "fixed",
+          top: 0,
+          left: collapsed ? "-260px" : "0",
+          transition: "left 0.3s ease",
+          zIndex: 1000,
+          background: theme === "dark"
+            ? `linear-gradient(180deg,#0d1117 0%,${C.pageBg} 100%)`
+            : `linear-gradient(180deg,#e8edf4 0%,${C.pageBg} 100%)`,
+          borderRight: `2px solid ${C.accent}`,
+          display: "flex",
+          flexDirection: "column",
+        }}>
 
-      {/* ── Usuario + Notificaciones ── */}
-      {user && (
+        {collapsed && (
+          <button
+            onClick={toggleSidebar}
+            style={{
+              position: "fixed",
+              top: "20px", left: "20px", zIndex: 1100,
+              background: C.accent, color: "#fff",
+              border: "none", borderRadius: "8px",
+              padding: "10px 12px", cursor: "pointer",
+              fontSize: "18px",
+              boxShadow: "0 4px 10px rgba(0,0,0,0.4)",
+            }}>
+            ☰
+          </button>
+        )}
+
+        {/* ── Logo + toggle ── */}
         <div style={{
-          padding: "14px 16px",
-          background: `rgba(37,99,235,0.07)`,
-          borderBottom: `1px solid rgba(37,99,235,0.15)`,
-          display: "flex", alignItems: "center", gap: "10px",
+          display: "flex", alignItems: "center",
+          justifyContent: collapsed ? "center" : "space-between",
+          gap: "12px", padding: collapsed ? "22px 10px" : "22px 20px",
+          borderBottom: `1px solid rgba(37,99,235,0.2)`,
+          transition: "padding 0.3s",
         }}>
           <div style={{
-            width: "38px", height: "38px", borderRadius: "50%", flexShrink: 0,
+            width: "42px", height: "42px", flexShrink: 0,
             background: `linear-gradient(135deg,${C.accent},${C.accent2})`,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: "#fff", fontWeight: "800", fontSize: "15px",
-          }}>
-            {(user.nombre || "C")[0].toUpperCase()}
-          </div>
+            borderRadius: "10px", display: "flex", alignItems: "center",
+            justifyContent: "center", fontFamily: "Cinzel,serif",
+            fontWeight: "700", color: "#fff", fontSize: "14px",
+            boxShadow: `0 2px 8px rgba(37,99,235,0.4)`,
+          }}>VM</div>
 
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{
-              color: C.text, fontSize: "13px", fontWeight: "700",
-              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-            }}>
-              {user.nombre}
+          {!collapsed && (
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: "Cinzel,serif", fontSize: "13px", fontWeight: "700", color: C.text }}>
+                VMBol en Red
+              </div>
+              <div style={{ fontSize: "10px", color: C.accent2, fontWeight: "600", letterSpacing: "1px", textTransform: "uppercase" }}>
+                Panel Cliente
+              </div>
             </div>
-            <div style={{ color: C.accent2, fontSize: "11px" }}>Cliente</div>
-          </div>
+          )}
 
-          <NotifDropdown token={token} />
+          <button
+            className="sidebar-toggle-btn"
+            onClick={toggleSidebar}
+            title={collapsed ? "Expandir sidebar" : "Colapsar sidebar"}
+            style={{
+              background: "transparent",
+              border: `1px solid rgba(37,99,235,0.3)`,
+              borderRadius: "7px", padding: "5px 7px",
+              cursor: "pointer", color: C.accent2,
+              fontSize: "14px", lineHeight: 1, flexShrink: 0,
+              transition: "background 0.2s",
+            }}>
+            {collapsed ? "›" : "‹"}
+          </button>
         </div>
-      )}
 
-      {/* ── Navegación ── */}
-      <ul style={{ listStyle: "none", padding: "12px 0", margin: 0, flex: 1 }}>
-        {LINKS.map(link => {
-          const active = pathname === link.href;
-          return (
-            <li key={link.href} style={{ margin: "2px 10px" }}>
-              <a href={link.href} style={{
-                display: "flex", alignItems: "center", gap: "12px",
-                padding: "10px 13px", borderRadius: "8px", textDecoration: "none",
-                color: active ? "#fff" : C.muted,
-                background: active ? `rgba(37,99,235,0.2)` : "transparent",
-                borderLeft: active ? `3px solid ${C.accent2}` : "3px solid transparent",
-                boxShadow: active ? `0 2px 8px rgba(37,99,235,0.2)` : "none",
-                fontSize: "13px", fontWeight: active ? "700" : "500",
-                transition: "all 0.2s",
-              }}>
-                <span style={{ fontSize: "16px", width: "20px", textAlign: "center", flexShrink: 0 }}>
-                  {link.icon}
-                </span>
-                <span style={{ flex: 1 }}>{link.label}</span>
-                {link.href === "/cliente/carrito" && carritoCount > 0 && (
-                  <span style={{
-                    background: C.accent, color: "#fff",
-                    borderRadius: "10px", padding: "2px 7px",
-                    fontSize: "11px", fontWeight: "700", flexShrink: 0,
-                  }}>{carritoCount}</span>
-                )}
-              </a>
-            </li>
-          );
-        })}
-      </ul>
-
-      {/* ── Cerrar Sesión ── */}
-      <div style={{ padding: "14px 16px", borderTop: `1px solid rgba(37,99,235,0.2)` }}>
-        <button
-          onClick={logout}
-          onMouseEnter={e => {
-            e.currentTarget.style.background = "rgba(239,68,68,0.1)";
-            e.currentTarget.style.borderColor = C.danger;
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.background = "transparent";
-            e.currentTarget.style.borderColor = "rgba(239,68,68,0.4)";
-          }}
-          style={{
-            width: "100%", padding: "10px 14px", borderRadius: "8px",
-            background: "transparent", border: `1px solid rgba(239,68,68,0.4)`,
-            color: "#f87171", cursor: "pointer", fontSize: "13px", fontWeight: "600",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
-            transition: "all 0.2s",
+        {/* ── Usuario + notificaciones ── */}
+        {user && (
+          <div style={{
+            padding: collapsed ? "14px 10px" : "14px 16px",
+            background: `rgba(37,99,235,0.07)`,
+            borderBottom: `1px solid rgba(37,99,235,0.15)`,
+            display: "flex", alignItems: "center",
+            justifyContent: collapsed ? "center" : "flex-start",
+            gap: "10px", transition: "padding 0.3s",
           }}>
-          <IconLogout size={15} />
-          Cerrar Sesión
-        </button>
-      </div>
-    </nav>
-  );
-}
+            <div style={{
+              width: "38px", height: "38px", borderRadius: "50%", flexShrink: 0,
+              background: `linear-gradient(135deg,${C.accent},${C.accent2})`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "#fff", fontWeight: "800", fontSize: "15px",
+            }}>
+              {(user.nombre || "C")[0].toUpperCase()}
+            </div>
+
+            {!collapsed && (
+              <>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    color: C.text, fontSize: "13px", fontWeight: "700",
+                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  }}>{user.nombre}</div>
+                  <div style={{ color: C.accent2, fontSize: "11px" }}>Cliente</div>
+                </div>
+                <NotifDropdown token={token} C={C} /> {/* 👈 pasamos C */}
+              </>
+            )}
+          </div>
+        )}
+
+        {/* ── Navegación ── */}
+        <ul style={{ listStyle: "none", padding: "12px 0", margin: 0, flex: 1 }}>
+          {LINKS.map(link => {
+            const active = pathname === link.href;
+            return (
+              <li
+  key={link.href}
+  style={{ margin: collapsed ? "2px 6px" : "2px 10px", transition: "margin 0.3s" }}
+>
+  <a
+    href={link.href}
+    title={collapsed ? link.label : undefined}
+    style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: collapsed ? "center" : "flex-start",
+      gap: "12px",
+      padding: collapsed ? "10px 8px" : "10px 13px",
+      borderRadius: "8px",
+      textDecoration: "none",
+      color: active ? "#fff" : C.muted,
+      background: active ? `rgba(37,99,235,0.2)` : "transparent",
+      borderLeft: active ? `3px solid ${C.accent2}` : "3px solid transparent",
+      boxShadow: active ? `0 2px 8px rgba(37,99,235,0.2)` : "none",
+      fontSize: "13px",
+      fontWeight: active ? "700" : "500",
+      transition: "all 0.2s",
+    }}
+  >
+    <span style={{ fontSize: "18px", flexShrink: 0 }}>
+      {link.icon}
+    </span>
+
+    {!collapsed && (
+      <span className="sidebar-label" style={{ flex: 1 }}>
+        {link.label}
+      </span>
+    )}
+
+    {!collapsed && link.href === "/cliente/carrito" && carritoCount > 0 && (
+      <span
+        style={{
+          background: C.accent,
+          color: "#fff",
+          borderRadius: "10px",
+          padding: "2px 7px",
+          fontSize: "11px",
+          fontWeight: "700",
+        }}
+      >
+        {carritoCount}
+      </span>
+    )}
+  </a>
+</li>
+            );
+          })}
+        </ul>
+
+        {/* ── Botón tema + Cerrar sesión ── */}
+        <div style={{
+          padding: collapsed ? "14px 10px" : "14px 16px",
+          borderTop: `1px solid rgba(37,99,235,0.2)`,
+          display: "flex", flexDirection: "column", gap: "8px",
+          transition: "padding 0.3s",
+        }}>
+
+          {/* 👇 BOTÓN TOGGLE DE TEMA — NUEVO */}
+          <button
+            className="theme-btn"
+            onClick={toggleTheme}
+            title={theme === "dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+            style={{
+              width: "100%",
+              padding: collapsed ? "10px 8px" : "10px 14px",
+              borderRadius: "8px",
+              background: "transparent",
+              border: `1px solid rgba(37,99,235,0.3)`,
+              color: C.muted, cursor: "pointer", fontSize: "13px", fontWeight: "600",
+              display: "flex", alignItems: "center",
+              justifyContent: "center",
+              gap: collapsed ? "0" : "8px",
+              transition: "all 0.2s",
+            }}>
+            <span style={{ fontSize: "16px" }}>{theme === "dark" ? "☀️" : "🌙"}</span>
+            {!collapsed && (
+              <span>{theme === "dark" ? "Modo claro" : "Modo oscuro"}</span>
+            )}
+          </button>
+
+          {/* Cerrar sesión — igual que antes */}
+          <button
+            onClick={logout}
+            title={collapsed ? "Cerrar Sesión" : undefined}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = "rgba(239,68,68,0.1)";
+              e.currentTarget.style.borderColor = C.danger;
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.borderColor = "rgba(239,68,68,0.4)";
+            }}
+            style={{
+              width: "100%",
+              padding: collapsed ? "10px 8px" : "10px 14px",
+              borderRadius: "8px", background: "transparent",
+              border: `1px solid rgba(239,68,68,0.4)`,
+              color: "#f87171", cursor: "pointer", fontSize: "13px", fontWeight: "600",
+              display: "flex", alignItems: "center",
+              justifyContent: "center",
+              gap: collapsed ? "0" : "8px",
+              transition: "all 0.2s",
+            }}>
+            <IconLogout size={15} />
+            {!collapsed && <span>Cerrar Sesión</span>}
+          </button>
+        </div>
+      </nav>
+    </>
+);
+}  

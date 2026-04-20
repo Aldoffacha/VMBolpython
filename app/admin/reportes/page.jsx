@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
-import AdminSidebar from "@/components/AdminSidebar";
+
 
 const API = "http://localhost:8000";
 function getToken() {
@@ -80,7 +80,7 @@ export default function AdminReportes() {
   return (
     <div style={s.page}>
       {/* SIDEBAR */}
-      <AdminSidebar user={user} />
+      
 
       {/* MAIN */}
       <main style={s.main}>
@@ -134,7 +134,7 @@ export default function AdminReportes() {
               </select>
             </div>
             <button onClick={() => setFiltros({ fecha_inicio: inicioMes(), fecha_fin: hoy(), producto_id: "", cliente_id: "" })}
-              style={s.btnSecondary}>🔄 Limpiar</button>
+              style={s.btnSecondary}> Limpiar</button>
           </div>
         </div>
 
@@ -145,10 +145,10 @@ export default function AdminReportes() {
             {/* STATS */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>
               {[
-                { icon: "💵", label: "Ventas Totales",   value: `$${data.stats.total_ventas.toLocaleString("en", { minimumFractionDigits: 2 })}`, color: "#9a031e",  sub: "Período seleccionado" },
-                { icon: "🛒", label: "Pedidos Activos",  value: data.stats.total_pedidos,     color: "#10b981", sub: "Excluye cancelados" },
-                { icon: "👥", label: "Clientes Nuevos",  value: data.stats.clientes_nuevos,   color: "#3b82f6", sub: "En el período" },
-                { icon: "🎯", label: "Ticket Promedio",  value: `$${data.stats.ticket_promedio.toFixed(2)}`, color: "#f59e0b", sub: "Por pedido" },
+                { icon: "", label: "Ventas Totales",   value: `$${data.stats.total_ventas.toLocaleString("en", { minimumFractionDigits: 2 })}`, color: "#9a031e",  sub: "Período seleccionado" },
+                { icon: "", label: "Pedidos Activos",  value: data.stats.total_pedidos,     color: "#10b981", sub: "Excluye cancelados" },
+                { icon: "", label: "Clientes Nuevos",  value: data.stats.clientes_nuevos,   color: "#3b82f6", sub: "En el período" },
+                { icon: "", label: "Ticket Promedio",  value: `$${data.stats.ticket_promedio.toFixed(2)}`, color: "#f59e0b", sub: "Por pedido" },
               ].map(st => (
                 <div key={st.label} style={{ ...s.statCard, borderLeftColor: st.color }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -167,7 +167,7 @@ export default function AdminReportes() {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
               {/* Ventas mensuales */}
               <div style={s.card}>
-                <p style={s.cardTitle}>📈 Ventas Mensuales (Últimos 6 meses)</p>
+                <p style={s.cardTitle}> Ventas Mensuales (Últimos 6 meses)</p>
                 <ResponsiveContainer width="100%" height={220}>
                   <LineChart data={data.ventas_mensuales}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(154,3,30,0.1)" />
@@ -182,7 +182,7 @@ export default function AdminReportes() {
 
               {/* Ventas semanales */}
               <div style={s.card}>
-                <p style={s.cardTitle}>📊 Ventas Semanales (Últimas 8 semanas)</p>
+                <p style={s.cardTitle}> Ventas Semanales (Últimas 8 semanas)</p>
                 <ResponsiveContainer width="100%" height={220}>
                   <BarChart data={data.ventas_semanales}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(154,3,30,0.1)" />
@@ -200,7 +200,7 @@ export default function AdminReportes() {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
               {/* Distribución estados */}
               <div style={s.card}>
-                <p style={s.cardTitle}>🥧 Distribución de Pedidos por Estado</p>
+                <p style={s.cardTitle}> Distribución de Pedidos por Estado</p>
                 {data.distribucion_estados.length === 0 ? (
                   <p style={{ color: "#a0a0a0", textAlign: "center", padding: 40 }}>Sin datos en el período</p>
                 ) : (
@@ -219,7 +219,7 @@ export default function AdminReportes() {
 
               {/* Top productos */}
               <div style={s.card}>
-                <p style={s.cardTitle}>🏆 Top Productos Más Vendidos</p>
+                <p style={s.cardTitle}> Top Productos Más Vendidos</p>
                 {data.productos_top.length === 0 ? (
                   <p style={{ color: "#a0a0a0", textAlign: "center", padding: 40 }}>Sin datos en el período</p>
                 ) : (
@@ -241,7 +241,7 @@ export default function AdminReportes() {
             {/* TABLA PRODUCTOS */}
             <div style={s.card}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                <p style={s.cardTitle}>📋 Detalle de Productos Más Vendidos</p>
+                <p style={s.cardTitle}> Detalle de Productos Más Vendidos</p>
                 <span style={{ color: "#a0a0a0", fontSize: 12 }}>
                   {data.filtros.fecha_inicio} — {data.filtros.fecha_fin}
                 </span>

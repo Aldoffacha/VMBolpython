@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import AdminSidebar from "@/components/AdminSidebar";
+
 
 const API = "http://localhost:8000";
 
@@ -10,7 +10,36 @@ function getToken() {
   return document.cookie.split("; ").find(r => r.startsWith("access_token="))?.split("=")[1];
 }
 
-const CATEGORIAS = ["otros", "electronica", "ropa", "hogar", "deportes", "libros"];
+const CATEGORIAS_ADMIN = [
+  { group: "Electrónico",  options: [
+    { value: "gaming",        label: "Gaming"        },
+    { value: "audio",         label: "Audio"         },
+    { value: "celulares",     label: "Celulares"     },
+    { value: "computadoras",  label: "Computadoras"  },
+    { value: "fotografia",    label: "Fotografía"    },
+  ]},
+  { group: "Ropa", options: [
+    { value: "ropa_hombre",   label: "Ropa Hombre"   },
+    { value: "ropa_mujer",    label: "Ropa Mujer"    },
+    { value: "calzado",       label: "Calzado"       },
+    { value: "accesorios",    label: "Accesorios"    },
+  ]},
+  { group: "Hogar", options: [
+    { value: "cocina",        label: "Cocina"        },
+    { value: "dormitorio",    label: "Dormitorio"    },
+    { value: "decoracion",    label: "Decoración"    },
+  ]},
+  { group: "Deportes", options: [
+    { value: "fitness",       label: "Fitness"       },
+    { value: "futbol",        label: "Fútbol"        },
+    { value: "outdoor",       label: "Outdoor"       },
+  ]},
+  { group: "Otros", options: [
+    { value: "juguetes",      label: "Juguetes"      },
+    { value: "libros",        label: "Libros"        },
+    { value: "otros",         label: "Otros"         },
+  ]},
+];
 const EMPTY_FORM = { nombre: "", descripcion: "", precio: "", stock: "0", categoria: "otros", imagen_actual: "" };
 
 
@@ -159,7 +188,7 @@ export default function AdminProductos() {
       {toast && <div style={s.toast}>{toast}</div>}
 
       {/* SIDEBAR */}
-      <AdminSidebar user={user} />
+      
 
       {/* MAIN */}
       <main style={s.main}>
@@ -212,7 +241,7 @@ export default function AdminProductos() {
                       </td>
                       <td style={s.td}>${p.precio.toFixed(2)}</td>
                       <td style={{ ...s.td, color: p.stock <= 5 ? "#ef4444" : "#d9d9d9", fontWeight: p.stock <= 5 ? 700 : 400 }}>
-                        {p.stock} {p.stock <= 5 && <span style={{ fontSize: 10 }}>⚠️ bajo</span>}
+                        {p.stock} {p.stock <= 5 && <span style={{ fontSize: 10 }}> bajo</span>}
                       </td>
                       <td style={s.td}>
                         <span style={s.categoriaBadge}>{p.categoria}</span>
@@ -264,7 +293,7 @@ export default function AdminProductos() {
               <button onClick={cerrarModal} style={s.closeBtn}>✕</button>
             </div>
             <div style={{ ...s.modalBody, overflowY: "auto", maxHeight: "65vh" }}>
-              {error && <div style={s.errorBox}>⚠️ {error}</div>}
+              {error && <div style={s.errorBox}> {error}</div>}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                 {/* Columna izquierda */}
                 <div>
@@ -283,8 +312,14 @@ export default function AdminProductos() {
                   <div style={s.formGroup}>
                     <label style={s.formLabel}>Categoría</label>
                     <select value={form.categoria} onChange={e => setForm({ ...form, categoria: e.target.value })} style={s.formInput}>
-                      {CATEGORIAS.map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
-                    </select>
+  {CATEGORIAS_ADMIN.map(grupo => (
+    <optgroup key={grupo.group} label={grupo.group}>
+      {grupo.options.map(o => (
+        <option key={o.value} value={o.value}>{o.label}</option>
+      ))}
+    </optgroup>
+  ))}
+</select>
                   </div>
                   <div style={s.formGroup}>
                     <label style={s.formLabel}>Imagen</label>
@@ -324,7 +359,7 @@ export default function AdminProductos() {
         <div style={s.modalOverlay} onClick={() => setConfirmDelete(null)}>
           <div style={{ ...s.modalBox, maxWidth: 420 }} onClick={e => e.stopPropagation()}>
             <div style={s.modalHeader}>
-              <h2 style={{ ...s.modalTitle, color: "#ef4444" }}>⚠️ Confirmar Eliminación</h2>
+              <h2 style={{ ...s.modalTitle, color: "#ef4444" }}> Confirmar Eliminación</h2>
               <button onClick={() => setConfirmDelete(null)} style={s.closeBtn}>✕</button>
             </div>
             <div style={{ ...s.modalBody, textAlign: "center", padding: 24 }}>

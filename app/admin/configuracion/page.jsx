@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import AdminSidebar from "@/components/AdminSidebar";
+
 
 const API = "http://localhost:8000";
 function getToken() {
@@ -139,7 +139,7 @@ export default function AdminConfiguracion() {
 
   return (
     <div style={s.page}>
-      <AdminSidebar user={user} />
+      
 
       <main style={s.main}>
         {/* HEADER */}
@@ -165,7 +165,7 @@ export default function AdminConfiguracion() {
 
             {/* Config general */}
             <div style={s.card}>
-              <div style={s.cardHeader}><span style={s.cardTitle}>⚙️ Configuración General</span></div>
+              <div style={s.cardHeader}><span style={s.cardTitle}> Configuración General</span></div>
               <div style={s.cardBody}>
                 <div style={s.formGroup}>
                   <label style={s.label}>Nombre de la Empresa</label>
@@ -191,14 +191,14 @@ export default function AdminConfiguracion() {
                   </select>
                 </div>
                 <button onClick={guardarGeneral} disabled={saving} style={s.btnPrimary}>
-                  {saving ? "Guardando..." : "💾 Guardar Configuración"}
+                  {saving ? "Guardando..." : " Guardar Configuración"}
                 </button>
               </div>
             </div>
 
             {/* QR */}
             <div style={s.card}>
-              <div style={s.cardHeader}><span style={s.cardTitle}>📱 Código QR de Pago</span></div>
+              <div style={s.cardHeader}><span style={s.cardTitle}> Código QR de Pago</span></div>
               <div style={s.cardBody}>
                 {/* QR actual */}
                 <div style={{ marginBottom: 16 }}>
@@ -216,7 +216,7 @@ export default function AdminConfiguracion() {
                 <input ref={qrInputRef} type="file" accept="image/*" onChange={subirQR}
                   style={{ display: "none" }} />
                 <button onClick={() => qrInputRef.current?.click()} style={s.btnSecondary}>
-                  📤 Seleccionar Imagen
+                   Seleccionar Imagen
                 </button>
               </div>
             </div>
@@ -228,7 +228,7 @@ export default function AdminConfiguracion() {
             {/* Depósitos */}
             <div style={s.card}>
               <div style={{ ...s.cardHeader, display: "flex", justifyContent: "space-between" }}>
-                <span style={s.cardTitle}>🏭 Depósitos en Miami</span>
+                <span style={s.cardTitle}> Depósitos en Miami</span>
                 <button onClick={() => setModal("deposito")} style={s.btnAdd}>＋ Agregar</button>
               </div>
               <div style={s.cardBody}>
@@ -258,7 +258,7 @@ export default function AdminConfiguracion() {
             {/* Tiendas */}
             <div style={s.card}>
               <div style={{ ...s.cardHeader, display: "flex", justifyContent: "space-between" }}>
-                <span style={s.cardTitle}>🛒 Tiendas USA Configuradas</span>
+                <span style={s.cardTitle}> Tiendas USA Configuradas</span>
                 <button onClick={() => setModal("tienda")} style={s.btnAdd}>＋ Agregar</button>
               </div>
               <div style={s.cardBody}>
@@ -295,7 +295,7 @@ export default function AdminConfiguracion() {
         <div style={s.overlay} onClick={() => setModal(null)}>
           <div style={s.modalBox} onClick={e => e.stopPropagation()}>
             <div style={s.modalHeader}>
-              <h2 style={s.modalTitle}>🏭 Agregar Depósito en Miami</h2>
+              <h2 style={s.modalTitle}> Agregar Depósito en Miami</h2>
               <button onClick={() => setModal(null)} style={s.closeBtn}>✕</button>
             </div>
             <div style={s.modalBody}>
@@ -325,7 +325,7 @@ export default function AdminConfiguracion() {
         <div style={s.overlay} onClick={() => setModal(null)}>
           <div style={s.modalBox} onClick={e => e.stopPropagation()}>
             <div style={s.modalHeader}>
-              <h2 style={s.modalTitle}>🛒 Agregar Tienda USA</h2>
+              <h2 style={s.modalTitle}> Agregar Tienda USA</h2>
               <button onClick={() => setModal(null)} style={s.closeBtn}>✕</button>
             </div>
             <div style={s.modalBody}>

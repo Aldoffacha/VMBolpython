@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import AdminSidebar from "@/components/AdminSidebar";
+
 
 const API = "http://localhost:8000";
 function getToken() {
@@ -10,7 +10,7 @@ function getToken() {
 }
 
 function hoy()      { return new Date().toISOString().split("T")[0]; }
-function inicioMes(){ const d = new Date(); d.setDate(1); return d.toISOString().split("T")[0]; }
+function inicioMes(){ return "2025-01-01"; }
 
 const ACCION_STYLE = {
   INSERT: { bg: "rgba(16,185,129,0.15)",  color: "#10b981", border: "rgba(16,185,129,0.4)"  },
@@ -103,7 +103,7 @@ export default function AdminAuditoria() {
 
   return (
     <div style={s.page}>
-      <AdminSidebar user={user} />
+      
 
       <main style={s.main}>
         {/* HEADER */}
@@ -190,7 +190,7 @@ export default function AdminAuditoria() {
                 <option value="productos">Productos</option>
               </select>
             </div>
-            <button onClick={limpiar} style={s.btnSecondary}>🔄 Limpiar</button>
+            <button onClick={limpiar} style={s.btnSecondary}> Limpiar</button>
           </div>
         </div>
 

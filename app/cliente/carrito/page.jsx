@@ -2,131 +2,103 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import ClienteSidebar from "@/components/ClienteSidebar";
+import { useTheme } from "@/context/ThemeContext";
+import "@/styles/dashboard.css";
+import "@/styles/carrito.css";
 
 const API = "http://localhost:8000";
 
-const C = {
-  pageBg:"#121418", cardBg:"#1f2429", accent:"#2563eb", accent2:"#3b82f6",
-  text:"#d9d9d9", muted:"#a0a0a0", success:"#10b981", warning:"#f59e0b",
-  danger:"#ef4444", indigo:"#6366f1",
-};
-
-const fmt = n => `$${parseFloat(n||0).toFixed(2)}`;
-
-const card   = { background:C.cardBg, borderRadius:"10px", border:`1px solid rgba(37,99,235,0.12)`,
-  boxShadow:"0 4px 15px rgba(0,0,0,0.1)", overflow:"hidden", marginBottom:"20px" };
-const cHead  = { padding:"13px 18px", borderBottom:`2px solid ${C.accent}`, background:C.pageBg,
-  display:"flex", alignItems:"center", justifyContent:"space-between" };
-const cTitle = { margin:0, color:C.accent2, fontFamily:"Cinzel,serif", fontSize:"14px", fontWeight:"700" };
-const cBody  = { padding:"18px" };
-const ov     = { position:"fixed", inset:0, background:"rgba(0,0,0,0.78)", display:"flex",
-  alignItems:"center", justifyContent:"center", zIndex:9000, padding:"20px" };
-const mWrap  = { background:C.cardBg, borderRadius:"12px", width:"100%", maxWidth:"580px",
-  border:`2px solid ${C.accent}`, boxShadow:"0 20px 60px rgba(0,0,0,0.6)", overflow:"hidden",
-  maxHeight:"92vh", display:"flex", flexDirection:"column" };
-const mHead  = { display:"flex", justifyContent:"space-between", alignItems:"center",
-  padding:"15px 20px", borderBottom:`2px solid ${C.accent}`, background:C.pageBg, flexShrink:0 };
-const mFoot  = { display:"flex", justifyContent:"flex-end", gap:"10px",
-  padding:"13px 20px", borderTop:`1px solid rgba(37,99,235,0.15)`, background:C.pageBg, flexShrink:0 };
-const mBody  = { padding:"20px", overflowY:"auto", flex:1 };
-const btnX   = { background:"transparent", border:"none", color:C.muted, cursor:"pointer", fontSize:"18px" };
-const btnPri = { background:C.accent, border:"none", color:"#fff", padding:"10px 24px",
-  borderRadius:"8px", cursor:"pointer", fontWeight:"700", fontSize:"13px",
-  boxShadow:`0 2px 8px rgba(37,99,235,0.35)` };
-const btnSec = { background:"transparent", border:`1px solid #444`, color:C.muted,
-  padding:"10px 24px", borderRadius:"8px", cursor:"pointer", fontWeight:"600", fontSize:"13px" };
-const btnQty = { background:`rgba(37,99,235,0.1)`, border:`1px solid ${C.accent}`, color:C.accent2,
-  width:"30px", height:"30px", borderRadius:"6px", cursor:"pointer", fontWeight:"800",
-  fontSize:"15px", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 };
-const inp_   = { width:"100%", padding:"9px 12px", background:C.pageBg,
-  border:`2px solid rgba(37,99,235,0.18)`, borderRadius:"6px", color:C.text,
-  fontSize:"13px", outline:"none", boxSizing:"border-box" };
-const lbl_   = { display:"block", color:C.muted, fontSize:"12px", marginBottom:"5px", fontWeight:"600" };
+const fmt = n => `$${parseFloat(n || 0).toFixed(2)}`;
 
 const PLAT = {
-  amazon: { bg:C.warning, col:"#000", txt:"Amazon" },
-  ebay:   { bg:C.accent2, col:"#fff", txt:"eBay"   },
-  local:  { bg:C.success, col:"#fff", txt:"Local"  },
+  amazon: { bg: "#f59e0b", col: "#000", txt: "Amazon" },
+  ebay:   { bg: "#3b82f6", col: "#fff", txt: "eBay"   },
+  local:  { bg: "#10b981", col: "#fff", txt: "Local"  },
 };
 
+/* ── Control de cantidad ──────────────────────────────────────────────── */
 function CantidadCtrl({ value, onChange, disabled }) {
   return (
-    <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
-      <button onClick={()=>onChange(value-1)} disabled={disabled||value<=1}
-        style={{ ...btnQty, opacity:disabled||value<=1?0.4:1 }}>−</button>
-      <span style={{ color:C.text, fontWeight:"700", fontSize:"15px",
-        minWidth:"20px", textAlign:"center" }}>{value}</span>
-      <button onClick={()=>onChange(value+1)} disabled={disabled||value>=10}
-        style={{ ...btnQty, opacity:disabled||value>=10?0.4:1 }}>+</button>
+    <div className="qty-row">
+      <button
+        className="qty-btn"
+        onClick={() => onChange(value - 1)}
+        disabled={disabled || value <= 1}
+        style={{ opacity: disabled || value <= 1 ? 0.4 : 1 }}
+      >−</button>
+      <span className="qty-num" style={{ fontSize: 22 }}>{value}</span>
+      <button
+        className="qty-btn"
+        onClick={() => onChange(value + 1)}
+        disabled={disabled || value >= 10}
+        style={{ opacity: disabled || value >= 10 ? 0.4 : 1 }}
+      >+</button>
     </div>
   );
 }
 
+/* ── Fila de item ─────────────────────────────────────────────────────── */
 function ItemRow({ item, tipo, onCantidad, onEliminar, updating }) {
-  const plat = PLAT[item.plataforma||"local"] || PLAT.local;
+  const plat       = PLAT[item.plataforma || "local"] || PLAT.local;
   const [confirmDel, setConfirmDel] = useState(false);
-  const id = tipo==="externo" ? item.id_carrito_externo : item.id_carrito;
+  const id         = tipo === "externo" ? item.id_carrito_externo : item.id_carrito;
 
   return (
-    <div style={{ display:"flex", gap:"14px", padding:"14px 0",
-      borderBottom:`1px solid rgba(37,99,235,0.08)`, alignItems:"center",
-      flexWrap:"wrap", opacity:updating?0.6:1, transition:"opacity 0.2s" }}>
+    <div className={`crt-item${updating ? " crt-item--updating" : ""}`}>
 
-      <div style={{ width:"60px", height:"60px", borderRadius:"8px", background:"#0d1117",
-        overflow:"hidden", flexShrink:0, border:`1px solid rgba(37,99,235,0.15)`,
-        display:"flex", alignItems:"center", justifyContent:"center" }}>
+      {/* Thumbnail */}
+      <div className="crt-item__thumb">
         {item.imagen_url
           ? <img src={item.imagen_url} alt={item.nombre}
-              style={{ width:"100%", height:"100%", objectFit:"cover" }}
-              onError={e=>{e.target.style.display="none";}}/>
-          : <span style={{ fontSize:"24px" }}>📦</span>
-        }
+              onError={e => { e.target.style.display = "none"; }} />
+          : "📦"}
       </div>
 
-      <div style={{ flex:1, minWidth:"160px" }}>
-        <div style={{ display:"flex", alignItems:"center", gap:"7px", marginBottom:"4px", flexWrap:"wrap" }}>
-          <span style={{ color:C.text, fontSize:"13px", fontWeight:"700" }}>
-            {(item.nombre||"").slice(0,48)}{(item.nombre||"").length>48?"...":""}
+      {/* Info */}
+      <div className="crt-item__info">
+        <div className="crt-item__name">
+          {(item.nombre || "").slice(0, 52)}{(item.nombre || "").length > 52 ? "…" : ""}
+          <span className="crt-item__plat" style={{ background: plat.bg, color: plat.col }}>
+            {plat.txt}
           </span>
-          <span style={{ background:plat.bg, color:plat.col, padding:"2px 7px",
-            borderRadius:"8px", fontSize:"10px", fontWeight:"700" }}>{plat.txt}</span>
         </div>
-        <div style={{ color:C.muted, fontSize:"11px" }}>
-          {item.categoria && `${item.categoria} · `}Precio unitario: {fmt(item.precio)}
+        <div className="crt-item__meta">
+          {item.categoria ? `${item.categoria} · ` : ""}precio unitario: {fmt(item.precio)}
         </div>
       </div>
 
-      <CantidadCtrl value={item.cantidad} disabled={updating}
-        onChange={qty => onCantidad(id, qty, tipo)} />
+      {/* Cantidad */}
+      <CantidadCtrl
+        value={item.cantidad}
+        disabled={updating}
+        onChange={qty => onCantidad(id, qty, tipo)}
+      />
 
-      <div style={{ minWidth:"70px", textAlign:"right" }}>
-        <div style={{ color:C.success, fontWeight:"800", fontSize:"15px" }}>
-          {fmt(parseFloat(item.precio) * item.cantidad)}
-        </div>
-        <div style={{ color:C.muted, fontSize:"10px" }}>subtotal</div>
+      {/* Subtotal */}
+      <div className="crt-item__subtotal">
+        <div className="crt-item__subtotal-val">{fmt(parseFloat(item.precio) * item.cantidad)}</div>
+        <div className="crt-item__subtotal-lbl">subtotal</div>
       </div>
 
+      {/* Eliminar */}
       <div>
-        {confirmDel
-          ? <div style={{ display:"flex", gap:"5px" }}>
-              <button onClick={()=>{ onEliminar(id,tipo); setConfirmDel(false); }}
-                style={{ background:C.danger, border:"none", color:"#fff", padding:"5px 10px",
-                  borderRadius:"6px", cursor:"pointer", fontSize:"11px", fontWeight:"700" }}>Sí</button>
-              <button onClick={()=>setConfirmDel(false)}
-                style={{ background:"transparent", border:`1px solid #444`, color:C.muted,
-                  padding:"5px 10px", borderRadius:"6px", cursor:"pointer", fontSize:"11px" }}>No</button>
-            </div>
-          : <button onClick={()=>setConfirmDel(true)}
-              style={{ background:"transparent", border:`1px solid rgba(239,68,68,0.35)`,
-                color:"#f87171", padding:"5px 10px", borderRadius:"6px",
-                cursor:"pointer", fontSize:"12px" }}>🗑️</button>
-        }
+        {confirmDel ? (
+          <div className="crt-del-confirm">
+            <button className="crt-del-yes"
+              onClick={() => { onEliminar(id, tipo); setConfirmDel(false); }}>
+              Sí
+            </button>
+            <button className="crt-del-no" onClick={() => setConfirmDel(false)}>No</button>
+          </div>
+        ) : (
+          <button className="crt-del" onClick={() => setConfirmDel(true)}>🗑️</button>
+        )}
       </div>
     </div>
   );
 }
 
-// ── Modal Pago ────────────────────────────────────────────────────────────────
+/* ── Modal de Pago ────────────────────────────────────────────────────── */
 function ModalPago({ idPedido, total, token, onClose, onSuccess }) {
   const [infoQR,  setInfoQR]  = useState(null);
   const [archivo, setArchivo] = useState(null);
@@ -134,27 +106,19 @@ function ModalPago({ idPedido, total, token, onClose, onSuccess }) {
   const [load,    setLoad]    = useState(false);
   const [error,   setError]   = useState("");
 
-  // Método fijo QR, monto fijo del pedido — no editables
-  const metodo = "QR";
-  const monto  = total;
-
-  useEffect(()=>{
-    fetch(`${API}/cliente/pago/info`,{ headers:{ Authorization:`Bearer ${token}` }})
-      .then(r=>r.json()).then(d=>setInfoQR(d))
-      .catch(()=>{});
-  },[token]);
+  useEffect(() => {
+    fetch(`${API}/cliente/pago/info`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json()).then(d => setInfoQR(d)).catch(() => {});
+  }, [token]);
 
   function handleFile(e) {
-    const f = e.target.files?.[0];
-    if (!f) return;
+    const f = e.target.files?.[0]; if (!f) return;
     setArchivo(f);
     if (f.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onload = ev => setPreview(ev.target.result);
       reader.readAsDataURL(f);
-    } else {
-      setPreview(null);
-    }
+    } else setPreview(null);
   }
 
   async function enviar() {
@@ -162,117 +126,93 @@ function ModalPago({ idPedido, total, token, onClose, onSuccess }) {
     setLoad(true); setError("");
     const fd = new FormData();
     fd.append("id_pedido", String(idPedido));
-    fd.append("metodo", metodo);
-    fd.append("monto", String(monto));
+    fd.append("metodo", "QR");
+    fd.append("monto", String(total));
     fd.append("comprobante", archivo);
-    const r = await fetch(`${API}/cliente/pago/subir`,{
-      method:"POST", headers:{ Authorization:`Bearer ${token}` }, body:fd });
+    const r = await fetch(`${API}/cliente/pago/subir`, {
+      method: "POST", headers: { Authorization: `Bearer ${token}` }, body: fd,
+    });
     const d = await r.json(); setLoad(false);
-    d.success ? onSuccess(d.message) : setError(d.detail||"Error al enviar");
+    d.success ? onSuccess(d.message) : setError(d.detail || "Error al enviar");
   }
 
   return (
-    <div style={ov}>
-      <div style={{...mWrap, maxWidth:"560px"}}>
-        <div style={mHead}>
-          <h3 style={{margin:0,color:C.accent2,fontFamily:"Cinzel,serif",fontSize:"15px",fontWeight:"700"}}>
-            💳 Pagar Pedido #VM{idPedido}
-          </h3>
-          <button onClick={onClose} style={btnX}>✕</button>
+    <div className="m-overlay">
+      <div className="m-box">
+        <div className="m-head">
+          <h3 className="m-head__title">💳 Pagar Pedido #VM{idPedido}</h3>
+          <button className="m-close" onClick={onClose}>✕</button>
         </div>
 
-        <div style={mBody}>
+        <div className="m-body">
           {/* Total */}
-          <div style={{ background:`rgba(37,99,235,0.07)`, borderRadius:"10px",
-            padding:"14px 18px", marginBottom:"20px", textAlign:"center",
-            border:`1px solid rgba(37,99,235,0.2)` }}>
-            <div style={{ color:C.muted, fontSize:"12px", marginBottom:"4px" }}>Total a pagar</div>
-            <div style={{ color:C.success, fontWeight:"800", fontSize:"32px" }}>{fmt(total)}</div>
+          <div className="pago-total-box">
+            <div className="pago-total-lbl">Total a pagar</div>
+            <div className="pago-total-val">{fmt(total)}</div>
           </div>
 
           {/* QR */}
           {infoQR?.qr_url && (
-            <div style={{ textAlign:"center", marginBottom:"18px" }}>
-              <div style={{ color:C.accent2, fontWeight:"700", fontSize:"13px", marginBottom:"10px" }}>
-                📱 Escanea el QR para pagar
-              </div>
-              <img src={infoQR.qr_url} alt="QR de pago"
-                style={{ maxWidth:"200px", borderRadius:"10px",
-                  border:`2px solid ${C.accent}`, padding:"8px", background:"#fff" }}
-                onError={e=>{e.target.style.display="none";}}/>
-              <div style={{ color:C.muted, fontSize:"11px", marginTop:"8px" }}>
-                {infoQR.nombre_empresa}
-              </div>
+            <div className="pago-qr-wrap">
+              <div className="pago-qr-label">📱 Escanea el QR para pagar</div>
+              <img
+                src={infoQR.qr_url}
+                alt="QR de pago"
+                className="pago-qr-img"
+                onError={e => { e.target.style.display = "none"; }}
+              />
+              <div className="pago-qr-company">{infoQR.nombre_empresa}</div>
             </div>
           )}
 
-          {/* Método — fijo, solo visual */}
-          <div style={{ marginBottom:"14px" }}>
-            <label style={lbl_}>Método de pago</label>
-            <div style={{ ...inp_, display:"flex", alignItems:"center", gap:"8px",
-              background:`rgba(16,185,129,0.08)`, border:`2px solid rgba(16,185,129,0.3)`,
-              color:C.success, fontWeight:"700", cursor:"default" }}>
-              <span style={{ fontSize:"16px" }}>📱</span> Pago QR
+          {/* Método */}
+          <div style={{ marginBottom: 16 }}>
+            <label className="f-lbl">Método de pago</label>
+            <div className="pago-field-readonly">
+              <span style={{ fontSize: 16 }}>📱</span> Pago QR
             </div>
           </div>
 
-          {/* Monto — fijo, solo visual */}
-          <div style={{ marginBottom:"14px" }}>
-            <label style={lbl_}>Monto a pagar (USD)</label>
-            <div style={{ ...inp_, display:"flex", alignItems:"center", justifyContent:"space-between",
-              background:`rgba(16,185,129,0.08)`, border:`2px solid rgba(16,185,129,0.3)`,
-              color:C.success, fontWeight:"800", fontSize:"16px", cursor:"default" }}>
-              <span>{fmt(total)}</span>
-              <span style={{ fontSize:"11px", color:C.muted, fontWeight:"400" }}>monto fijo</span>
+          {/* Monto */}
+          <div style={{ marginBottom: 16 }}>
+            <label className="f-lbl">Monto a pagar (USD)</label>
+            <div className="pago-field-readonly" style={{ justifyContent: "space-between" }}>
+              <span style={{ fontSize: 16, fontWeight: 800 }}>{fmt(total)}</span>
+              <span style={{ fontSize: 11, color: "var(--text-3)", fontWeight: 400 }}>monto fijo</span>
             </div>
           </div>
 
           {/* Comprobante */}
-          <div style={{ marginBottom:"14px" }}>
-            <label style={lbl_}>Comprobante de pago *</label>
-            <label style={{ display:"block", cursor:"pointer" }}>
-              <input type="file" accept="image/*,.pdf" style={{ display:"none" }}
-                onChange={handleFile}/>
-              <div style={{ border:`2px dashed ${archivo?C.accent:"rgba(37,99,235,0.25)"}`,
-                borderRadius:"8px", padding:"20px", textAlign:"center",
-                background: archivo?`rgba(37,99,235,0.07)`:"transparent",
-                transition:"all 0.2s" }}>
+          <div style={{ marginBottom: 8 }}>
+            <label className="f-lbl">Comprobante de pago *</label>
+            <label style={{ display: "block", cursor: "pointer" }}>
+              <input type="file" accept="image/*,.pdf" style={{ display: "none" }} onChange={handleFile} />
+              <div className={`pago-upload-zone${archivo ? " pago-upload-zone--active" : ""}`}>
                 {preview
                   ? <img src={preview} alt="preview"
-                      style={{ maxHeight:"140px", maxWidth:"100%", borderRadius:"6px" }}/>
+                      style={{ maxHeight: 140, maxWidth: "100%", borderRadius: "var(--r-s)" }} />
                   : archivo
-                  ? <div style={{ color:C.success, fontSize:"13px", fontWeight:"700" }}>
-                      📄 {archivo.name}
-                    </div>
-                  : <div>
-                      <div style={{ fontSize:"28px", marginBottom:"6px" }}>📎</div>
-                      <div style={{ color:C.muted, fontSize:"12px" }}>
-                        Click para adjuntar imagen o PDF del comprobante
-                      </div>
-                    </div>
+                    ? <div style={{ color: "var(--green)", fontSize: 13, fontWeight: 700 }}>📄 {archivo.name}</div>
+                    : <>
+                        <div className="pago-upload-ico">📎</div>
+                        <div className="pago-upload-txt">Click para adjuntar imagen o PDF del comprobante</div>
+                      </>
                 }
               </div>
             </label>
           </div>
 
-          {error && (
-            <div style={{ background:`rgba(239,68,68,0.1)`, border:`1px solid rgba(239,68,68,0.3)`,
-              borderRadius:"6px", padding:"10px 14px", color:"#fca5a5", fontSize:"12px" }}>
-              ⚠️ {error}
-            </div>
-          )}
+          {error && <div className="pago-alert-error">⚠️ {error}</div>}
 
-          <div style={{ background:`rgba(245,158,11,0.07)`, border:`1px solid rgba(245,158,11,0.2)`,
-            borderRadius:"6px", padding:"10px 14px", marginTop:"12px",
-            color:"#fcd34d", fontSize:"11px", lineHeight:"1.5" }}>
-            ℹ️ Tu comprobante será revisado por el equipo de VMBol en Red.
-            Recibirás una notificación cuando sea confirmado.
+          <div className="pago-alert-info">
+            ℹ️ Tu comprobante será revisado por el equipo de VMBol en Red antes de confirmar tu pedido.
           </div>
         </div>
 
-        <div style={mFoot}>
-          <button onClick={onClose} style={btnSec}>Cancelar</button>
-          <button onClick={enviar} disabled={load} style={{...btnPri,opacity:load?0.7:1}}>
+        <div className="m-foot">
+          <button className="btn btn-out" onClick={onClose}>Cancelar</button>
+          <button className="btn btn-pri" onClick={enviar} disabled={load}
+            style={{ opacity: load ? 0.7 : 1 }}>
             {load ? "Enviando…" : "📤 Enviar Comprobante"}
           </button>
         </div>
@@ -281,268 +221,267 @@ function ModalPago({ idPedido, total, token, onClose, onSuccess }) {
   );
 }
 
-// ── PÁGINA PRINCIPAL ──────────────────────────────────────────────────────────
+/* ══════════════════════════════════════════════════════════════════════════
+   PÁGINA PRINCIPAL
+══════════════════════════════════════════════════════════════════════════ */
 export default function CarritoPage() {
-  const router = useRouter();
+  const router    = useRouter();
+  const { theme } = useTheme();
+
   const [user,     setUser]     = useState(null);
   const [token,    setToken]    = useState("");
   const [carrito,  setCarrito]  = useState(null);
   const [load,     setLoad]     = useState(true);
   const [updating, setUpdating] = useState(null);
-  const [toast,    setToast]    = useState({ msg:"", color:C.success });
+  const [toast,    setToast]    = useState({ msg: "", ok: true });
   const [mPago,    setMPago]    = useState(null);
   const [creando,  setCreando]  = useState(false);
 
-  const showToast = (msg, color=C.success) => {
-    setToast({msg,color}); setTimeout(()=>setToast({msg:""}),3500);
+  const showToast = (msg, ok = true) => {
+    setToast({ msg, ok }); setTimeout(() => setToast({ msg: "" }), 3500);
   };
 
   const cargar = useCallback(async t => {
-    const r = await fetch(`${API}/cliente/carrito`,{headers:{Authorization:`Bearer ${t}`}});
+    const r = await fetch(`${API}/cliente/carrito`, { headers: { Authorization: `Bearer ${t}` } });
     if (!r.ok) return;
-    const d = await r.json();
-    setCarrito(d);
-    setLoad(false);
-  },[]);
+    const d = await r.json(); setCarrito(d); setLoad(false);
+  }, []);
 
-  useEffect(()=>{
-    const u = JSON.parse(sessionStorage.getItem("user")||"null");
-    const t = document.cookie.split(";").find(c=>c.trim().startsWith("access_token="))?.split("=")[1];
-    if (!t||!u) return router.push("/login");
-    setUser(u); setToken(t);
-    cargar(t);
-  },[router,cargar]);
+  useEffect(() => {
+    const u = JSON.parse(sessionStorage.getItem("user") || "null");
+    const t = document.cookie.split(";").find(c => c.trim().startsWith("access_token="))?.split("=")[1];
+    if (!t || !u) return router.push("/login");
+    setUser(u); setToken(t); cargar(t);
+  }, [router, cargar]);
 
   async function cambiarCantidad(id, qty, tipo) {
     if (qty < 1 || qty > 10) return;
     setUpdating(id);
-    await fetch(`${API}/cliente/carrito/${id}/cantidad`,{
-      method:"PUT",
-      headers:{"Content-Type":"application/json", Authorization:`Bearer ${token}`},
-      body:JSON.stringify({ cantidad:qty, tipo }),
+    await fetch(`${API}/cliente/carrito/${id}/cantidad`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ cantidad: qty, tipo }),
     });
-    await cargar(token);
-    setUpdating(null);
+    await cargar(token); setUpdating(null);
   }
 
   async function eliminarItem(id, tipo) {
     setUpdating(id);
-    await fetch(`${API}/cliente/carrito/${id}?tipo=${tipo}`,{
-      method:"DELETE", headers:{ Authorization:`Bearer ${token}` }});
-    await cargar(token);
-    setUpdating(null);
-    showToast("🗑️ Item eliminado");
+    await fetch(`${API}/cliente/carrito/${id}?tipo=${tipo}`, {
+      method: "DELETE", headers: { Authorization: `Bearer ${token}` },
+    });
+    await cargar(token); setUpdating(null); showToast("🗑️ Item eliminado");
   }
 
   async function vaciarCarrito() {
     if (!confirm("¿Vaciar todo el carrito?")) return;
-    await fetch(`${API}/cliente/carrito`,{
-      method:"DELETE", headers:{ Authorization:`Bearer ${token}` }});
-    await cargar(token);
-    showToast("🗑️ Carrito vaciado");
+    await fetch(`${API}/cliente/carrito`, {
+      method: "DELETE", headers: { Authorization: `Bearer ${token}` },
+    });
+    await cargar(token); showToast("🗑️ Carrito vaciado");
   }
 
   async function crearPedido() {
     setCreando(true);
-    const r = await fetch(`${API}/cliente/pedido/crear`,{
-      method:"POST", headers:{ Authorization:`Bearer ${token}` }});
-    const d = await r.json();
-    setCreando(false);
-    if (d.success) {
-      setMPago({ id_pedido: d.id_pedido, total: d.total });
-    } else {
-      showToast(d.detail||"Error al crear pedido", C.danger);
-    }
+    const r = await fetch(`${API}/cliente/pedido/crear`, {
+      method: "POST", headers: { Authorization: `Bearer ${token}` },
+    });
+    const d = await r.json(); setCreando(false);
+    d.success
+      ? setMPago({ id_pedido: d.id_pedido, total: d.total })
+      : showToast(d.detail || "Error al crear pedido", false);
   }
 
+  /* ── Loading ────────────────────────────────────────────────────────── */
   if (load) return (
-    <div style={{height:"100vh",background:C.pageBg,display:"flex",
-      alignItems:"center",justifyContent:"center",flexDirection:"column",gap:"16px"}}>
-      <div style={{width:"44px",height:"44px",border:`4px solid rgba(37,99,235,0.2)`,
-        borderTop:`4px solid ${C.accent}`,borderRadius:"50%",animation:"spin 0.9s linear infinite"}}/>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-      <div style={{color:C.muted,fontFamily:"Cinzel,serif",fontSize:"13px"}}>Cargando carrito…</div>
+    <div className={`crt-loading ${theme}`}>
+      <div className="crt-loading__ring" />
+      <span className="crt-loading__text">CARGANDO</span>
     </div>
   );
 
-  const items  = [...(carrito?.items_locales||[]), ...(carrito?.items_externos||[])];
+  const items  = [...(carrito?.items_locales || []), ...(carrito?.items_externos || [])];
   const total  = carrito?.total_monto || 0;
-  const nItems = carrito?.total_items || 0;
+  const nItems = carrito?.total_items  || 0;
 
   return (
-    <div style={{height:"100vh",background:C.pageBg,display:"flex",overflow:"hidden"}}>
-      <ClienteSidebar user={user} carritoCount={nItems}/>
+    <div className={`crt-root ${theme}`}>
+      <ClienteSidebar user={user} carritoCount={nItems} />
 
-      <main style={{flex:1,padding:"28px",overflowY:"auto",overflowX:"hidden"}}>
+      <main className="crt-main">
 
+        {/* Toast */}
         {toast.msg && (
-          <div style={{position:"fixed",top:20,right:20,background:toast.color,color:"#fff",
-            padding:"12px 22px",borderRadius:"8px",zIndex:9999,fontWeight:"700",
-            boxShadow:"0 4px 16px rgba(0,0,0,0.5)"}}>
+          <div className="vmb-toast" style={{ background: toast.ok ? "var(--green)" : "var(--red)" }}>
             {toast.msg}
           </div>
         )}
 
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",
-          marginBottom:"24px",borderBottom:`2px solid ${C.accent}`,paddingBottom:"18px",
-          flexWrap:"wrap",gap:"12px"}}>
-          <div>
-            <h1 style={{margin:0,fontFamily:"Cinzel,serif",color:C.accent2,fontSize:"22px"}}>
-              🛒 Mi Carrito
-            </h1>
-            <p style={{margin:"4px 0 0",color:C.muted,fontSize:"13px"}}>
-              {nItems} producto{nItems!==1?"s":""} · Total: <strong style={{color:C.success}}>{fmt(total)}</strong>
-            </p>
-          </div>
-          {nItems > 0 && (
-            <button onClick={vaciarCarrito} style={{
-              background:"transparent", border:`1px solid rgba(239,68,68,0.35)`,
-              color:"#f87171", padding:"8px 16px", borderRadius:"7px",
-              cursor:"pointer", fontSize:"12px", fontWeight:"600"}}>
-              🗑️ Vaciar carrito
-            </button>
-          )}
-        </div>
-
-        {nItems === 0 ? (
-          <div style={{...card, textAlign:"center", padding:"60px 20px"}}>
-            <div style={{fontSize:"52px",marginBottom:"16px"}}>🛒</div>
-            <h3 style={{color:C.text,marginBottom:"8px"}}>Tu carrito está vacío</h3>
-            <p style={{color:C.muted,marginBottom:"24px",fontSize:"14px"}}>
-              Explora la tienda y agrega productos para importar.
-            </p>
-            <button onClick={()=>router.push("/cliente/tienda")} style={btnPri}>
-              🛍️ Ir a la Tienda
-            </button>
-          </div>
-        ) : (
-          <div style={{display:"grid",gridTemplateColumns:"1fr 340px",gap:"24px",alignItems:"start"}}>
-
+        {/* ── Hero ────────────────────────────────────────────────── */}
+        <header className="crt-hero">
+          <div className="crt-hero__inner">
             <div>
-              {(carrito?.items_locales||[]).length > 0 && (
-                <div style={card}>
-                  <div style={cHead}>
-                    <h3 style={cTitle}>🏠 Productos Locales</h3>
-                    <span style={{color:C.muted,fontSize:"12px"}}>
-                      {carrito.items_locales.length} ítem{carrito.items_locales.length!==1?"s":""}
-                    </span>
-                  </div>
-                  <div style={cBody}>
-                    {carrito.items_locales.map(item=>(
-                      <ItemRow key={item.id_carrito} item={item} tipo="local"
-                        updating={updating===item.id_carrito}
-                        onCantidad={cambiarCantidad} onEliminar={eliminarItem}/>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {(carrito?.items_externos||[]).length > 0 && (
-                <div style={card}>
-                  <div style={cHead}>
-                    <h3 style={cTitle}>🌐 Productos de Importación</h3>
-                    <span style={{color:C.muted,fontSize:"12px"}}>
-                      {carrito.items_externos.length} ítem{carrito.items_externos.length!==1?"s":""}
-                    </span>
-                  </div>
-                  <div style={cBody}>
-                    {carrito.items_externos.map(item=>(
-                      <ItemRow key={item.id_carrito_externo} item={item} tipo="externo"
-                        updating={updating===item.id_carrito_externo}
-                        onCantidad={cambiarCantidad} onEliminar={eliminarItem}/>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <div className="crt-hero__eyebrow">
+                <span className="crt-hero__tag">Carrito</span>
+                <span className="vmb-hero__pulse" />
+                <span className="vmb-hero__live">VMBol en Red</span>
+              </div>
+              <h1 className="crt-hero__title">
+                Mi <span>Carrito</span>
+              </h1>
+              <p className="crt-hero__sub">
+                {nItems} producto{nItems !== 1 ? "s" : ""} · Total:{" "}
+                <span style={{ color: "var(--green)", fontWeight: 700 }}>{fmt(total)}</span>
+              </p>
             </div>
 
-            <div style={{position:"sticky",top:"0"}}>
-              <div style={card}>
-                <div style={cHead}>
-                  <h3 style={cTitle}>📋 Resumen del Pedido</h3>
-                </div>
-                <div style={cBody}>
-                  <div style={{marginBottom:"16px"}}>
-                    {items.map((item)=>{
-                      const id = item.id_carrito || item.id_carrito_externo;
-                      return(
-                        <div key={id} style={{display:"flex",justifyContent:"space-between",
-                          marginBottom:"7px",gap:"8px"}}>
-                          <span style={{color:C.muted,fontSize:"12px",flex:1,
-                            overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
-                            {(item.nombre||"").slice(0,30)} ×{item.cantidad}
-                          </span>
-                          <span style={{color:C.text,fontSize:"12px",fontWeight:"600",flexShrink:0}}>
-                            {fmt(parseFloat(item.precio)*item.cantidad)}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
+            {nItems > 0 && (
+              <button className="crt-vaciar-btn" onClick={vaciarCarrito}>
+                🗑️ Vaciar carrito
+              </button>
+            )}
+          </div>
+        </header>
 
-                  <div style={{borderTop:`2px solid ${C.accent}`,paddingTop:"14px",marginBottom:"20px"}}>
-                    <div style={{display:"flex",justifyContent:"space-between",
-                      alignItems:"center",marginBottom:"6px"}}>
-                      <span style={{color:C.muted,fontSize:"12px"}}>Subtotal productos:</span>
-                      <span style={{color:C.text,fontSize:"13px",fontWeight:"600"}}>{fmt(total)}</span>
-                    </div>
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                      <span style={{color:C.text,fontWeight:"800",fontSize:"15px"}}>Total:</span>
-                      <strong style={{color:C.success,fontSize:"22px"}}>{fmt(total)}</strong>
-                    </div>
-                    <div style={{color:C.muted,fontSize:"10px",textAlign:"right",marginTop:"4px"}}>
-                      * Los costos de importación se estiman por ítem
-                    </div>
-                  </div>
+        {/* ── Contenido ───────────────────────────────────────────── */}
+        <div className="crt-content">
 
-                  <button onClick={crearPedido} disabled={creando}
-                    style={{width:"100%",padding:"13px",
-                      background:`linear-gradient(135deg,${C.accent},${C.accent2})`,
-                      border:"none",borderRadius:"9px",color:"#fff",
-                      cursor:creando?"not-allowed":"pointer",fontWeight:"800",fontSize:"14px",
-                      boxShadow:`0 4px 15px rgba(37,99,235,0.4)`,
-                      opacity:creando?0.7:1,transition:"all 0.2s",
-                      display:"flex",alignItems:"center",justifyContent:"center",gap:"8px"}}>
-                    {creando
-                      ? <><div style={{width:"16px",height:"16px",
-                          border:"2px solid rgba(255,255,255,0.3)",
-                          borderTop:"2px solid #fff",borderRadius:"50%",
-                          animation:"spin 0.7s linear infinite"}}/>
-                          Creando pedido…</>
-                      : "🛒 Realizar Pedido"}
-                  </button>
-
-                  <div style={{color:C.muted,fontSize:"11px",textAlign:"center",
-                    marginTop:"10px",lineHeight:"1.5"}}>
-                    Al hacer el pedido se generará una orden y podrás subir el comprobante de pago.
-                  </div>
-                </div>
-              </div>
-
-              <button onClick={()=>router.push("/cliente/tienda")}
-                style={{width:"100%",padding:"10px",background:"transparent",
-                  border:`1px solid rgba(37,99,235,0.3)`,color:C.muted,
-                  borderRadius:"8px",cursor:"pointer",fontSize:"12px",fontWeight:"600"}}>
-                ← Seguir comprando
+          {/* Estado vacío */}
+          {nItems === 0 ? (
+            <div className="crt-empty">
+              <span className="crt-empty__ico">🛒</span>
+              <h2 className="crt-empty__title">Carrito Vacío</h2>
+              <p className="crt-empty__sub">Explora la tienda y agrega productos para importar.</p>
+              <button className="btn btn-pri" onClick={() => router.push("/cliente/tienda")}>
+                🛍️ Ir a la Tienda
               </button>
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="crt-grid">
 
-        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+              {/* ── Columna izquierda: items ─────────────────────── */}
+              <div>
+                {/* Productos locales */}
+                {(carrito?.items_locales || []).length > 0 && (
+                  <div className="crt-card">
+                    <div className="crt-card__head">
+                      <span className="crt-card__title">🏠 Productos Locales</span>
+                      <span className="crt-card__badge">
+                        {carrito.items_locales.length} ítem{carrito.items_locales.length !== 1 ? "s" : ""}
+                      </span>
+                    </div>
+                    <div className="crt-card__body">
+                      {carrito.items_locales.map(item => (
+                        <ItemRow
+                          key={item.id_carrito}
+                          item={item} tipo="local"
+                          updating={updating === item.id_carrito}
+                          onCantidad={cambiarCantidad}
+                          onEliminar={eliminarItem}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Productos de importación */}
+                {(carrito?.items_externos || []).length > 0 && (
+                  <div className="crt-card">
+                    <div className="crt-card__head">
+                      <span className="crt-card__title">🌐 Importación</span>
+                      <span className="crt-card__badge">
+                        {carrito.items_externos.length} ítem{carrito.items_externos.length !== 1 ? "s" : ""}
+                      </span>
+                    </div>
+                    <div className="crt-card__body">
+                      {carrito.items_externos.map(item => (
+                        <ItemRow
+                          key={item.id_carrito_externo}
+                          item={item} tipo="externo"
+                          updating={updating === item.id_carrito_externo}
+                          onCantidad={cambiarCantidad}
+                          onEliminar={eliminarItem}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* ── Columna derecha: resumen ─────────────────────── */}
+              <div className="crt-summary">
+                <div className="crt-card">
+                  <div className="crt-card__head">
+                    <span className="crt-card__title">📋 Resumen</span>
+                  </div>
+                  <div className="crt-card__body" style={{ padding: "18px 22px" }}>
+
+                    {/* Lista de items */}
+                    <div className="crt-summary__items">
+                      {items.map(item => {
+                        const id = item.id_carrito || item.id_carrito_externo;
+                        return (
+                          <div key={id} className="crt-summary__row">
+                            <span className="crt-summary__lbl">
+                              {(item.nombre || "").slice(0, 28)}… ×{item.cantidad}
+                            </span>
+                            <span className="crt-summary__val">
+                              {fmt(parseFloat(item.precio) * item.cantidad)}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Total */}
+                    <div className="crt-summary__total">
+                      <div className="crt-summary__total-row">
+                        <span className="crt-summary__total-lbl">Total</span>
+                        <span className="crt-summary__total-val">{fmt(total)}</span>
+                      </div>
+                      <div className="crt-summary__hint">* Costos de importación estimados por ítem</div>
+                    </div>
+
+                    {/* Botón pedido */}
+                    <button
+                      className="crt-checkout-btn"
+                      onClick={crearPedido}
+                      disabled={creando}
+                    >
+                      {creando
+                        ? <><div className="crt-spinner" /> Creando…</>
+                        : "🛒 Realizar Pedido"
+                      }
+                    </button>
+
+                    <p className="crt-checkout-note">
+                      Al confirmar se genera una orden y podrás subir el comprobante de pago.
+                    </p>
+                  </div>
+                </div>
+
+                <button className="crt-back-btn" onClick={() => router.push("/cliente/tienda")}>
+                  ← Seguir comprando
+                </button>
+              </div>
+
+            </div>
+          )}
+        </div>
       </main>
 
+      {/* ── Modal de pago ─────────────────────────────────────────── */}
       {mPago && (
         <ModalPago
           idPedido={mPago.id_pedido}
           total={mPago.total}
           token={token}
-          onClose={()=>setMPago(null)}
-          onSuccess={msg=>{
+          onClose={() => setMPago(null)}
+          onSuccess={msg => {
             const pedidoId = mPago.id_pedido;
             setMPago(null);
             showToast(msg);
-            setTimeout(()=>router.push(`/cliente/pedidos/${pedidoId}`), 1500);
+            setTimeout(() => router.push(`/cliente/pedidos/${pedidoId}`), 1500);
           }}
         />
       )}

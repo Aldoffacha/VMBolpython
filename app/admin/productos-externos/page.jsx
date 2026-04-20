@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import AdminSidebar from "@/components/AdminSidebar";
+
 
 const API = "http://localhost:8000";
 
@@ -130,7 +130,7 @@ function ModalForm({ inicial, onClose, onSaved, token }) {
     <div style={ov}>
       <div style={mBox}>
         <div style={mHd}>
-          <h3 style={mTit}>{esEdicion ? "✏️ Editar Producto Externo" : "🌐 Agregar Producto Externo"}</h3>
+          <h3 style={mTit}>{esEdicion ? "✏️ Editar Producto Externo" : " Agregar Producto Externo"}</h3>
           <button onClick={onClose} style={btnX}>✕</button>
         </div>
         <div style={mBd}>
@@ -164,10 +164,10 @@ function ModalForm({ inicial, onClose, onSaved, token }) {
               <select style={sel} value={form.categoria} onChange={e=>set("categoria", e.target.value)}>
                 <option value="">Selecciona una categoría</option>
                 <option value="electronico">📱 Electrónicos</option>
-                <option value="ropa">👕 Ropa</option>
-                <option value="hogar">🏠 Hogar</option>
-                <option value="deportes">⚽ Deportes</option>
-                <option value="otros">📦 Otros</option>
+                <option value="ropa"> Ropa</option>
+                <option value="hogar"> Hogar</option>
+                <option value="deportes"> Deportes</option>
+                <option value="otros"> Otros</option>
               </select>
             </div>
             <div>
@@ -322,7 +322,7 @@ export default function AdminProductosExternos() {
     fetchProds();
   }
 
-  const CAT_ICONS = { electronico:"📱", ropa:"👕", hogar:"🏠", deportes:"⚽", otros:"📦" };
+  const CAT_ICONS = { electronico:"", ropa:"", hogar:"", deportes:"", otros:"" };
 
   return (
     <div style={{ display:"flex", minHeight:"100vh", background:C.bg, color:C.text, fontFamily:"'Lato',sans-serif" }}>
@@ -333,7 +333,7 @@ export default function AdminProductosExternos() {
           boxShadow:"0 4px 20px rgba(0,0,0,0.5)" }}>{toast}</div>
       )}
 
-      <AdminSidebar user={user} />
+      
 
       <main style={{ flex:1, padding:"24px 28px" }}>
         {/* Header */}
@@ -342,7 +342,7 @@ export default function AdminProductosExternos() {
           flexWrap:"wrap", gap:12 }}>
           <div>
             <h1 style={{ color:C.accent2, fontSize:26, fontWeight:700, margin:0 }}>
-              🌐 Productos Externos
+               Productos Externos
             </h1>
             <p style={{ color:C.muted, fontSize:13, margin:"4px 0 0" }}>
               Amazon & eBay — {prods.length} producto{prods.length !== 1 ? "s" : ""} registrado{prods.length !== 1 ? "s" : ""}
@@ -423,7 +423,7 @@ export default function AdminProductosExternos() {
 
                       {/* Categoría */}
                       <td style={{ padding:"10px 14px", color:C.text }}>
-                        {CAT_ICONS[p.categoria] || "📦"} {p.categoria ? p.categoria.charAt(0).toUpperCase() + p.categoria.slice(1) : "—"}
+                        {CAT_ICONS[p.categoria] || ""} {p.categoria ? p.categoria.charAt(0).toUpperCase() + p.categoria.slice(1) : "—"}
                       </td>
 
                       {/* Precio */}

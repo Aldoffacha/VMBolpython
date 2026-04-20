@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import AdminSidebar from "@/components/AdminSidebar";
+
 
 const API = "http://localhost:8000";
 
@@ -149,7 +149,7 @@ export default function AdminPedidos() {
     <div style={s.page}>
       {toast && <div style={s.toast}>{toast}</div>}
 
-      <AdminSidebar user={user} />
+      
 
       <main style={s.main}>
         <div style={s.header}>
@@ -287,14 +287,14 @@ export default function AdminPedidos() {
                   {/* Info cliente y pedido */}
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
                     <div style={s.infoBox}>
-                      <p style={s.infoTitle}>👤 Cliente</p>
+                      <p style={s.infoTitle}> Cliente</p>
                       <p style={s.infoRow}><b>Nombre:</b> {detalle.pedido.cliente_nombre}</p>
                       <p style={s.infoRow}><b>Email:</b> {detalle.pedido.cliente_email}</p>
                       <p style={s.infoRow}><b>Teléfono:</b> {detalle.pedido.telefono}</p>
                       <p style={s.infoRow}><b>Dirección:</b> {detalle.pedido.direccion}</p>
                     </div>
                     <div style={s.infoBox}>
-                      <p style={s.infoTitle}>📋 Pedido</p>
+                      <p style={s.infoTitle}> Pedido</p>
                       <p style={s.infoRow}><b>ID:</b> #{detalle.pedido.id_pedido}</p>
                       <p style={s.infoRow}><b>Fecha:</b> {detalle.pedido.fecha}</p>
                       <p style={s.infoRow}><b>Estado:</b>{" "}
