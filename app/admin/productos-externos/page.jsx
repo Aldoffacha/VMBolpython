@@ -37,9 +37,45 @@ const lbl  = { display:"block", color:C.muted, fontSize:12, marginBottom:5, font
 const inp  = { width:"100%", padding:"9px 12px", background:C.bg,
   border:"2px solid rgba(154,3,30,0.2)", borderRadius:6, color:C.text,
   fontSize:13, outline:"none", boxSizing:"border-box" };
-const sel  = { ...undefined, width:"100%", padding:"9px 12px", background:C.bg,
+const sel  = { width:"100%", padding:"9px 12px", background:C.bg,
   border:"2px solid rgba(154,3,30,0.2)", borderRadius:6, color:C.text,
   fontSize:13, outline:"none", boxSizing:"border-box" };
+
+// ── Categorías agrupadas ──────────────────────────────────────────────────────
+const CATEGORIAS_EXTERNOS = [
+  { group: "Electrónico", options: [
+    { value: "electronico",  label: "Electrónicos (General)" },
+    { value: "gaming",       label: "Gaming"                 },
+    { value: "audio",        label: "Audio"                  },
+    { value: "celulares",    label: "Celulares"              },
+    { value: "computadoras", label: "Computadoras"           },
+    { value: "fotografia",   label: "Fotografía"             },
+  ]},
+  { group: "Ropa", options: [
+    { value: "ropa",         label: "Ropa (General)"         },
+    { value: "ropa_hombre",  label: "Ropa Hombre"            },
+    { value: "ropa_mujer",   label: "Ropa Mujer"             },
+    { value: "calzado",      label: "Calzado"                },
+    { value: "accesorios",   label: "Accesorios"             },
+  ]},
+  { group: "Hogar", options: [
+    { value: "hogar",        label: "Hogar (General)"        },
+    { value: "cocina",       label: "Cocina"                 },
+    { value: "dormitorio",   label: "Dormitorio"             },
+    { value: "decoracion",   label: "Decoración"             },
+  ]},
+  { group: "Deportes", options: [
+    { value: "deportes",     label: "Deportes (General)"     },
+    { value: "fitness",      label: "Fitness"                },
+    { value: "futbol",       label: "Fútbol"                 },
+    { value: "outdoor",      label: "Outdoor"                },
+  ]},
+  { group: "Otros", options: [
+    { value: "otros",        label: "Otros"                  },
+    { value: "juguetes",     label: "Juguetes"               },
+    { value: "libros",       label: "Libros"                 },
+  ]},
+];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function detectPlat(url = "") {
@@ -130,7 +166,7 @@ function ModalForm({ inicial, onClose, onSaved, token }) {
     <div style={ov}>
       <div style={mBox}>
         <div style={mHd}>
-          <h3 style={mTit}>{esEdicion ? "✏️ Editar Producto Externo" : " Agregar Producto Externo"}</h3>
+          <h3 style={mTit}>{esEdicion ? "✏️ Editar Producto Externo" : "➕ Agregar Producto Externo"}</h3>
           <button onClick={onClose} style={btnX}>✕</button>
         </div>
         <div style={mBd}>
@@ -163,11 +199,13 @@ function ModalForm({ inicial, onClose, onSaved, token }) {
               <label style={lbl}>Categoría *</label>
               <select style={sel} value={form.categoria} onChange={e=>set("categoria", e.target.value)}>
                 <option value="">Selecciona una categoría</option>
-                <option value="electronico">📱 Electrónicos</option>
-                <option value="ropa"> Ropa</option>
-                <option value="hogar"> Hogar</option>
-                <option value="deportes"> Deportes</option>
-                <option value="otros"> Otros</option>
+                {CATEGORIAS_EXTERNOS.map(grupo => (
+                  <optgroup key={grupo.group} label={grupo.group}>
+                    {grupo.options.map(o => (
+                      <option key={o.value} value={o.value}>{o.label}</option>
+                    ))}
+                  </optgroup>
+                ))}
               </select>
             </div>
             <div>
@@ -260,8 +298,8 @@ export default function AdminProductosExternos() {
   const [prods,    setProds]    = useState([]);
   const [load,     setLoad]     = useState(true);
   const [mAgregar, setMAgregar] = useState(false);
-  const [mEditar,  setMEditar]  = useState(null);   // producto a editar
-  const [mElim,    setMElim]    = useState(null);   // producto a eliminar
+  const [mEditar,  setMEditar]  = useState(null);
+  const [mElim,    setMElim]    = useState(null);
   const [elimLoad, setElimLoad] = useState(false);
   const [toast,    setToast]    = useState("");
   const [token,    setToken]    = useState("");
@@ -322,7 +360,15 @@ export default function AdminProductosExternos() {
     fetchProds();
   }
 
-  const CAT_ICONS = { electronico:"", ropa:"", hogar:"", deportes:"", otros:"" };
+  // Mapa extendido de íconos para todas las categorías
+  const CAT_ICONS = {
+    electronico:"📱", gaming:"🎮", audio:"🎧", celulares:"📲",
+    computadoras:"💻", fotografia:"📷",
+    ropa:"👕", ropa_hombre:"👔", ropa_mujer:"👗", calzado:"👟", accesorios:"👜",
+    hogar:"🏠", cocina:"🍳", dormitorio:"🛏️", decoracion:"🖼️",
+    deportes:"⚽", fitness:"🏋️", futbol:"⚽", outdoor:"🏕️",
+    otros:"📦", juguetes:"🧸", libros:"📚",
+  };
 
   return (
     <div style={{ display:"flex", minHeight:"100vh", background:C.bg, color:C.text, fontFamily:"'Lato',sans-serif" }}>
@@ -333,8 +379,6 @@ export default function AdminProductosExternos() {
           boxShadow:"0 4px 20px rgba(0,0,0,0.5)" }}>{toast}</div>
       )}
 
-      
-
       <main style={{ flex:1, padding:"24px 28px" }}>
         {/* Header */}
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center",
@@ -342,7 +386,7 @@ export default function AdminProductosExternos() {
           flexWrap:"wrap", gap:12 }}>
           <div>
             <h1 style={{ color:C.accent2, fontSize:26, fontWeight:700, margin:0 }}>
-               Productos Externos
+              🛍️ Productos Externos
             </h1>
             <p style={{ color:C.muted, fontSize:13, margin:"4px 0 0" }}>
               Amazon & eBay — {prods.length} producto{prods.length !== 1 ? "s" : ""} registrado{prods.length !== 1 ? "s" : ""}
@@ -423,7 +467,7 @@ export default function AdminProductosExternos() {
 
                       {/* Categoría */}
                       <td style={{ padding:"10px 14px", color:C.text }}>
-                        {CAT_ICONS[p.categoria] || ""} {p.categoria ? p.categoria.charAt(0).toUpperCase() + p.categoria.slice(1) : "—"}
+                        {CAT_ICONS[p.categoria] || "📦"} {p.categoria ? p.categoria.charAt(0).toUpperCase() + p.categoria.slice(1).replace("_", " ") : "—"}
                       </td>
 
                       {/* Precio */}

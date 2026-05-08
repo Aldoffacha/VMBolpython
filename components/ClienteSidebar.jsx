@@ -510,7 +510,7 @@ export default function ClienteSidebar({ user, carritoCount = 0 }) {
               gap: collapsed ? "0" : "8px",
               transition: "all 0.2s",
             }}>
-            <span style={{ fontSize: "16px" }}>{theme === "dark" ? "☀️" : "🌙"}</span>
+            <span style={{ fontSize: "16px" }}>{theme === "dark" ? "" : ""}</span>
             {!collapsed && (
               <span>{theme === "dark" ? "Modo claro" : "Modo oscuro"}</span>
             )}

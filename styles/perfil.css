@@ -1,0 +1,356 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   VMBol · Perfil Cliente — Midnight Fashion Edition
+   Ruta: frontend/styles/perfil.css
+   Hereda variables de dashboard.css
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Layout principal ─────────────────────────────────────────────────── */
+.prf-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 28px;
+  padding: 40px 52px 60px;
+  position: relative;
+  z-index: 1;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .prf-layout {
+    grid-template-columns: 1fr;
+    padding: 28px 24px 48px;
+  }
+}
+
+/* ── Columna izquierda (aside) ────────────────────────────────────────── */
+.prf-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: sticky;
+  top: 24px;
+}
+
+/* ── Columna derecha ──────────────────────────────────────────────────── */
+.prf-main-col {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Card base ────────────────────────────────────────────────────────── */
+.prf-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-l);
+  overflow: hidden;
+  transition: border-color .25s var(--ease), background .3s;
+  animation: fadeUp .45s var(--ease) both;
+}
+
+.prf-card:hover {
+  border-color: var(--border-blue);
+}
+
+.prf-card__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-3);
+  transition: background .3s, border-color .3s;
+}
+
+.prf-card__icon {
+  font-size: 14px;
+  color: var(--blue-bright);
+  line-height: 1;
+}
+
+.prf-card__title {
+  font-family: var(--font-d);
+  font-size: 18px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text);
+  font-weight: 400;
+}
+
+.prf-card__body {
+  padding: 24px;
+}
+
+/* ── Foto de perfil ───────────────────────────────────────────────────── */
+.prf-foto-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.prf-foto-ring {
+  position: relative;
+  display: inline-block;
+}
+
+/* Anillo animado alrededor del avatar */
+.prf-foto-ring::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--blue) 0deg,
+    var(--blue-bright) 90deg,
+    transparent 180deg,
+    transparent 360deg
+  );
+  animation: spin 4s linear infinite;
+  opacity: 0.6;
+  z-index: 0;
+}
+
+.prf-foto-ring::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: var(--card);
+  z-index: 1;
+}
+
+/* Avatar con imagen */
+.prf-avatar {
+  display: block;
+  border-radius: 50%;
+  object-fit: cover;
+  position: relative;
+  z-index: 2;
+  border: 2px solid var(--border-blue);
+}
+
+/* Avatar con iniciales */
+.prf-avatar--initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue) 0%, var(--blue-bright) 100%);
+  color: #fff;
+  font-family: var(--font-d);
+  letter-spacing: 3px;
+  position: relative;
+  z-index: 2;
+  border: 2px solid var(--border-blue);
+  user-select: none;
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none;    /* Firefox */
+    -ms-user-select: none;     /* IE10+ */
+}
+
+.prf-foto-badge {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  font-family: var(--font-c);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  background: var(--amber);
+  color: #000;
+  padding: 2px 10px;
+  border-radius: var(--r-p);
+  white-space: nowrap;
+}
+
+.prf-foto-name {
+  font-family: var(--font-d);
+  font-size: 22px;
+  letter-spacing: 3px;
+  color: var(--text);
+  text-align: center;
+  margin-top: 4px;
+}
+
+.prf-foto-since {
+  font-family: var(--font-c);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.prf-foto-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.prf-btn-full {
+  width: 100%;
+  justify-content: center;
+}
+
+.prf-foto-hint {
+  font-family: var(--font-c);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  text-align: center;
+  margin-top: 4px;
+}
+
+/* ── Formularios ──────────────────────────────────────────────────────── */
+.prf-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.prf-form__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 680px) {
+  .prf-form__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.prf-form__foot {
+  display: flex;
+  justify-content: flex-start;
+  padding-top: 4px;
+}
+
+/* ── Campo ────────────────────────────────────────────────────────────── */
+.prf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.prf-field__hint {
+  font-family: var(--font-c);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-top: 2px;
+}
+
+/* Textarea */
+.f-textarea {
+  resize: vertical;
+  min-height: 88px;
+  font-family: var(--font-b);
+  line-height: 1.6;
+}
+
+/* Input disabled */
+.f-inp--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Input valid */
+.f-inp--valid {
+  border-color: var(--green) !important;
+  box-shadow: 0 0 0 3px rgba(16,185,129,0.15) !important;
+}
+
+/* Input invalid */
+.f-inp--invalid {
+  border-color: var(--red) !important;
+  box-shadow: 0 0 0 3px rgba(239,68,68,0.15) !important;
+}
+
+/* Mensajes de contraseña */
+.prf-pass-error {
+  font-family: var(--font-c);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-top: 2px;
+}
+
+.prf-pass-ok {
+  font-family: var(--font-c);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-top: 2px;
+}
+
+/* ── Metric correo (texto pequeño) ───────────────────────────────────── */
+.prf-metric__correo {
+  font-size: 18px !important;
+  letter-spacing: 0.5px !important;
+  font-family: var(--font-b) !important;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+/* ── Toast override para perfil ───────────────────────────────────────── */
+.vmb-toast--danger {
+  background: var(--red);
+  box-shadow: 0 8px 32px rgba(239,68,68,.35);
+}
+
+.vmb-toast--warning {
+  background: var(--amber);
+  color: #000;
+  box-shadow: 0 8px 32px rgba(245,158,11,.35);
+}
+
+/* ── Animation delays para cards ──────────────────────────────────────── */
+.prf-aside   .prf-card:nth-child(1) { animation-delay: .05s; }
+.prf-aside   .prf-card:nth-child(2) { animation-delay: .12s; }
+.prf-main-col .prf-card:nth-child(1) { animation-delay: .10s; }
+.prf-main-col .prf-card:nth-child(2) { animation-delay: .18s; }
+
+/* ── Divisor sutil entre secciones del form ───────────────────────────── */
+.prf-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
+/* ── Info row (solo texto, sin input) ────────────────────────────────── */
+.prf-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.prf-info-row:last-child { border-bottom: none; }
+.prf-info-row__k {
+  font-family: var(--font-c);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.prf-info-row__v {
+  font-family: var(--font-d);
+  font-size: 18px;
+  letter-spacing: 1.5px;
+  color: var(--text);
+}
