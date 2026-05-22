@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { Printer, Download, ChevronUp, ChevronDown, FileText } from "lucide-react";
 
 
 const API = "http://localhost:8000";
@@ -91,8 +92,8 @@ export default function AdminReportes() {
             <p style={s.pageSubtitle}>Análisis de ventas, pedidos y productos</p>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={() => window.print()} style={s.btnSecondary}>🖨️ Imprimir</button>
-            <button onClick={exportarCSV} style={{ ...s.btnSecondary, color: "#10b981", borderColor: "rgba(16,185,129,0.4)" }}>📥 Exportar CSV</button>
+            <button onClick={() => window.print()} style={s.btnSecondary}><Printer size={14} /> Imprimir</button>
+            <button onClick={exportarCSV} style={{ ...s.btnSecondary, color: "#10b981", borderColor: "rgba(16,185,129,0.4)" }}><Download size={14} /> Exportar CSV</button>
           </div>
         </div>
 
@@ -283,9 +284,9 @@ export default function AdminReportes() {
             {/* TABLA VENTAS DETALLADAS (expandible) */}
             <div style={s.card}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: tablaVista ? 16 : 0 }}>
-                <p style={{ ...s.cardTitle, margin: 0 }}>🧾 Ventas Detalladas ({data.ventas_detalladas.length} registros)</p>
+                <p style={{ ...s.cardTitle, margin: 0 }}><FileText size={14} /> Ventas Detalladas ({data.ventas_detalladas.length} registros)</p>
                 <button onClick={() => setTablaVista(!tablaVista)} style={s.btnSecondary}>
-                  {tablaVista ? "▲ Ocultar" : "▼ Ver detalle"}
+                  {tablaVista ? <><ChevronUp size={14} /> Ocultar</> : <><ChevronDown size={14} /> Ver detalle</>}
                 </button>
               </div>
               {tablaVista && (

@@ -1,8 +1,9 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import ClienteSidebar from "@/components/ClienteSidebar";
 import { useTheme } from "@/context/ThemeContext";
+import { Home, Package, ShoppingCart, ShoppingBag, X, Link, BarChart3, Globe, Hash, Search, Check } from "lucide-react";
 import "@/styles/dashboard.css";
 import "@/styles/tienda.css";
 
@@ -69,9 +70,9 @@ const SUBCATS_LINK = SUBCATEGORIAS.map(s => ({
 
 const PLATAFORMAS = [
   { value: "",       label: "Todas las plataformas" },
-  { value: "local",  label: "🏠 Tienda Local"       },
-  { value: "amazon", label: "📦 Amazon"             },
-  { value: "ebay",   label: "🛒 eBay"               },
+  { value: "local",  label: "Tienda Local"       },
+  { value: "amazon", label: "Amazon"             },
+  { value: "ebay",   label: "eBay"               },
 ];
 
 const PRODUCTOS_SIMULADOS = [
@@ -235,8 +236,8 @@ function ModalDetalle({ prod, tc, token, onClose, onSuccess }) {
     <div className="m-overlay">
       <div className="m-box m-box--wide">
         <div className="m-head">
-          <h3 className="m-head__title">🛍 Detalle del Producto</h3>
-          <button className="m-close" onClick={onClose}>✕</button>
+          <h3 className="m-head__title"><ShoppingBag size={16} /> Detalle del Producto</h3>
+          <button className="m-close" onClick={onClose}><X size={18} /></button>
         </div>
 
         <div className="m-body">
@@ -253,14 +254,14 @@ function ModalDetalle({ prod, tc, token, onClose, onSuccess }) {
               <p className="det-desc">{prod.descripcion || "Sin descripción"}</p>
               {prod.enlace && (
                 <a href={prod.enlace} target="_blank" rel="noreferrer" className="det-link">
-                  🔗 Ver en tienda original →
+                  <><Link size={14} /> Ver en tienda original →</>
                 </a>
               )}
             </div>
           </div>
 
           <div className="det-breakdown">
-            <div className="det-breakdown__title">📊 Costo de Importación</div>
+            <div className="det-breakdown__title"><BarChart3 size={16} /> Costo de Importación</div>
             {[
               ["Precio del producto",    precio],
               ["Flete internacional",    flete],
@@ -290,7 +291,7 @@ function ModalDetalle({ prod, tc, token, onClose, onSuccess }) {
         <div className="m-foot">
           <button className="btn btn-out" onClick={onClose}>Cancelar</button>
           <button className="btn btn-pri" onClick={agregar} disabled={load} style={{ opacity: load ? 0.7 : 1 }}>
-            {load ? "Agregando…" : "🛒 Agregar al Carrito"}
+              {load ? "Agregando…" : <><ShoppingCart size={16} /> Agregar al Carrito</>}
           </button>
         </div>
       </div>
@@ -349,7 +350,7 @@ function ModalAgregarLink({ tc, token, onClose, onSuccess }) {
     });
     const d = await r.json(); setLoad(false);
     if (d.success) {
-      setOk("✅ Producto agregado al carrito");
+      setOk("Producto agregado al carrito");
       setTimeout(() => { onSuccess(d.message); onClose(); }, 1400);
     } else {
       alert(d.detail || d.message || "Error al agregar");
@@ -360,8 +361,8 @@ function ModalAgregarLink({ tc, token, onClose, onSuccess }) {
     <div className="m-overlay">
       <div className="m-box m-box--wide">
         <div className="m-head">
-          <h3 className="m-head__title">🌐 Agregar por Link</h3>
-          <button className="m-close" onClick={onClose}>✕</button>
+          <h3 className="m-head__title"><Globe size={16} /> Agregar por Link</h3>
+          <button className="m-close" onClick={onClose}><X size={18} /></button>
         </div>
 
         <div className="m-body">
@@ -374,7 +375,7 @@ function ModalAgregarLink({ tc, token, onClose, onSuccess }) {
           </div>
 
           <div style={{ marginBottom: 16 }}>
-            <label className="f-lbl">🔗 URL del Producto *</label>
+            <label className="f-lbl">URL del Producto *</label>
             <input className="f-inp" type="url"
               placeholder="https://amazon.com/dp/... o https://ebay.com/itm/..."
               value={form.url} onChange={e => { setForm({ ...form, url: e.target.value }); setCotizacion(null); }} />
@@ -384,7 +385,7 @@ function ModalAgregarLink({ tc, token, onClose, onSuccess }) {
           </div>
 
           <div style={{ marginBottom: 16 }}>
-            <label className="f-lbl">📝 Nombre del Producto (opcional)</label>
+            <label className="f-lbl">Nombre del Producto (opcional)</label>
             <input className="f-inp" type="text"
               placeholder="Ej: Mouse Logitech G502"
               value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} />
@@ -392,19 +393,19 @@ function ModalAgregarLink({ tc, token, onClose, onSuccess }) {
 
           <div className="f-grid" style={{ marginBottom: 16 }}>
             <div>
-              <label className="f-lbl">💵 Precio (USD) *</label>
+              <label className="f-lbl">Precio (USD) *</label>
               <input className="f-inp" type="number" step="0.01" placeholder="0.00"
                 value={form.precio}
                 onChange={e => { setForm({ ...form, precio: e.target.value }); setCotizacion(null); }} />
             </div>
             <div>
-              <label className="f-lbl">⚖️ Peso estimado (kg) *</label>
+              <label className="f-lbl">Peso estimado (kg) *</label>
               <input className="f-inp" type="number" step="0.1" placeholder="0.5"
                 value={form.peso}
                 onChange={e => { setForm({ ...form, peso: e.target.value }); setCotizacion(null); }} />
             </div>
             <div>
-              <label className="f-lbl">📦 Subcategoría</label>
+              <label className="f-lbl">Subcategoría</label>
               <SelectCategoriasLink
                 value={form.categoria}
                 onChange={e => { setForm({ ...form, categoria: e.target.value }); setCotizacion(null); }}
@@ -412,7 +413,7 @@ function ModalAgregarLink({ tc, token, onClose, onSuccess }) {
               />
             </div>
             <div>
-              <label className="f-lbl">📐 Tamaño de Caja</label>
+              <label className="f-lbl">Tamaño de Caja</label>
               <select className="f-sel" value={form.tamano}
                 onChange={e => { setForm({ ...form, tamano: e.target.value }); setCotizacion(null); }}>
                 <option value="20x15x1">Pequeño 20×15×1 — Bs.135</option>
@@ -428,7 +429,7 @@ function ModalAgregarLink({ tc, token, onClose, onSuccess }) {
 
           {cotizacion && (
             <div className="cot-box">
-              <div className="cot-box__title">📊 Desglose de Importación</div>
+              <div className="cot-box__title">Desglose de Importación</div>
               {[
                 ["Producto",                         cotizacion.precio],
                 ["Flete",                            cotizacion.flete],
@@ -454,10 +455,10 @@ function ModalAgregarLink({ tc, token, onClose, onSuccess }) {
 
         <div className="m-foot">
           <button className="btn btn-out"      onClick={onClose}>Cancelar</button>
-          <button className="btn btn-blue-out" onClick={calcular}>🔢 Calcular</button>
+          <button className="btn btn-blue-out" onClick={calcular}><Hash size={14} /> Calcular</button>
           {cotizacion && (
             <button className="btn btn-pri" onClick={agregar} disabled={load} style={{ opacity: load ? 0.7 : 1 }}>
-              {load ? "Agregando…" : "🛒 Agregar al Carrito"}
+            {load ? "Agregando…" : <><ShoppingCart size={16} /> Agregar al Carrito</>}
             </button>
           )}
         </div>
@@ -469,7 +470,7 @@ function ModalAgregarLink({ tc, token, onClose, onSuccess }) {
 /* ══════════════════════════════════════════════════════════════════════════
    PÁGINA PRINCIPAL
 ══════════════════════════════════════════════════════════════════════════ */
-export default function ClienteTienda() {
+function ClienteTiendaContent() {
   const router       = useRouter();
   const searchParams = useSearchParams();
   const { theme }    = useTheme();
@@ -537,7 +538,7 @@ export default function ClienteTienda() {
       <main className="tnd-main">
 
         {/* Toast */}
-        {toast && <div className="vmb-toast">✓ {toast}</div>}
+        {toast && <div className="vmb-toast"><Check size={14} /> {toast}</div>}
 
         {/* ── Hero ──────────────────────────────────────────────── */}
         <header className="tnd-hero">
@@ -555,7 +556,7 @@ export default function ClienteTienda() {
             </div>
 
             <button className="btn-amber" onClick={() => setMLink(true)}>
-              🔗 Agregar por Link
+              <Link size={14} /> Agregar por Link
             </button>
           </div>
         </header>
@@ -563,7 +564,7 @@ export default function ClienteTienda() {
         {/* ── Filtros ───────────────────────────────────────────── */}
         <div className="tnd-filters">
           <div className="tnd-filters__search">
-            <span className="tnd-filters__search-ico">🔍</span>
+            <span className="tnd-filters__search-ico"><Search size={16} /></span>
             <input
               className="tnd-filters__inp"
               placeholder="Buscar producto..."
@@ -590,7 +591,7 @@ export default function ClienteTienda() {
               className="btn btn-out"
               onClick={() => { setBuscar(""); setCatFil(""); setPlatFil(""); }}
             >
-              ✕ Limpiar
+              <X size={14} /> Limpiar
             </button>
           )}
         </div>
@@ -606,7 +607,7 @@ export default function ClienteTienda() {
         {prodsFiltrados.length === 0 ? (
           <div className="tnd-empty">
             <div className="tnd-empty__box">
-              <span className="tnd-empty__ico">🔍</span>
+              <span className="tnd-empty__ico"><Search size={52} /></span>
               <p className="tnd-empty__txt">No se encontraron productos</p>
               <div className="tnd-empty__btns">
                 <button className="btn btn-pri"
@@ -614,7 +615,7 @@ export default function ClienteTienda() {
                   Ver todos
                 </button>
                 <button className="btn-amber" onClick={() => setMLink(true)}>
-                  🔗 Agregar por Link
+                  <Link size={14} /> Agregar por Link
                 </button>
               </div>
             </div>
@@ -648,5 +649,17 @@ export default function ClienteTienda() {
         />
       )}
     </div>
+  );
+}
+
+export default function ClienteTienda() {
+  return (
+    <Suspense fallback={
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", background: "#0d0f12", color: "#a0a0a0" }}>
+        Cargando tienda...
+      </div>
+    }>
+      <ClienteTiendaContent />
+    </Suspense>
   );
 }

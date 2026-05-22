@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Fragment } from "react";
 import { useRouter } from "next/navigation";
 
 
@@ -155,7 +155,7 @@ export default function AdminProductos() {
       if (!res.ok) { setError(data.detail || "Error al guardar"); return; }
       cerrarModal();
       fetchProductos();
-      showToast(modal === "crear" ? "✅ Producto creado correctamente" : "✅ Producto actualizado correctamente");
+      showToast(modal === "crear" ? "Producto creado correctamente" : "Producto actualizado correctamente");
     } catch (e) {
       setError("Error de conexión");
     } finally {
@@ -172,7 +172,7 @@ export default function AdminProductos() {
       });
       setConfirmDelete(null);
       fetchProductos();
-      showToast("✅ Producto eliminado correctamente");
+      showToast("Producto eliminado correctamente");
     } catch (e) { console.error(e); }
   };
 
@@ -269,10 +269,10 @@ export default function AdminProductos() {
             {Array.from({ length: totalPaginas }, (_, i) => i + 1)
               .filter(p => p === 1 || p === totalPaginas || Math.abs(p - pagina) <= 1)
               .map((p, idx, arr) => (
-                <>
-                  {idx > 0 && arr[idx - 1] !== p - 1 && <span key={`dots-${p}`} style={{ color: "#a0a0a0", padding: "0 4px" }}>...</span>}
-                  <button key={p} onClick={() => setPagina(p)} style={{ ...s.pageBtn, ...(p === pagina ? s.pageBtnActive : {}) }}>{p}</button>
-                </>
+                <Fragment key={p}>
+                  {idx > 0 && arr[idx - 1] !== p - 1 && <span style={{ color: "#a0a0a0", padding: "0 4px" }}>...</span>}
+                  <button onClick={() => setPagina(p)} style={{ ...s.pageBtn, ...(p === pagina ? s.pageBtnActive : {}) }}>{p}</button>
+                </Fragment>
               ))
             }
             <button onClick={() => setPagina(p => Math.min(totalPaginas, p + 1))} disabled={pagina === totalPaginas} style={{ ...s.pageBtn, opacity: pagina === totalPaginas ? 0.4 : 1 }}>Siguiente ›</button>
@@ -289,7 +289,7 @@ export default function AdminProductos() {
         <div style={s.modalOverlay} onClick={cerrarModal}>
           <div style={{ ...s.modalBox, maxWidth: 680 }} onClick={e => e.stopPropagation()}>
             <div style={s.modalHeader}>
-              <h2 style={s.modalTitle}>{modal === "crear" ? "➕ Nuevo Producto" : "✏️ Editar Producto"}</h2>
+              <h2 style={s.modalTitle}>{modal === "crear" ? "Nuevo Producto" : "Editar Producto"}</h2>
               <button onClick={cerrarModal} style={s.closeBtn}>✕</button>
             </div>
             <div style={{ ...s.modalBody, overflowY: "auto", maxHeight: "65vh" }}>
@@ -359,7 +359,7 @@ export default function AdminProductos() {
         <div style={s.modalOverlay} onClick={() => setConfirmDelete(null)}>
           <div style={{ ...s.modalBox, maxWidth: 420 }} onClick={e => e.stopPropagation()}>
             <div style={s.modalHeader}>
-              <h2 style={{ ...s.modalTitle, color: "#ef4444" }}> Confirmar Eliminación</h2>
+              <h2 style={{ ...s.modalTitle, color: "#ef4444" }}>Confirmar Eliminación</h2>
               <button onClick={() => setConfirmDelete(null)} style={s.closeBtn}>✕</button>
             </div>
             <div style={{ ...s.modalBody, textAlign: "center", padding: 24 }}>

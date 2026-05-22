@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Users, DollarSign, ShoppingCart, Package, ClipboardList, TrendingUp, Zap, ShoppingBag, X } from "lucide-react";
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
 } from "recharts";
-import AdminSidebar from "@/components/AdminSidebar";
 const API = "http://localhost:8000";
 
 function getToken() {
@@ -26,7 +26,7 @@ export default function AdminDashboard() {
   const router = useRouter();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState(null); // 'clientes' | 'ventas' | 'pedidos' | 'productos'
+  const [modal, setModal] = useState(null);
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -78,12 +78,9 @@ export default function AdminDashboard() {
 
   return (
     <div style={styles.page}>
-      {/* SIDEBAR */}
       
 
-      {/* MAIN */}
       <main style={styles.main}>
-        {/* HEADER */}
         <div style={styles.header}>
           <div>
             <h1 style={styles.pageTitle}>Dashboard</h1>
@@ -91,31 +88,27 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* STAT CARDS */}
         <div style={styles.statsGrid}>
-          <StatCard icon="👥" label="Clientes Activos" value={stats.clientes}
+          <StatCard icon={<Users size={28} />} label="Clientes Activos" value={stats.clientes}
             sub="Click para ver últimos 5" accent="#9a031e"
             onClick={() => setModal("clientes")} />
-          <StatCard icon="💰" label="Ventas del Mes" value={`$${stats.ventas_mes.toLocaleString("en", { minimumFractionDigits: 2 })}`}
-            sub={`${stats.crecimiento >= 0 ? "▲" : "▼"} ${Math.abs(stats.crecimiento)}% vs mes anterior`}
+          <StatCard icon={<DollarSign size={28} />} label="Ventas del Mes" value={`$${stats.ventas_mes.toLocaleString("en", { minimumFractionDigits: 2 })}`}
+            sub={`${stats.crecimiento >= 0 ? "↑" : "↓"} ${Math.abs(stats.crecimiento)}% vs mes anterior`}
             subColor={stats.crecimiento >= 0 ? "#10b981" : "#ef4444"}
             accent="#10b981" onClick={() => setModal("ventas")} />
-          <StatCard icon="🛒" label="Pedidos Activos" value={stats.pedidos}
+          <StatCard icon={<ShoppingCart size={28} />} label="Pedidos Activos" value={stats.pedidos}
             sub={`${stats.pendientes} pendientes`} subColor="#f59e0b"
             accent="#3b82f6" onClick={() => setModal("pedidos")} />
-          <StatCard icon="📦" label="Productos Activos" value={stats.productos}
+          <StatCard icon={<Package size={28} />} label="Productos Activos" value={stats.productos}
             sub="Click para ver últimos 5" accent="#f59e0b"
             onClick={() => setModal("productos")} />
         </div>
 
-        {/* CHARTS + TABLE ROW */}
         <div style={styles.contentRow}>
-          {/* LEFT */}
           <div style={styles.leftCol}>
-            {/* Pedidos recientes */}
             <div style={styles.card}>
               <div style={styles.cardHeader}>
-                <span style={styles.cardTitle}>📋 Pedidos Recientes</span>
+                <span style={styles.cardTitle}><ClipboardList size={16} style={{ verticalAlign: "middle", marginRight: 6 }} /> Pedidos Recientes</span>
                 <a href="/admin/pedidos" style={styles.cardLink}>Ver todos →</a>
               </div>
               <div style={styles.tableWrapper}>
@@ -146,10 +139,9 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Gráfico ventas mensuales */}
             <div style={styles.card}>
               <div style={styles.cardHeader}>
-                <span style={styles.cardTitle}>📈 Ventas Mensuales (últimos 6 meses)</span>
+                <span style={styles.cardTitle}><TrendingUp size={16} style={{ verticalAlign: "middle", marginRight: 6 }} /> Ventas Mensuales (últimos 6 meses)</span>
               </div>
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={ventas_mensuales}>
@@ -166,9 +158,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* RIGHT */}
           <div style={styles.rightCol}>
-            {/* Pie chart */}
             <div style={styles.card}>
               <div style={styles.cardHeader}>
                 <span style={styles.cardTitle}> Estado de Pedidos</span>
@@ -196,20 +186,19 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Resumen rápido */}
             <div style={styles.card}>
               <div style={styles.cardHeader}>
-                <span style={styles.cardTitle}>⚡ Resumen Rápido</span>
+                <span style={styles.cardTitle}><Zap size={16} style={{ verticalAlign: "middle", marginRight: 6 }} /> Resumen Rápido</span>
               </div>
               <div style={styles.quickGrid}>
                 {[
-                  { icon: "💵", label: "Ventas Mes",     value: `$${stats.ventas_mes.toFixed(0)}`, color: "#10b981" },
-                  { icon: "🛒", label: "Total Pedidos",  value: stats.pedidos,                      color: "#3b82f6" },
-                  { icon: "👥", label: "Clientes",       value: stats.clientes,                     color: "#9a031e" },
-                  { icon: "📦", label: "Productos",      value: stats.productos,                    color: "#f59e0b" },
+                  { icon: <DollarSign size={28} />, label: "Ventas Mes",     value: `$${stats.ventas_mes.toFixed(0)}`, color: "#10b981" },
+                  { icon: <ShoppingCart size={28} />, label: "Total Pedidos",  value: stats.pedidos,                      color: "#3b82f6" },
+                  { icon: <Users size={28} />, label: "Clientes",       value: stats.clientes,                     color: "#9a031e" },
+                  { icon: <Package size={28} />, label: "Productos",      value: stats.productos,                    color: "#f59e0b" },
                 ].map(q => (
                   <div key={q.label} style={styles.quickCard}>
-                    <span style={{ fontSize: 26 }}>{q.icon}</span>
+                    {q.icon}
                     <span style={{ color: q.color, fontWeight: 700, fontSize: 22 }}>{q.value}</span>
                     <span style={{ color: "#a0a0a0", fontSize: 11 }}>{q.label}</span>
                   </div>
@@ -220,22 +209,20 @@ export default function AdminDashboard() {
         </div>
       </main>
 
-      {/* MODALS */}
       {modal && (
         <div style={styles.modalOverlay} onClick={() => setModal(null)}>
           <div style={styles.modalBox} onClick={e => e.stopPropagation()}>
             <div style={styles.modalHeader}>
               <h2 style={styles.modalTitle}>
-                {modal === "clientes"  && "👥 Últimos 5 Clientes Activos"}
-                {modal === "ventas"    && "💰 Últimas 5 Ventas del Mes"}
-                {modal === "pedidos"   && "📦 Últimos 5 Pedidos Activos"}
-                {modal === "productos" && "🛍️ Últimos 5 Productos Activos"}
+                {modal === "clientes"  && <><Users size={16} style={{ verticalAlign: "middle", marginRight: 6 }} /> Últimos 5 Clientes Activos</>}
+                {modal === "ventas"    && <><DollarSign size={16} style={{ verticalAlign: "middle", marginRight: 6 }} /> Últimas 5 Ventas del Mes</>}
+                {modal === "pedidos"   && <><Package size={16} style={{ verticalAlign: "middle", marginRight: 6 }} /> Últimos 5 Pedidos Activos</>}
+                {modal === "productos" && <><ShoppingBag size={16} style={{ verticalAlign: "middle", marginRight: 6 }} /> Últimos 5 Productos Activos</>}
               </h2>
-              <button onClick={() => setModal(null)} style={styles.closeBtn}>✕</button>
+              <button onClick={() => setModal(null)} style={styles.closeBtn}><X size={18} /></button>
             </div>
 
             <div style={styles.modalBody}>
-              {/* Ventas extra info */}
               {modal === "ventas" && (
                 <div style={styles.modalCards}>
                   {[
@@ -251,7 +238,6 @@ export default function AdminDashboard() {
                 </div>
               )}
 
-              {/* Pedidos extra info */}
               {modal === "pedidos" && (
                 <div style={styles.modalCards}>
                   {[
@@ -268,7 +254,6 @@ export default function AdminDashboard() {
                 </div>
               )}
 
-              {/* Tabla */}
               <div style={styles.tableWrapper}>
                 <table style={styles.table}>
                   <thead>
@@ -359,7 +344,7 @@ function StatCard({ icon, label, value, sub, subColor, accent, onClick }) {
           <p style={styles.statLabel}>{label}</p>
           <p style={styles.statValue}>{value}</p>
         </div>
-        <span style={styles.statIcon}>{icon}</span>
+        {icon}
       </div>
       <p style={{ ...styles.statSub, color: subColor || "#a0a0a0" }}>{sub}</p>
     </div>
@@ -371,8 +356,6 @@ const styles = {
   loadingPage: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "#121418" },
   spinner: { width: 40, height: 40, border: "3px solid rgba(154,3,30,0.3)", borderTop: "3px solid #9a031e", borderRadius: "50%", animation: "spin 0.8s linear infinite" },
 
-  // Sidebar
-  
   sidebar: { width: 240, background: "#0d0f12", borderRight: "2px solid #9a031e", display: "flex", flexDirection: "column", position: "sticky", top: 0, height: "100vh" },
   sidebarLogo: { padding: "24px 20px", display: "flex", alignItems: "center", gap: 10, borderBottom: "1px solid rgba(154,3,30,0.3)" },
   logoIcon: { fontSize: 24 },
@@ -387,13 +370,11 @@ const styles = {
   userRole: { color: "#9a031e", fontSize: 11, margin: 0 },
   logoutBtn: { width: "100%", padding: "8px", background: "rgba(154,3,30,0.15)", border: "1px solid rgba(154,3,30,0.4)", borderRadius: 8, color: "#d9d9d9", cursor: "pointer", fontSize: 13 },
 
-  // Main
   main: { flex: 1, padding: "24px 28px", overflowY: "auto" },
   header: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28, paddingBottom: 16, borderBottom: "2px solid #9a031e" },
   pageTitle: { color: "#c1121f", fontSize: 26, fontWeight: 700, margin: 0 },
   pageSubtitle: { color: "#a0a0a0", fontSize: 13, margin: "4px 0 0" },
 
-  // Stats
   statsGrid: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 },
   statCard: { background: "#1f2429", padding: "20px", borderRadius: 12, borderLeft: "4px solid #9a031e", cursor: "pointer", transition: "all 0.3s ease" },
   statTop: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 },
@@ -402,31 +383,26 @@ const styles = {
   statIcon: { fontSize: 28 },
   statSub: { fontSize: 12, margin: 0 },
 
-  // Content row
   contentRow: { display: "grid", gridTemplateColumns: "1fr 320px", gap: 20 },
   leftCol: { display: "flex", flexDirection: "column", gap: 20 },
   rightCol: { display: "flex", flexDirection: "column", gap: 20 },
 
-  // Card
   card: { background: "#1f2429", borderRadius: 12, border: "1px solid rgba(154,3,30,0.2)", overflow: "hidden" },
   cardHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", borderBottom: "2px solid #9a031e", background: "#121418" },
   cardTitle: { color: "#c1121f", fontWeight: 700, fontSize: 14 },
   cardLink: { color: "#9a031e", fontSize: 12, textDecoration: "none" },
 
-  // Table
   tableWrapper: { overflowX: "auto", padding: "0 0 4px" },
   table: { width: "100%", borderCollapse: "collapse", fontSize: 13 },
   th: { padding: "10px 16px", textAlign: "left", color: "#a0a0a0", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.8, background: "#121418", borderBottom: "2px solid rgba(154,3,30,0.3)" },
   td: { padding: "10px 16px", color: "#d9d9d9", borderBottom: "1px solid rgba(154,3,30,0.08)" },
   badge: { padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700 },
 
-  // Pie
   pieStats: { display: "flex", justifyContent: "space-around", padding: "12px 16px 16px" },
   pieStat: { display: "flex", flexDirection: "column", alignItems: "center", gap: 2 },
   quickGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, padding: 16 },
   quickCard: { background: "#121418", borderRadius: 10, padding: 16, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, border: "1px solid rgba(154,3,30,0.15)" },
 
-  // Modal
   modalOverlay: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 },
   modalBox: { background: "#1f2429", border: "2px solid #9a031e", borderRadius: 16, width: "100%", maxWidth: 720, maxHeight: "85vh", display: "flex", flexDirection: "column" },
   modalHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", borderBottom: "2px solid #9a031e", background: "#121418" },

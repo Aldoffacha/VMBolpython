@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ClienteSidebar from "@/components/ClienteSidebar";
 import { useTheme } from "@/context/ThemeContext";
+import { Package, Bike, Calendar, Globe, Home, MapPin, AlertTriangle, CheckCircle, CreditCard } from "lucide-react";
 import "@/styles/dashboard.css"; // mismas variables CSS del dashboard
 
 const API = "http://localhost:8000";
@@ -77,7 +78,7 @@ export default function MisPedidos() {
       method:"POST", headers:{ Authorization:`Bearer ${token}` }});
     const d = await r.json();
     if (d.success) {
-      showToast("✅ Pedido confirmado como entregado", true);
+      showToast("Pedido confirmado como entregado", true);
       setPedidos(prev => prev.map(p =>
         p.id_pedido===idPedido ? {...p, estado_entrega:"entregado"} : p
       ));
@@ -375,7 +376,7 @@ export default function MisPedidos() {
 
           {lista.length===0 && (
             <div className="ped-empty">
-              <span className="ped-empty__ico">📭</span>
+              <span className="ped-empty__ico"><Package size={52} /></span>
               <h3 className="ped-empty__title">
                 {filtro==="todos" ? "Sin pedidos aún" : "Sin resultados"}
               </h3>
@@ -406,7 +407,7 @@ export default function MisPedidos() {
                   <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
                     <span className="ped-card__id">#VM{p.id_pedido}</span>
                     {enCamino && (
-                      <span style={{animation:"bounce2 .7s infinite",fontSize:"18px"}}>🚴</span>
+                      <span style={{animation:"bounce2 .7s infinite",display:"inline-flex",alignItems:"center"}}><Bike size={18} /></span>
                     )}
                   </div>
                   <div className="ped-card__badges">
@@ -419,7 +420,7 @@ export default function MisPedidos() {
                 {/* Body */}
                 <div className="ped-card__body">
                   <div className="ped-card__meta">
-                    <span className="ped-card__date">📅 {fDate(p.fecha)}</span>
+                    <span className="ped-card__date"><Calendar size={14} /> {fDate(p.fecha)}</span>
                     <span className="ped-card__total">{fmt(p.total)}</span>
                   </div>
 
@@ -428,7 +429,7 @@ export default function MisPedidos() {
                       <div className="ped-detail-row">
                         <span className="ped-detail-k">Tipo</span>
                         <span className="ped-detail-v">
-                          {p.tipo_pedido==="importacion" ? "🌐 Importación" : "🏠 Local"}
+                          {p.tipo_pedido==="importacion" ? <><Globe size={14} /> Importación</> : <><Home size={14} /> Local</>}
                         </span>
                       </div>
                     )}
@@ -442,7 +443,7 @@ export default function MisPedidos() {
                     )}
                     {tieneUbic && (
                       <div className="ped-detail-row">
-                        <span className="ped-detail-k">📍</span>
+                        <span className="ped-detail-k"><MapPin size={14} /></span>
                         <span className="ped-detail-v" style={{
                           overflow:"hidden",textOverflow:"ellipsis",
                           whiteSpace:"nowrap",maxWidth:"200px",textAlign:"right"
@@ -455,17 +456,17 @@ export default function MisPedidos() {
 
                   {!estaPagado && (
                     <div className="ped-alert ped-alert--red">
-                      <span>⚠️</span> Requiere pago para continuar
+                      <span><AlertTriangle size={14} /></span> Requiere pago para continuar
                     </div>
                   )}
                   {estaPagado && !tieneUbic && (
                     <div className="ped-alert ped-alert--amber">
-                      <span>📍</span> Falta establecer ubicación de entrega
+                      <span><MapPin size={14} /></span> Falta establecer ubicación de entrega
                     </div>
                   )}
                   {puedeConf && (
                     <div className="ped-alert ped-alert--green">
-                      <span>✅</span> ¡Tu pedido llegó! Confirma la recepción
+                      <span><CheckCircle size={14} /></span> ¡Tu pedido llegó! Confirma la recepción
                     </div>
                   )}
                 </div>
@@ -475,19 +476,19 @@ export default function MisPedidos() {
                   {!estaPagado && (
                     <button className="ped-foot-btn ped-foot-btn--red"
                       onClick={()=>router.push("/cliente/carrito")}>
-                      💳 Pagar ahora
+                      <CreditCard size={14} /> Pagar ahora
                     </button>
                   )}
                   {estaPagado && !tieneUbic && (
                     <button className="ped-foot-btn ped-foot-btn--amber"
                       onClick={()=>router.push(`/cliente/pedidos/${p.id_pedido}`)}>
-                      📍 Establecer Ubicación
+                      <MapPin size={14} /> Establecer Ubicación
                     </button>
                   )}
                   {puedeConf && (
                     <button className="ped-foot-btn ped-foot-btn--green"
                       onClick={()=>marcarEntregado(p.id_pedido)}>
-                      ✅ Confirmar Recepción
+                      <CheckCircle size={14} /> Confirmar Recepción
                     </button>
                   )}
                   <button className="ped-foot-btn ped-foot-btn--ghost"

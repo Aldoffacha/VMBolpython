@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import ClienteSidebar from "@/components/ClienteSidebar";
 import "@/styles/dashboard.css";
 import { useTheme } from "@/context/ThemeContext";
+import { X, Check, Truck, DollarSign, ShoppingCart } from "lucide-react";
 const API = "http://localhost:8000";
 
 /* ─── Importación ──────────────────────────────────────────────────────── */
@@ -153,7 +154,7 @@ function Modal({ title, onClose, foot, wide, children }) {
       <div className={`m-box${wide ? " m-box--wide" : ""}`}>
         <div className="m-head">
           <h3 className="m-head__title">{title}</h3>
-          <button className="m-close" onClick={onClose}>✕</button>
+          <button className="m-close" onClick={onClose}><X size={18} /></button>
         </div>
         <div className="m-body">{children}</div>
         {foot && <div className="m-foot">{foot}</div>}
@@ -255,7 +256,7 @@ function ModalCot({ tc, token, onClose }) {
         largo:d.l, ancho:d.a, alto:d.h }),
     });
     const data = await r.json(); setBusy(false);
-    if (data.success) { setOk("Cotización guardada ✓"); setTimeout(onClose, 1500); }
+    if (data.success) { setOk(<>Cotización guardada <Check size={14} /></>); setTimeout(onClose, 1500); }
     else alert(data.detail || "Error al guardar");
   };
 
@@ -336,7 +337,7 @@ function ModalEnvios({ items, onClose }) {
         <a href="/cliente/pedidos" className="btn btn-pri">Ver pedidos</a>
       </>}>
       {!items.length
-        ? <div className="vmb-empty"><span className="vmb-empty__ico">🚚</span><span className="vmb-empty__txt">Sin envíos en camino</span></div>
+        ? <div className="vmb-empty"><span className="vmb-empty__ico"><Truck size={52} /></span><span className="vmb-empty__txt">Sin envíos en camino</span></div>
         : items.map(e => (
           <div key={e.id_pedido} className="m-item">
             <div className="m-item__row">
@@ -367,7 +368,7 @@ function ModalCots({ items, onClose, onNueva }) {
         <button className="btn btn-pri" onClick={onNueva}>Nueva cotización</button>
       </>}>
       {!items.length
-        ? <div className="vmb-empty"><span className="vmb-empty__ico">💵</span><span className="vmb-empty__txt">Sin cotizaciones pendientes</span></div>
+        ? <div className="vmb-empty"><span className="vmb-empty__ico"><DollarSign size={52} /></span><span className="vmb-empty__txt">Sin cotizaciones pendientes</span></div>
         : items.map(c => (
           <div key={c.id_cotizacion} className="m-item">
             <div className="m-item__row">
@@ -397,7 +398,7 @@ function ModalCarrito({ items, total, onClose }) {
         {items.length > 0 && <a href="/cliente/carrito" className="btn btn-pri">Ir al carrito →</a>}
       </>}>
       {!items.length
-        ? <div className="vmb-empty"><span className="vmb-empty__ico">🛒</span><span className="vmb-empty__txt">Carrito vacío</span></div>
+        ? <div className="vmb-empty"><span className="vmb-empty__ico"><ShoppingCart size={52} /></span><span className="vmb-empty__txt">Carrito vacío</span></div>
         : <>
           {items.map(item => (
             <div key={item.id_carrito} className="cart-item">
@@ -426,7 +427,7 @@ function ModalCarrito({ items, total, onClose }) {
 ══════════════════════════════════════════════════════════════════════════ */
 export default function ClienteDashboard() {
   const router = useRouter();
-  // ✅ useTheme integrado — aplica clase "light" o "dark" al root
+  // useTheme integrado — aplica clase "light" o "dark" al root
   const { theme } = useTheme();
 
   const [user,  setUser]  = useState(null);
@@ -460,7 +461,7 @@ export default function ClienteDashboard() {
 
   /* Loading */
   if (load) return (
-    // ✅ clase de tema en el loading también
+    // clase de tema en el loading también
     <div className={`vmb-loading ${theme}`}>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       <div className="vmb-loading__ring" />
@@ -490,14 +491,14 @@ export default function ClienteDashboard() {
   };
 
   return (
-    // ✅ Clase "dark" o "light" en el root — dashboard.css debe usar estas clases para sus variables
+    // Clase "dark" o "light" en el root — dashboard.css debe usar estas clases para sus variables
     <div className={`vmb-root ${theme}`}>
       <ClienteSidebar user={user} carritoCount={stats?.total_carrito || 0} />
 
       <main className="vmb-main">
 
         {/* Toast */}
-        {toast && <div className="vmb-toast">✓ {toast}</div>}
+        {toast && <div className="vmb-toast"><Check size={14} /> {toast}</div>}
 
         {/* ── Hero ─────────────────────────────────────────────────── */}
         <header className="vmb-hero">

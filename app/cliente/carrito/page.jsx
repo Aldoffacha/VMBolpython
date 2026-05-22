@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import ClienteSidebar from "@/components/ClienteSidebar";
 import { useTheme } from "@/context/ThemeContext";
+import { Package, Trash2, CreditCard, X, Smartphone, FileText, Paperclip, AlertTriangle, Upload, ShoppingCart, ShoppingBag, Home, Globe, ClipboardList } from "lucide-react";
 import "@/styles/dashboard.css";
 import "@/styles/carrito.css";
 
@@ -51,7 +52,7 @@ function ItemRow({ item, tipo, onCantidad, onEliminar, updating }) {
         {item.imagen_url
           ? <img src={item.imagen_url} alt={item.nombre}
               onError={e => { e.target.style.display = "none"; }} />
-          : "📦"}
+          : <Package size={24} />}
       </div>
 
       {/* Info */}
@@ -91,7 +92,7 @@ function ItemRow({ item, tipo, onCantidad, onEliminar, updating }) {
             <button className="crt-del-no" onClick={() => setConfirmDel(false)}>No</button>
           </div>
         ) : (
-          <button className="crt-del" onClick={() => setConfirmDel(true)}>🗑️</button>
+          <button className="crt-del" onClick={() => setConfirmDel(true)}><Trash2 size={16} /></button>
         )}
       </div>
     </div>
@@ -140,8 +141,8 @@ function ModalPago({ idPedido, total, token, onClose, onSuccess }) {
     <div className="m-overlay">
       <div className="m-box">
         <div className="m-head">
-          <h3 className="m-head__title">💳 Pagar Pedido #VM{idPedido}</h3>
-          <button className="m-close" onClick={onClose}>✕</button>
+          <h3 className="m-head__title"><CreditCard size={16} /> Pagar Pedido #VM{idPedido}</h3>
+          <button className="m-close" onClick={onClose}><X size={18} /></button>
         </div>
 
         <div className="m-body">
@@ -154,7 +155,7 @@ function ModalPago({ idPedido, total, token, onClose, onSuccess }) {
           {/* QR */}
           {infoQR?.qr_url && (
             <div className="pago-qr-wrap">
-              <div className="pago-qr-label">📱 Escanea el QR para pagar</div>
+              <div className="pago-qr-label">Escanea el QR para pagar</div>
               <img
                 src={infoQR.qr_url}
                 alt="QR de pago"
@@ -169,7 +170,7 @@ function ModalPago({ idPedido, total, token, onClose, onSuccess }) {
           <div style={{ marginBottom: 16 }}>
             <label className="f-lbl">Método de pago</label>
             <div className="pago-field-readonly">
-              <span style={{ fontSize: 16 }}>📱</span> Pago QR
+              <span style={{ fontSize: 16, display: "inline-flex", alignItems: "center" }}><Smartphone size={16} /></span> Pago QR
             </div>
           </div>
 
@@ -192,9 +193,9 @@ function ModalPago({ idPedido, total, token, onClose, onSuccess }) {
                   ? <img src={preview} alt="preview"
                       style={{ maxHeight: 140, maxWidth: "100%", borderRadius: "var(--r-s)" }} />
                   : archivo
-                    ? <div style={{ color: "var(--green)", fontSize: 13, fontWeight: 700 }}>📄 {archivo.name}</div>
+                    ? <div style={{ color: "var(--green)", fontSize: 13, fontWeight: 700 }}><FileText size={14} /> {archivo.name}</div>
                     : <>
-                        <div className="pago-upload-ico">📎</div>
+                        <div className="pago-upload-ico"><Paperclip size={24} /></div>
                         <div className="pago-upload-txt">Click para adjuntar imagen o PDF del comprobante</div>
                       </>
                 }
@@ -202,10 +203,10 @@ function ModalPago({ idPedido, total, token, onClose, onSuccess }) {
             </label>
           </div>
 
-          {error && <div className="pago-alert-error">⚠️ {error}</div>}
+          {error && <div className="pago-alert-error"><AlertTriangle size={14} /> {error}</div>}
 
           <div className="pago-alert-info">
-            ℹ️ Tu comprobante será revisado por el equipo de VMBol en Red antes de confirmar tu pedido.
+            Tu comprobante será revisado por el equipo de VMBol en Red antes de confirmar tu pedido.
           </div>
         </div>
 
@@ -213,7 +214,7 @@ function ModalPago({ idPedido, total, token, onClose, onSuccess }) {
           <button className="btn btn-out" onClick={onClose}>Cancelar</button>
           <button className="btn btn-pri" onClick={enviar} disabled={load}
             style={{ opacity: load ? 0.7 : 1 }}>
-            {load ? "Enviando…" : "📤 Enviar Comprobante"}
+            {load ? "Enviando…" : <><Upload size={14} /> Enviar Comprobante</>}
           </button>
         </div>
       </div>
@@ -270,7 +271,7 @@ export default function CarritoPage() {
     await fetch(`${API}/cliente/carrito/${id}?tipo=${tipo}`, {
       method: "DELETE", headers: { Authorization: `Bearer ${token}` },
     });
-    await cargar(token); setUpdating(null); showToast("🗑️ Item eliminado");
+    await cargar(token); setUpdating(null); showToast("Item eliminado");
   }
 
   async function vaciarCarrito() {
@@ -278,7 +279,7 @@ export default function CarritoPage() {
     await fetch(`${API}/cliente/carrito`, {
       method: "DELETE", headers: { Authorization: `Bearer ${token}` },
     });
-    await cargar(token); showToast("🗑️ Carrito vaciado");
+    await cargar(token); showToast("Carrito vaciado");
   }
 
   async function crearPedido() {
@@ -337,7 +338,7 @@ export default function CarritoPage() {
 
             {nItems > 0 && (
               <button className="crt-vaciar-btn" onClick={vaciarCarrito}>
-                🗑️ Vaciar carrito
+                <Trash2 size={14} /> Vaciar carrito
               </button>
             )}
           </div>
@@ -349,11 +350,11 @@ export default function CarritoPage() {
           {/* Estado vacío */}
           {nItems === 0 ? (
             <div className="crt-empty">
-              <span className="crt-empty__ico">🛒</span>
+              <span className="crt-empty__ico"><ShoppingCart size={52} /></span>
               <h2 className="crt-empty__title">Carrito Vacío</h2>
               <p className="crt-empty__sub">Explora la tienda y agrega productos para importar.</p>
               <button className="btn btn-pri" onClick={() => router.push("/cliente/tienda")}>
-                🛍️ Ir a la Tienda
+                <ShoppingBag size={16} /> Ir a la Tienda
               </button>
             </div>
           ) : (
@@ -365,7 +366,7 @@ export default function CarritoPage() {
                 {(carrito?.items_locales || []).length > 0 && (
                   <div className="crt-card">
                     <div className="crt-card__head">
-                      <span className="crt-card__title">🏠 Productos Locales</span>
+                      <span className="crt-card__title"><Home size={16} /> Productos Locales</span>
                       <span className="crt-card__badge">
                         {carrito.items_locales.length} ítem{carrito.items_locales.length !== 1 ? "s" : ""}
                       </span>
@@ -388,7 +389,7 @@ export default function CarritoPage() {
                 {(carrito?.items_externos || []).length > 0 && (
                   <div className="crt-card">
                     <div className="crt-card__head">
-                      <span className="crt-card__title">🌐 Importación</span>
+                      <span className="crt-card__title"><Globe size={16} /> Importación</span>
                       <span className="crt-card__badge">
                         {carrito.items_externos.length} ítem{carrito.items_externos.length !== 1 ? "s" : ""}
                       </span>
@@ -412,7 +413,7 @@ export default function CarritoPage() {
               <div className="crt-summary">
                 <div className="crt-card">
                   <div className="crt-card__head">
-                    <span className="crt-card__title">📋 Resumen</span>
+                    <span className="crt-card__title"><ClipboardList size={16} /> Resumen</span>
                   </div>
                   <div className="crt-card__body" style={{ padding: "18px 22px" }}>
 
@@ -450,7 +451,7 @@ export default function CarritoPage() {
                     >
                       {creando
                         ? <><div className="crt-spinner" /> Creando…</>
-                        : "🛒 Realizar Pedido"
+                        : <><ShoppingCart size={16} /> Realizar Pedido</>
                       }
                     </button>
 

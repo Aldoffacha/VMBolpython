@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import ClienteSidebar from "@/components/ClienteSidebar";
 import "@/styles/dashboard.css";
 import "@/styles/perfil.css";
+import { X, AlertTriangle, Check } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 
 const API = "http://localhost:8000";
@@ -44,7 +45,7 @@ function Toast({ msg, tipo }) {
   if (!msg) return null;
   return (
     <div className={`vmb-toast vmb-toast--${tipo || "success"}`}>
-      {tipo === "danger" ? "✕" : tipo === "warning" ? "⚠" : "✓"} {msg}
+      {tipo === "danger" ? <X size={14} /> : tipo === "warning" ? <AlertTriangle size={14} /> : <Check size={14} />} {msg}
     </div>
   );
 }
@@ -525,7 +526,7 @@ export default function ClientePerfil() {
                       <p className="prf-pass-error">Las contraseñas no coinciden</p>
                     )}
                     {passMatch === true && (
-                      <p className="prf-pass-ok">Las contraseñas coinciden ✓</p>
+                      <p className="prf-pass-ok">Las contraseñas coinciden <Check size={14} /></p>
                     )}
                   </Field>
                 </div>

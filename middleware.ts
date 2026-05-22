@@ -11,7 +11,7 @@ const PUBLIC_ROUTES = ["/login", "/registro"];
 
 function decodeJwtPayload(token: string) {
   const base64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
-  const json = Buffer.from(base64, "base64").toString("utf-8");
+  const json = atob(base64);
   return JSON.parse(json);
 }
 
@@ -24,11 +24,10 @@ function getDashboard(tipo_usuario: string) {
   return map[tipo_usuario] || "/login";
 }
 
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("access_token")?.value;
 
-  // Rutas públicas
   if (PUBLIC_ROUTES.some((r) => pathname.startsWith(r))) {
     if (token) {
       try {
@@ -41,7 +40,6 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Rutas protegidas
   const matchedRoute = Object.keys(PROTECTED_ROUTES).find((r) => pathname.startsWith(r));
   if (matchedRoute) {
     if (!token) {

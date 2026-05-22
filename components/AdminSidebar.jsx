@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { Bell, BellOff, Megaphone, Info, CheckCircle, AlertTriangle, XCircle, Package, CreditCard, Truck, X } from "lucide-react";
 
 const API = "http://localhost:8000";
 
@@ -25,6 +26,7 @@ const LINKS = [
   { icon: "", label: "Auditoría",      href: "/admin/auditoria" },
   { icon: "", label: "Configuración", href: "/admin/configuracion" },
   { icon: "", label: "Prod. Externos", href: "/admin/productos-externos" },
+  { icon: "", label: "ML Recomendaciones", href: "/admin/recomendaciones" },
 ];
 
 const IconBell = ({ size = 18 }) => (
@@ -117,7 +119,7 @@ function NotifDropdown({ token }) {
     return `${Math.floor(diff / 86400)}d`;
   }
 
-  const TIPO_ICON = { info: "ℹ️", success: "✅", warning: "⚠️", error: "❌", pedido: "📦", pago: "💳", envio: "🚚" };
+  const TIPO_ICON = { info: <Info size={16} />, success: <CheckCircle size={16} />, warning: <AlertTriangle size={16} />, error: <XCircle size={16} />, pedido: <Package size={16} />, pago: <CreditCard size={16} />, envio: <Truck size={16} /> };
 
   return (
     <>
@@ -165,7 +167,7 @@ function NotifDropdown({ token }) {
             padding: "12px 16px", borderBottom: `2px solid ${C.accent}`, background: C.pageBg,
           }}>
             <span style={{ color: C.accent2, fontWeight: "700", fontSize: "13px" }}>
-              🔔 Notificaciones
+              <Bell size={14} /> Notificaciones
             </span>
             <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
               {noLeidas > 0 && (
@@ -180,7 +182,7 @@ function NotifDropdown({ token }) {
               <button onClick={() => setOpen(false)} style={{
                 background: "transparent", border: "none",
                 color: C.muted, cursor: "pointer", fontSize: "16px", lineHeight: 1,
-              }}>✕</button>
+              }}><X size={16} /></button>
             </div>
           </div>
 
@@ -188,14 +190,13 @@ function NotifDropdown({ token }) {
           <div style={{
             maxHeight: "360px",
             overflowY: "auto",
-            // Scrollbar oculto dentro del panel también
             scrollbarWidth: "none",
             msOverflowStyle: "none",
           }}>
             {notifs.length === 0
               ? (
                 <div style={{ padding: "32px 16px", textAlign: "center" }}>
-                  <div style={{ fontSize: "32px", marginBottom: "8px" }}>🔕</div>
+                  <div style={{ fontSize: "32px", marginBottom: "8px" }}><BellOff size={32} /></div>
                   <div style={{ color: C.muted, fontSize: "13px" }}>Sin notificaciones</div>
                 </div>
               )
@@ -212,7 +213,7 @@ function NotifDropdown({ token }) {
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px" }}>
                       <div style={{ display: "flex", gap: "8px", flex: 1, minWidth: 0 }}>
                         <span style={{ fontSize: "16px", flexShrink: 0 }}>
-                          {TIPO_ICON[n.tipo] || "📣"}
+                          {TIPO_ICON[n.tipo] || <Megaphone size={16} />}
                         </span>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "3px" }}>
@@ -299,8 +300,8 @@ export default function AdminSidebar({ user }) {
           height: "100vh",
           flexShrink: 0,
           overflowY: "auto",
-          scrollbarWidth: "none",      // Firefox
-          msOverflowStyle: "none",     // IE/Edge
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
           background: `linear-gradient(180deg,#080a0c 0%,${C.pageBg} 100%)`,
           borderRight: `2px solid ${C.accent}`,
           display: "flex",

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { CreditCard, Clock, CheckCircle, DollarSign, X, Link } from "lucide-react";
 
 
 const API = "http://localhost:8000";
@@ -67,11 +68,11 @@ export default function AdminPagos() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (!res.ok) { showToast(`❌ ${data.detail}`); return; }
-      showToast("✅ Pago confirmado y pedido actualizado");
+      if (!res.ok) { showToast(`${data.detail}`); return; }
+      showToast("Pago confirmado y pedido actualizado");
       fetchPagos();
     } catch (e) {
-      showToast("❌ Error de conexión");
+      showToast("Error de conexión");
     } finally {
       setConfirmando(null);
     }
@@ -98,7 +99,7 @@ export default function AdminPagos() {
         {/* HEADER */}
         <div style={s.header}>
           <div>
-            <h1 style={s.pageTitle}>Gestión de Pagos</h1>
+            <h1 style={s.pageTitle}>Gesti&oacute;n de Pagos</h1>
             <p style={s.pageSubtitle}>Confirma los comprobantes de pago de los clientes</p>
           </div>
         </div>
@@ -107,10 +108,10 @@ export default function AdminPagos() {
         {stats && (
           <div style={s.statsGrid}>
             {[
-              { icon: "💳", label: "Total Pagos",   value: stats.total_pagos,                                          color: "#9a031e" },
-              { icon: "⏳", label: "Pendientes",     value: stats.pendientes,                                           color: "#f59e0b" },
-              { icon: "✅", label: "Confirmados",    value: stats.confirmados,                                          color: "#10b981" },
-              { icon: "💵", label: "Monto Confirmado", value: `$${stats.monto_total.toLocaleString("en", { minimumFractionDigits: 2 })}`, color: "#3b82f6" },
+              { icon: <CreditCard size={30} />, label: "Total Pagos",   value: stats.total_pagos,                                          color: "#9a031e" },
+              { icon: <Clock size={30} />,      label: "Pendientes",     value: stats.pendientes,                                           color: "#f59e0b" },
+              { icon: <CheckCircle size={30} />, label: "Confirmados",    value: stats.confirmados,                                          color: "#10b981" },
+              { icon: <DollarSign size={30} />, label: "Monto Confirmado", value: `$${stats.monto_total.toLocaleString("en", { minimumFractionDigits: 2 })}`, color: "#3b82f6" },
             ].map(st => (
               <div key={st.label} style={{ ...s.statCard, borderLeftColor: st.color }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -151,7 +152,7 @@ export default function AdminPagos() {
               <table style={s.table}>
                 <thead>
                   <tr>
-                    {["ID Pago", "Pedido", "Cliente", "Monto", "Método", "Comprobante", "Fecha", "Estado", "Acción"].map(h => (
+                    {["ID Pago", "Pedido", "Cliente", "Monto", "M&eacute;todo", "Comprobante", "Fecha", "Estado", "Acci&oacute;n"].map(h => (
                       <th key={h} style={s.th}>{h}</th>
                     ))}
                   </tr>
@@ -202,10 +203,10 @@ export default function AdminPagos() {
                             disabled={confirmando === p.id_pago}
                             style={{ ...s.btnConfirmar, opacity: confirmando === p.id_pago ? 0.6 : 1 }}
                           >
-                            {confirmando === p.id_pago ? "..." : "✅ Confirmar"}
+                            {confirmando === p.id_pago ? "..." : <> <CheckCircle size={14} /> Confirmar</>}
                           </button>
                         ) : (
-                          <span style={{ color: "#10b981", fontSize: 13, fontWeight: 600 }}>✓ Confirmado</span>
+                          <span style={{ color: "#10b981", fontSize: 13, fontWeight: 600 }}>Confirmado</span>
                         )}
                       </td>
                     </tr>
@@ -222,15 +223,15 @@ export default function AdminPagos() {
         <div style={s.modalOverlay} onClick={() => setModalImg(null)}>
           <div style={s.imgModalBox} onClick={e => e.stopPropagation()}>
             <div style={s.modalHeader}>
-              <h2 style={s.modalTitle}>🧾 Comprobante de Pago</h2>
-              <button onClick={() => setModalImg(null)} style={s.closeBtn}>✕</button>
+              <h2 style={s.modalTitle}>Comprobante de Pago</h2>
+              <button onClick={() => setModalImg(null)} style={s.closeBtn}><X size={18} /></button>
             </div>
             <div style={{ padding: 20, textAlign: "center" }}>
               <img src={modalImg} alt="comprobante" style={{ maxWidth: "100%", maxHeight: "70vh", borderRadius: 8, border: "1px solid rgba(154,3,30,0.3)" }} />
             </div>
             <div style={s.modalFooter}>
               <a href={modalImg} target="_blank" rel="noopener noreferrer" style={s.btnPrimary}>
-                🔗 Abrir en nueva pestaña
+                <Link size={14} /> Abrir en nueva pesta&ntilde;a
               </a>
               <button onClick={() => setModalImg(null)} style={s.btnSecondary}>Cerrar</button>
             </div>

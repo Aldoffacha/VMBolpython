@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { X, Trash2, Save, CheckCircle, XCircle, Plus, Upload } from "lucide-react";
 
 
 const API = "http://localhost:8000";
@@ -155,7 +156,7 @@ export default function AdminConfiguracion() {
           <div style={{ ...s.toast, background: toast.ok ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.15)",
             borderColor: toast.ok ? "rgba(16,185,129,0.4)" : "rgba(239,68,68,0.4)",
             color: toast.ok ? "#10b981" : "#ef4444" }}>
-            {toast.ok ? "✅" : "❌"} {toast.msg}
+            <>{toast.ok ? <CheckCircle size={14} /> : <XCircle size={14} />} {toast.msg}</>
           </div>
         )}
 
@@ -165,7 +166,7 @@ export default function AdminConfiguracion() {
 
             {/* Config general */}
             <div style={s.card}>
-              <div style={s.cardHeader}><span style={s.cardTitle}> Configuración General</span></div>
+                <div style={s.cardHeader}><span style={s.cardTitle}>Configuración General</span></div>
               <div style={s.cardBody}>
                 <div style={s.formGroup}>
                   <label style={s.label}>Nombre de la Empresa</label>
@@ -191,14 +192,14 @@ export default function AdminConfiguracion() {
                   </select>
                 </div>
                 <button onClick={guardarGeneral} disabled={saving} style={s.btnPrimary}>
-                  {saving ? "Guardando..." : " Guardar Configuración"}
+                  {saving ? "Guardando..." : <><Save size={14} /> Guardar Configuración</>}
                 </button>
               </div>
             </div>
 
             {/* QR */}
             <div style={s.card}>
-              <div style={s.cardHeader}><span style={s.cardTitle}> Código QR de Pago</span></div>
+              <div style={s.cardHeader}><span style={s.cardTitle}>Código QR de Pago</span></div>
               <div style={s.cardBody}>
                 {/* QR actual */}
                 <div style={{ marginBottom: 16 }}>
@@ -216,7 +217,7 @@ export default function AdminConfiguracion() {
                 <input ref={qrInputRef} type="file" accept="image/*" onChange={subirQR}
                   style={{ display: "none" }} />
                 <button onClick={() => qrInputRef.current?.click()} style={s.btnSecondary}>
-                   Seleccionar Imagen
+                  <Upload size={14} /> Seleccionar Imagen
                 </button>
               </div>
             </div>
@@ -228,8 +229,8 @@ export default function AdminConfiguracion() {
             {/* Depósitos */}
             <div style={s.card}>
               <div style={{ ...s.cardHeader, display: "flex", justifyContent: "space-between" }}>
-                <span style={s.cardTitle}> Depósitos en Miami</span>
-                <button onClick={() => setModal("deposito")} style={s.btnAdd}>＋ Agregar</button>
+                <span style={s.cardTitle}>Depósitos en Miami</span>
+                <button onClick={() => setModal("deposito")} style={s.btnAdd}><Plus size={14} /> Agregar</button>
               </div>
               <div style={s.cardBody}>
                 {!data?.depositos?.length ? (
@@ -245,7 +246,7 @@ export default function AdminConfiguracion() {
                           <td style={s.td}>{d.nombre_deposito}</td>
                           <td style={s.td}>{d.contacto || "—"}</td>
                           <td style={s.td}>
-                            <button onClick={() => eliminarDeposito(d.id_deposito)} style={s.btnDel}>🗑️</button>
+                            <button onClick={() => eliminarDeposito(d.id_deposito)} style={s.btnDel}><Trash2 size={14} /></button>
                           </td>
                         </tr>
                       ))}
@@ -258,8 +259,8 @@ export default function AdminConfiguracion() {
             {/* Tiendas */}
             <div style={s.card}>
               <div style={{ ...s.cardHeader, display: "flex", justifyContent: "space-between" }}>
-                <span style={s.cardTitle}> Tiendas USA Configuradas</span>
-                <button onClick={() => setModal("tienda")} style={s.btnAdd}>＋ Agregar</button>
+                <span style={s.cardTitle}>Tiendas USA Configuradas</span>
+                <button onClick={() => setModal("tienda")} style={s.btnAdd}><Plus size={14} /> Agregar</button>
               </div>
               <div style={s.cardBody}>
                 {!data?.tiendas?.length ? (
@@ -277,7 +278,7 @@ export default function AdminConfiguracion() {
                             <span style={s.pill}>{t.tipo}</span>
                           </td>
                           <td style={s.td}>
-                            <button onClick={() => eliminarTienda(t.id_tienda)} style={s.btnDel}>🗑️</button>
+                            <button onClick={() => eliminarTienda(t.id_tienda)} style={s.btnDel}><Trash2 size={14} /></button>
                           </td>
                         </tr>
                       ))}
@@ -295,8 +296,8 @@ export default function AdminConfiguracion() {
         <div style={s.overlay} onClick={() => setModal(null)}>
           <div style={s.modalBox} onClick={e => e.stopPropagation()}>
             <div style={s.modalHeader}>
-              <h2 style={s.modalTitle}> Agregar Depósito en Miami</h2>
-              <button onClick={() => setModal(null)} style={s.closeBtn}>✕</button>
+              <h2 style={s.modalTitle}><Plus size={16} /> Agregar Depósito</h2>
+              <button onClick={() => setModal(null)} style={s.closeBtn}><X size={18} /></button>
             </div>
             <div style={s.modalBody}>
               {[
@@ -326,7 +327,7 @@ export default function AdminConfiguracion() {
           <div style={s.modalBox} onClick={e => e.stopPropagation()}>
             <div style={s.modalHeader}>
               <h2 style={s.modalTitle}> Agregar Tienda USA</h2>
-              <button onClick={() => setModal(null)} style={s.closeBtn}>✕</button>
+              <button onClick={() => setModal(null)} style={s.closeBtn}><X size={18} /></button>
             </div>
             <div style={s.modalBody}>
               <div style={s.formGroup}>

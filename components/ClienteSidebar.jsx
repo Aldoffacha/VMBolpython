@@ -1,11 +1,11 @@
 "use client";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { useTheme } from "@/context/ThemeContext"; // 👈 NUEVO
+import { useTheme } from "@/context/ThemeContext";
+import { Bell, BellOff, Megaphone, Info, CheckCircle, AlertTriangle, XCircle, Package, CreditCard, Truck, X, Home, ShoppingBag, ShoppingCart, DollarSign, User, Menu, Moon, Sun } from "lucide-react";
 
 const API = "http://localhost:8000";
 
-// 👇 REEMPLAZA el objeto C fijo por esta función
 function getColors(isDark) {
   return {
     pageBg:  isDark ? "#121418" : "#f0f2f5",
@@ -21,12 +21,12 @@ function getColors(isDark) {
 }
 
 const LINKS = [
-  { href: "/cliente/dashboard",    icon: "🏠", label: "Dashboard" },
-  { href: "/cliente/tienda",       icon: "🛍️", label: "Tienda" },
-  { href: "/cliente/carrito",      icon: "🛒", label: "Mi Carrito" },
-  { href: "/cliente/pedidos",      icon: "📦", label: "Mis Pedidos" },
-  { href: "/cliente/cotizaciones", icon: "💰", label: "Cotizaciones" },
-  { href: "/cliente/perfil",       icon: "👤", label: "Mi Perfil" },
+  { href: "/cliente/dashboard",    icon: <Home size={18} />, label: "Dashboard" },
+  { href: "/cliente/tienda",       icon: <ShoppingBag size={18} />, label: "Tienda" },
+  { href: "/cliente/carrito",      icon: <ShoppingCart size={18} />, label: "Mi Carrito" },
+  { href: "/cliente/pedidos",      icon: <Package size={18} />, label: "Mis Pedidos" },
+  { href: "/cliente/cotizaciones", icon: <DollarSign size={18} />, label: "Cotizaciones" },
+  { href: "/cliente/perfil",       icon: <User size={18} />, label: "Mi Perfil" },
 ];
 
 const IconBell = ({ size = 18 }) => (
@@ -49,7 +49,7 @@ const IconLogout = ({ size = 16 }) => (
 // ── Dropdown de notificaciones ────────────────────────────────────────────────
 function NotifDropdown({ token}) { 
   const { theme } = useTheme();   
-  const C = getColors(theme === "dark"); // 👈 recibe C como prop
+  const C = getColors(theme === "dark");
   const [open,     setOpen]     = useState(false);
   const [notifs,   setNotifs]   = useState([]);
   const [noLeidas, setNoLeidas] = useState(0);
@@ -121,7 +121,7 @@ function NotifDropdown({ token}) {
     return `${Math.floor(diff / 86400)}d`;
   }
 
-  const TIPO_ICON = { info: "ℹ️", success: "✅", warning: "⚠️", error: "❌", pedido: "📦", pago: "💳", envio: "🚚" };
+  const TIPO_ICON = { info: <Info size={16} />, success: <CheckCircle size={16} />, warning: <AlertTriangle size={16} />, error: <XCircle size={16} />, pedido: <Package size={16} />, pago: <CreditCard size={16} />, envio: <Truck size={16} /> };
 
   return (
     <>
@@ -159,7 +159,7 @@ function NotifDropdown({ token}) {
             padding: "12px 16px", borderBottom: `2px solid ${C.accent}`, background: C.pageBg,
           }}>
             <span style={{ color: C.accent2, fontWeight: "700", fontSize: "13px", fontFamily: "Cinzel,serif" }}>
-              🔔 Notificaciones
+              <Bell size={14} /> Notificaciones
             </span>
             <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
               {noLeidas > 0 && (
@@ -174,7 +174,7 @@ function NotifDropdown({ token}) {
               <button onClick={() => setOpen(false)} style={{
                 background: "transparent", border: "none",
                 color: C.muted, cursor: "pointer", fontSize: "16px", lineHeight: 1,
-              }}>✕</button>
+              }}><X size={16} /></button>
             </div>
           </div>
 
@@ -182,7 +182,7 @@ function NotifDropdown({ token}) {
             {notifs.length === 0
               ? (
                 <div style={{ padding: "32px 16px", textAlign: "center" }}>
-                  <div style={{ fontSize: "32px", marginBottom: "8px" }}>🔕</div>
+                  <div style={{ fontSize: "32px", marginBottom: "8px" }}><BellOff size={32} /></div>
                   <div style={{ color: C.muted, fontSize: "13px" }}>Sin notificaciones</div>
                 </div>
               )
@@ -196,7 +196,7 @@ function NotifDropdown({ token}) {
                   }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px" }}>
                       <div style={{ display: "flex", gap: "8px", flex: 1, minWidth: 0 }}>
-                        <span style={{ fontSize: "16px", flexShrink: 0 }}>{TIPO_ICON[n.tipo] || "📣"}</span>
+                        <span style={{ fontSize: "16px", flexShrink: 0 }}>{TIPO_ICON[n.tipo] || <Megaphone size={16} />}</span>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "3px" }}>
                             <span style={{
@@ -249,8 +249,8 @@ function NotifDropdown({ token}) {
 export default function ClienteSidebar({ user, carritoCount = 0 }) {
   const router   = useRouter();
   const pathname = usePathname();
-  const { theme, toggleTheme } = useTheme(); // 👈 NUEVO
-  const C = getColors(theme === "dark");     // 👈 NUEVO — C ahora reacciona al tema
+  const { theme, toggleTheme } = useTheme();
+  const C = getColors(theme === "dark");
 
   const [token,     setToken]     = useState("");
   const [collapsed, setCollapsed] = useState(() => {
@@ -344,7 +344,7 @@ export default function ClienteSidebar({ user, carritoCount = 0 }) {
               fontSize: "18px",
               boxShadow: "0 4px 10px rgba(0,0,0,0.4)",
             }}>
-            ☰
+            <Menu size={18} />
           </button>
         )}
 
@@ -420,7 +420,7 @@ export default function ClienteSidebar({ user, carritoCount = 0 }) {
                   }}>{user.nombre}</div>
                   <div style={{ color: C.accent2, fontSize: "11px" }}>Cliente</div>
                 </div>
-                <NotifDropdown token={token} C={C} /> {/* 👈 pasamos C */}
+                <NotifDropdown token={token} C={C} />
               </>
             )}
           </div>
@@ -493,7 +493,6 @@ export default function ClienteSidebar({ user, carritoCount = 0 }) {
           transition: "padding 0.3s",
         }}>
 
-          {/* 👇 BOTÓN TOGGLE DE TEMA — NUEVO */}
           <button
             className="theme-btn"
             onClick={toggleTheme}
@@ -510,13 +509,13 @@ export default function ClienteSidebar({ user, carritoCount = 0 }) {
               gap: collapsed ? "0" : "8px",
               transition: "all 0.2s",
             }}>
-            <span style={{ fontSize: "16px" }}>{theme === "dark" ? "" : ""}</span>
+            <span style={{ fontSize: "16px" }}>{theme === "dark" ? <Moon size={16} /> : <Sun size={16} />}</span>
             {!collapsed && (
               <span>{theme === "dark" ? "Modo claro" : "Modo oscuro"}</span>
             )}
           </button>
 
-          {/* Cerrar sesión — igual que antes */}
+          {/* Cerrar sesión */}
           <button
             onClick={logout}
             title={collapsed ? "Cerrar Sesión" : undefined}

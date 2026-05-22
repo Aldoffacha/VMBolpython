@@ -106,8 +106,8 @@ export default function AdminPedidos() {
         body: JSON.stringify({ estado: confirm.nuevoEstado }),
       });
       const data = await res.json();
-      if (!res.ok) { showToast(`❌ ${data.detail}`); return; }
-      showToast(`✅ ${data.mensaje}`);
+      if (!res.ok) { showToast(data.detail); return; }
+      showToast(data.mensaje);
       setConfirm(null);
       fetchPedidos();
     } catch (e) { showToast("❌ Error de conexión"); }
@@ -423,7 +423,7 @@ export default function AdminPedidos() {
         <div style={s.modalOverlay} onClick={() => setConfirm(null)}>
           <div style={{ ...s.modalBox, maxWidth: 400 }} onClick={e => e.stopPropagation()}>
             <div style={s.modalHeader}>
-              <h2 style={{ ...s.modalTitle, color: "#f59e0b" }}>⚠️ Confirmar Cambio</h2>
+              <h2 style={{ ...s.modalTitle, color: "#f59e0b" }}>Confirmar Cambio</h2>
               <button onClick={() => setConfirm(null)} style={s.closeBtn}>✕</button>
             </div>
             <div style={{ ...s.modalBody, textAlign: "center", padding: 24 }}>

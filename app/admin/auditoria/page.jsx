@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { Download, BarChart3, FileText, Database, Calendar, Users, ClipboardList, X, Info, Search, Upload } from "lucide-react";
 
 
 const API = "http://localhost:8000";
@@ -113,9 +114,9 @@ export default function AdminAuditoria() {
             <p style={s.pageSubtitle}>Registro de todas las acciones realizadas</p>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-  <button onClick={() => exportar("csv")}   style={{ ...s.btnSecondary, color: "#10b981", borderColor: "rgba(16,185,129,0.4)" }}>📥 CSV</button>
-  <button onClick={() => exportar("excel")} style={{ ...s.btnSecondary, color: "#3b82f6", borderColor: "rgba(59,130,246,0.4)"  }}>📊 Excel</button>
-  <button onClick={() => exportar("pdf")}   style={{ ...s.btnSecondary, color: "#ef4444", borderColor: "rgba(239,68,68,0.4)"   }}>📄 PDF</button>
+  <button onClick={() => exportar("csv")}   style={{ ...s.btnSecondary, color: "#10b981", borderColor: "rgba(16,185,129,0.4)" }}><Download size={14} /> CSV</button>
+  <button onClick={() => exportar("excel")} style={{ ...s.btnSecondary, color: "#3b82f6", borderColor: "rgba(59,130,246,0.4)"  }}><BarChart3 size={14} /> Excel</button>
+  <button onClick={() => exportar("pdf")}   style={{ ...s.btnSecondary, color: "#ef4444", borderColor: "rgba(239,68,68,0.4)"   }}><FileText size={14} /> PDF</button>
 </div>
         </div>
 
@@ -123,10 +124,10 @@ export default function AdminAuditoria() {
         {data?.stats && (
           <div style={s.statsGrid}>
             {[
-              { icon: "🗄️", label: "Total Registros",   value: data.stats.total_registros,  color: "#9a031e" },
-              { icon: "📅", label: "Registros Hoy",     value: data.stats.registros_hoy,    color: "#10b981" },
-              { icon: "👥", label: "Usuarios Activos",  value: data.stats.usuarios_activos, color: "#3b82f6" },
-              { icon: "📋", label: "Tablas Afectadas",  value: data.stats.tablas_afectadas, color: "#f59e0b" },
+              { icon: <Database size={28} />, label: "Total Registros",   value: data.stats.total_registros,  color: "#9a031e" },
+              { icon: <Calendar size={28} />, label: "Registros Hoy",     value: data.stats.registros_hoy,    color: "#10b981" },
+              { icon: <Users size={28} />, label: "Usuarios Activos",  value: data.stats.usuarios_activos, color: "#3b82f6" },
+              { icon: <ClipboardList size={28} />, label: "Tablas Afectadas",  value: data.stats.tablas_afectadas, color: "#f59e0b" },
             ].map(st => (
               <div key={st.label} style={{ ...s.statCard, borderLeftColor: st.color }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -134,7 +135,7 @@ export default function AdminAuditoria() {
                     <p style={s.statLabel}>{st.label}</p>
                     <p style={{ ...s.statValue, color: st.color }}>{st.value}</p>
                   </div>
-                  <span style={{ fontSize: 28 }}>{st.icon}</span>
+                  <span style={{ display: "inline-flex", alignItems: "center" }}>{st.icon}</span>
                 </div>
               </div>
             ))}
@@ -244,7 +245,7 @@ export default function AdminAuditoria() {
                         <td style={s.td}>#{r.id_registro}</td>
                         <td style={{ ...s.td, fontSize: 11, color: "#a0a0a0" }}>{r.ip_address || "—"}</td>
                         <td style={s.td}>
-                          <button onClick={() => setDetalle(r)} style={s.btnInfo}>🔍</button>
+                          <button onClick={() => setDetalle(r)} style={s.btnInfo}><Search size={14} /></button>
                         </td>
                       </tr>
                     );
@@ -285,13 +286,13 @@ export default function AdminAuditoria() {
         <div style={s.modalOverlay} onClick={() => setDetalle(null)}>
           <div style={{ ...s.modalBox, maxWidth: 680 }} onClick={e => e.stopPropagation()}>
             <div style={s.modalHeader}>
-              <h2 style={s.modalTitle}>🔍 Detalle Auditoría #{detalle.id_auditoria}</h2>
-              <button onClick={() => setDetalle(null)} style={s.closeBtn}>✕</button>
+              <h2 style={s.modalTitle}><Search size={16} /> Detalle Auditoría #{detalle.id_auditoria}</h2>
+              <button onClick={() => setDetalle(null)} style={s.closeBtn}><X size={18} /></button>
             </div>
             <div style={{ ...s.modalBody, overflowY: "auto", maxHeight: "65vh" }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
                 <div style={s.infoBox}>
-                  <p style={s.infoTitle}>ℹ️ Información General</p>
+                  <p style={s.infoTitle}><Info size={16} /> Información General</p>
                   {[
                     ["ID Auditoría", `#${detalle.id_auditoria}`],
                     ["Fecha",        detalle.fecha],
@@ -308,13 +309,13 @@ export default function AdminAuditoria() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   {detalle.datos_anteriores && (
                     <div style={s.infoBox}>
-                      <p style={{ ...s.infoTitle, color: "#f59e0b" }}>📤 Datos Anteriores</p>
+                      <p style={{ ...s.infoTitle, color: "#f59e0b" }}><Upload size={16} /> Datos Anteriores</p>
                       <pre style={s.pre}>{tryParseJSON(detalle.datos_anteriores)}</pre>
                     </div>
                   )}
                   {detalle.datos_nuevos && (
                     <div style={s.infoBox}>
-                      <p style={{ ...s.infoTitle, color: "#10b981" }}>📥 Datos Nuevos</p>
+                      <p style={{ ...s.infoTitle, color: "#10b981" }}><Download size={16} /> Datos Nuevos</p>
                       <pre style={s.pre}>{tryParseJSON(detalle.datos_nuevos)}</pre>
                     </div>
                   )}

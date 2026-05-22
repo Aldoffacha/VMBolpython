@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import ClienteSidebar from "@/components/ClienteSidebar";
 import { useTheme } from "@/context/ThemeContext";
+import { Building2, Plane, ShieldCheck, CheckCircle, Zap, Check, Calendar, MapPin, Bike, X, Save, AlertTriangle, CreditCard, Package, Globe, Home, Phone, User, Pencil } from "lucide-react";
 import "@/styles/dashboard.css";
 
 const API = "http://localhost:8000";
@@ -60,10 +61,10 @@ function Row({ label, value, color, mono }) {
 }
 
 const ETAPAS = [
-  { key:"en_miami",    icon:"🏢", label:"En depósito Miami",    campo:"fecha_salida_miami"    },
-  { key:"en_transito", icon:"✈️", label:"Vuelo a Bolivia",       campo:"fecha_llegada_bolivia" },
-  { key:"en_aduanas",  icon:"🛃", label:"En aduanas bolivianas", campo:null                    },
-  { key:"entregado",   icon:"✅", label:"Entregado al cliente",  campo:"fecha_entrega_cliente" },
+  { key:"en_miami",    icon:<Building2 size={15} />, label:"En depósito Miami",    campo:"fecha_salida_miami"    },
+  { key:"en_transito", icon:<Plane size={15} />, label:"Vuelo a Bolivia",       campo:"fecha_llegada_bolivia" },
+  { key:"en_aduanas",  icon:<ShieldCheck size={15} />, label:"En aduanas bolivianas", campo:null                    },
+  { key:"entregado",   icon:<CheckCircle size={15} />, label:"Entregado al cliente",  campo:"fecha_entrega_cliente" },
 ];
 const ORDEN = ETAPAS.map(e=>e.key);
 
@@ -95,13 +96,13 @@ function Timeline({ envio }) {
               boxShadow: active ? `0 0 0 5px var(--blue-soft)` : "none",
               animation: active ? "tlPulse 1.6s ease-in-out infinite" : "none",
             }}>
-              {done ? (active ? "⚡" : "✓") : (
+              {done ? (active ? <Zap size={14} /> : <Check size={14} />) : (
                 <span style={{color:"var(--text-3)",fontFamily:"var(--font-d)",fontSize:"12px"}}>{idx+1}</span>
               )}
             </div>
             <div style={{ flex:1, paddingTop:"2px" }}>
               <div style={{ display:"flex", alignItems:"center", gap:"8px", flexWrap:"wrap" }}>
-                <span style={{ fontSize:"15px" }}>{et.icon}</span>
+                <span style={{ fontSize:"15px", display:"inline-flex", alignItems:"center" }}>{et.icon}</span>
                 <span style={{
                   fontFamily:"var(--font-c)", fontSize:"12px", letterSpacing:"1px",
                   color: done ? "var(--text)" : "var(--text-3)",
@@ -114,7 +115,7 @@ function Timeline({ envio }) {
               </div>
               <div style={{ marginTop:"3px", fontFamily:"var(--font-c)", fontSize:"10px",
                 letterSpacing:"1px", color: done ? "var(--green)" : "var(--text-3)" }}>
-                {fecha ? `📅 ${fDate(fecha)}` : (active ? "En curso…" : "Pendiente")}
+                {fecha ? <><Calendar size={12} /> {fDate(fecha)}</> : (active ? "En curso…" : "Pendiente")}
               </div>
             </div>
           </div>
@@ -145,9 +146,9 @@ function MapaLeaflet({ lat, lng, tracking, readOnly=true, onPosChange }) {
       const entregaIcon = L.divIcon({
         html:`<div style="background:#2563eb;color:#fff;border-radius:50% 50% 50% 0;
           width:34px;height:34px;display:flex;align-items:center;justify-content:center;
-          font-size:16px;transform:rotate(-45deg);border:2px solid #fff;
+          transform:rotate(-45deg);border:2px solid #fff;
           box-shadow:0 3px 8px rgba(0,0,0,0.4)">
-          <span style="transform:rotate(45deg)">📍</span></div>`,
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(45deg)"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></div>`,
         className:"", iconSize:[34,34], iconAnchor:[17,34],
       });
       if (lat && lng) {
@@ -176,7 +177,8 @@ function MapaLeaflet({ lat, lng, tracking, readOnly=true, onPosChange }) {
       const empIcon = L.divIcon({
         html:`<div style="background:#10b981;color:#fff;border-radius:50%;
           width:38px;height:38px;display:flex;align-items:center;justify-content:center;
-          font-size:20px;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.4)">🚴</div>`,
+          border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.4)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/></svg></div>`,
         className:"", iconSize:[38,38], iconAnchor:[19,19],
       });
       empRef.current = L.marker([t.latitud, t.longitud],{ icon:empIcon })
@@ -234,7 +236,7 @@ function ModalUbicacion({ pedido, token, onClose, onSaved }) {
       body:JSON.stringify({ latitud:pos.lat, longitud:pos.lng, ...form }),
     });
     const d = await r.json(); setLoad(false);
-    if (d.success) { setOk("✅ Guardado"); setTimeout(()=>{ onSaved(); onClose(); },1200); }
+    if (d.success) { setOk("Guardado"); setTimeout(()=>{ onSaved(); onClose(); },1200); }
     else alert(d.detail||"Error al guardar");
   }
 
@@ -243,9 +245,9 @@ function ModalUbicacion({ pedido, token, onClose, onSaved }) {
       <div className="m-box m-box--wide">
         <div className="m-head">
           <h3 className="m-head__title">
-            📍 {ubi ? "Editar" : "Establecer"} Ubicación
+            <MapPin size={16} /> {ubi ? "Editar" : "Establecer"} Ubicación
           </h3>
-          <button className="m-close" onClick={onClose}>✕</button>
+          <button className="m-close" onClick={onClose}><X size={18} /></button>
         </div>
         <div className="m-body">
           {ok && <div className="alert-ok">{ok}</div>}
@@ -255,14 +257,14 @@ function ModalUbicacion({ pedido, token, onClose, onSaved }) {
             fontFamily:"var(--font-c)", fontSize:"11px", letterSpacing:"1.5px",
             color:"var(--blue-bright)", textTransform:"uppercase",
           }}>
-            🗺️ Haz clic en el mapa para colocar el pin de entrega
+            Haz clic en el mapa para colocar el pin de entrega
           </div>
           <div style={{marginBottom:"16px"}}>
             <MapaLeaflet lat={pos.lat} lng={pos.lng} readOnly={false} onPosChange={handlePos}/>
             {pos.lat && (
               <div style={{color:"var(--text-3)",fontSize:"11px",marginTop:"4px",textAlign:"right",
                 fontFamily:"var(--font-c)",letterSpacing:"1px"}}>
-                📌 {pos.lat.toFixed(6)}, {pos.lng.toFixed(6)}
+                Coordenadas: {pos.lat.toFixed(6)}, {pos.lng.toFixed(6)}
               </div>
             )}
           </div>
@@ -294,7 +296,7 @@ function ModalUbicacion({ pedido, token, onClose, onSaved }) {
         <div className="m-foot">
           <button className="btn btn-out" onClick={onClose}>Cancelar</button>
           <button className="btn btn-pri" onClick={guardar} disabled={load} style={{opacity:load?.7:1}}>
-            {load?"Guardando…":"💾 Guardar Ubicación"}
+            {load?"Guardando…":<><Save size={14} /> Guardar Ubicación</>}
           </button>
         </div>
       </div>
@@ -352,7 +354,7 @@ export default function DetallePedido() {
       method:"POST", headers:{ Authorization:`Bearer ${token}` }});
     const d = await r.json();
     d.success
-      ? (showToast("✅ Pedido confirmado"), cargar(token,idPed))
+      ? (showToast("Pedido confirmado"), cargar(token,idPed))
       : showToast(d.detail||"Error", false);
   }
 
@@ -620,7 +622,7 @@ export default function DetallePedido() {
             </div>
             <div className="det-hero__right">
               <div className="det-hero__total">{fmt(total)}</div>
-              <div className="det-hero__date">📅 {fDate(fecha)}</div>
+              <div className="det-hero__date"><Calendar size={14} /> {fDate(fecha)}</div>
             </div>
           </div>
         </header>
@@ -628,7 +630,7 @@ export default function DetallePedido() {
         {/* Rider banner */}
         {enCamino && (
           <div className="det-rider" style={{marginTop:"24px"}}>
-            <span className="det-rider__icon">🚴</span>
+            <span className="det-rider__icon"><Bike size={26} /></span>
             <div>
               <div className="det-rider__title">¡Tu pedido está en camino!</div>
               <div className="det-rider__sub">
@@ -642,33 +644,33 @@ export default function DetallePedido() {
         {!estaPagado && (
           <div className="det-alert-bar det-alert-bar--red" style={{marginTop:"24px"}}>
             <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
-              <span>⚠️</span> Este pedido requiere pago para continuar
+              <span><AlertTriangle size={14} /></span> Este pedido requiere pago para continuar
             </div>
             <button className="btn btn-pri" style={{background:"var(--red)",padding:"8px 18px",fontSize:"10px"}}
               onClick={()=>router.push("/cliente/carrito")}>
-              💳 Ir a pagar
+              <CreditCard size={14} /> Ir a pagar
             </button>
           </div>
         )}
         {puedeEditar && !tieneUbic && (
           <div className="det-alert-bar det-alert-bar--amber" style={{marginTop: !estaPagado ? "10px" : "24px"}}>
             <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
-              <span>📍</span> ¡Pedido pagado! Establece tu ubicación de entrega
+              <span><MapPin size={14} /></span> ¡Pedido pagado! Establece tu ubicación de entrega
             </div>
             <button className="btn btn-pri" style={{padding:"8px 18px",fontSize:"10px"}}
               onClick={()=>setMUbi(true)}>
-              📍 Establecer Ubicación
+              <MapPin size={14} /> Establecer Ubicación
             </button>
           </div>
         )}
         {puedeConf && (
           <div className="det-alert-bar det-alert-bar--green" style={{marginTop: "10px"}}>
             <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
-              <span>📦</span> ¿Ya recibiste tu pedido?
+              <span><Package size={14} /></span> ¿Ya recibiste tu pedido?
             </div>
             <button className="btn btn-pri" style={{background:"var(--green)",padding:"8px 18px",fontSize:"10px"}}
               onClick={marcarEntregado}>
-              ✅ Confirmar Recepción
+              <CheckCircle size={14} /> Confirmar Recepción
             </button>
           </div>
         )}
@@ -692,13 +694,13 @@ export default function DetallePedido() {
                     {d.imagen_url
                       ? <img src={d.imagen_url} alt={d.nombre} className="det-prod-img"
                           onError={e=>{e.target.style.display="none";}}/>
-                      : <div className="det-prod-img" style={{display:"flex",alignItems:"center",justifyContent:"center",fontSize:"22px"}}>📦</div>
+                      : <div className="det-prod-img" style={{display:"flex",alignItems:"center",justifyContent:"center"}}><Package size={22} /></div>
                     }
                   </div>
                   <div style={{flex:1,minWidth:0}}>
                     <div className="det-prod-name">{d.nombre||"Producto externo"}</div>
                     <div className="det-prod-meta">
-                      {d.tipo_producto==="externo" ? "🌐 Importado" : "🏠 Local"} · ×{d.cantidad}
+                      {d.tipo_producto==="externo" ? <><Globe size={12} /> Importado</> : <><Home size={12} /> Local</>} · ×{d.cantidad}
                     </div>
                   </div>
                   <div style={{textAlign:"right",flexShrink:0}}>
@@ -733,18 +735,18 @@ export default function DetallePedido() {
                       padding:"8px 12px",marginTop:"8px",
                       fontFamily:"var(--font-c)",fontSize:"11px",color:"var(--text-3)",
                       border:"1px solid var(--border-blue)",letterSpacing:"0.5px"}}>
-                      📝 {envio.observaciones}
+                      {envio.observaciones}
                     </div>
                   )}
                 </div>
               )}
               {envio?.nombre_deposito && (
                 <div className="det-deposito">
-                  <div className="det-deposito__title">🏢 Depósito Miami</div>
+                  <div className="det-deposito__title"><Building2 size={16} /> Depósito Miami</div>
                   <div className="det-deposito__name">{envio.nombre_deposito}</div>
                   <div className="det-deposito__meta">{envio.dir_deposito}</div>
-                  {envio.tel_deposito && <div className="det-deposito__meta">📞 {envio.tel_deposito}</div>}
-                  {envio.contacto_deposito && <div className="det-deposito__meta">👤 {envio.contacto_deposito}</div>}
+                  {envio.tel_deposito && <div className="det-deposito__meta"><Phone size={12} /> {envio.tel_deposito}</div>}
+                  {envio.contacto_deposito && <div className="det-deposito__meta"><User size={12} /> {envio.contacto_deposito}</div>}
                 </div>
               )}
             </div>
@@ -757,7 +759,7 @@ export default function DetallePedido() {
                 {enCamino ? "Seguimiento Live" : "Mapa de Entrega"}
               </h3>
               {puedeEditar && tieneUbic && (
-                <button className="det-edit-btn" onClick={()=>setMUbi(true)}>✏️ Editar</button>
+                <button className="det-edit-btn" onClick={()=>setMUbi(true)}><Pencil size={12} /> Editar</button>
               )}
             </div>
             <div className="det-card__body">
@@ -766,7 +768,7 @@ export default function DetallePedido() {
                     tracking={tracking} readOnly={true}/>
                 : (
                   <div className="det-map-empty">
-                    <span className="det-map-empty__ico">📍</span>
+                    <span className="det-map-empty__ico"><MapPin size={36} /></span>
                     <div style={{fontFamily:"var(--font-c)",fontSize:"11px",letterSpacing:"2px",
                       color:"var(--text-3)",textTransform:"uppercase",textAlign:"center"}}>
                       {estaPagado
@@ -801,7 +803,7 @@ export default function DetallePedido() {
               }
 
               <div className="det-pay-section">
-                <div className="det-pay-title">💳 Información de Pago</div>
+                <div className="det-pay-title">Información de Pago</div>
                 <Row label="Estado" value={(estado_pago||"").replace(/_/g," ").toUpperCase()}
                   color={estaPagado ? "var(--green)" : "var(--red)"}/>
                 {pedido.metodo     && <Row label="Método"     value={pedido.metodo}/>}
@@ -813,10 +815,10 @@ export default function DetallePedido() {
                 <div className="det-contact">
                   <a href="https://wa.me/59177712345" target="_blank" rel="noreferrer"
                     className="btn btn-pri" style={{background:"#25d366",padding:"10px 18px",fontSize:"10px",textDecoration:"none"}}>
-                    💬 WhatsApp
+                    WhatsApp
                   </a>
                   <a href="tel:+59177712345" className="btn btn-out" style={{fontSize:"10px",textDecoration:"none"}}>
-                    📞 Llamar
+                    Llamar
                   </a>
                 </div>
               </div>
@@ -829,7 +831,7 @@ export default function DetallePedido() {
       {mUbi && (
         <ModalUbicacion pedido={pedido} token={token}
           onClose={()=>setMUbi(false)}
-          onSaved={()=>{ cargar(token,idPed); showToast("✅ Ubicación actualizada"); }}/>
+          onSaved={()=>{ cargar(token,idPed); showToast("Ubicación actualizada"); }}/>
       )}
     </div>
   );

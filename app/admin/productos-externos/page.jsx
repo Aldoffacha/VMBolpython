@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { ShoppingBag, Plus, Pencil, Trash2, Package, ShoppingCart, X, Save, Star, AlertTriangle, Link, Smartphone, Gamepad2, Headphones, Laptop, Camera, Shirt, Home, CookingPot, Bed, Image, Dumbbell, Tent, Gift, Book, Footprints, Circle } from "lucide-react";
 
 
 const API = "http://localhost:8000";
@@ -86,8 +87,8 @@ function detectPlat(url = "") {
 
 function PlatBadge({ plat }) {
   const m = {
-    amazon:{ bg:"rgba(245,158,11,0.15)", color:C.warning, txt:"📦 Amazon" },
-    ebay:  { bg:"rgba(59,130,246,0.15)",  color:C.info,    txt:"🛒 eBay"   },
+    amazon:{ bg:"rgba(245,158,11,0.15)", color:C.warning, txt:<> <Package size={12} /> Amazon</> },
+    ebay:  { bg:"rgba(59,130,246,0.15)",  color:C.info,    txt:<> <ShoppingCart size={12} /> eBay</>   },
   };
   const p = m[plat] || m.amazon;
   return (
@@ -156,7 +157,7 @@ function ModalForm({ inicial, onClose, onSaved, token }) {
     const d = await r.json();
     setLoad(false);
     if (r.ok && (d.success !== false)) {
-      onSaved(esEdicion ? "✅ Producto actualizado" : "✅ Producto agregado");
+      onSaved(esEdicion ? "Producto actualizado" : "Producto agregado");
     } else {
       alert(d.detail || d.message || "Error al guardar");
     }
@@ -166,8 +167,8 @@ function ModalForm({ inicial, onClose, onSaved, token }) {
     <div style={ov}>
       <div style={mBox}>
         <div style={mHd}>
-          <h3 style={mTit}>{esEdicion ? "✏️ Editar Producto Externo" : "➕ Agregar Producto Externo"}</h3>
-          <button onClick={onClose} style={btnX}>✕</button>
+          <h3 style={mTit}>{esEdicion ? <> <Pencil size={16} /> Editar Producto Externo</> : <> <Plus size={16} /> Agregar Producto Externo</>}</h3>
+          <button onClick={onClose} style={btnX}><X size={18} /></button>
         </div>
         <div style={mBd}>
 
@@ -248,14 +249,14 @@ function ModalForm({ inicial, onClose, onSaved, token }) {
               onChange={e=>set("destacado", e.target.checked)}
               style={{ accentColor:C.accent, width:16, height:16, cursor:"pointer" }} />
             <label htmlFor="destacado" style={{ color:C.text, fontSize:13, cursor:"pointer" }}>
-              ⭐ Mostrar como destacado en el dashboard del cliente
+              <Star size={14} /> Mostrar como destacado en el dashboard del cliente
             </label>
           </div>
         </div>
         <div style={mFt}>
           <button onClick={onClose} style={btnS}>Cancelar</button>
           <button onClick={guardar} disabled={load} style={{ ...btnP, opacity:load?0.7:1 }}>
-            {load ? "Guardando..." : (esEdicion ? "💾 Actualizar" : "💾 Guardar")}
+            {load ? "Guardando..." : (esEdicion ? <> <Save size={14} /> Actualizar</> : <> <Save size={14} /> Guardar</>)}
           </button>
         </div>
       </div>
@@ -269,11 +270,11 @@ function ModalConfirm({ prod, onClose, onConfirm, load }) {
     <div style={ov}>
       <div style={{ ...mBox, maxWidth:400 }}>
         <div style={mHd}>
-          <h3 style={{ ...mTit, color:C.danger }}>🗑️ Eliminar Producto</h3>
-          <button onClick={onClose} style={btnX}>✕</button>
+          <h3 style={{ ...mTit, color:C.danger }}><Trash2 size={16} /> Eliminar</h3>
+          <button onClick={onClose} style={btnX}><X size={18} /></button>
         </div>
         <div style={{ ...mBd, textAlign:"center", padding:"28px 20px" }}>
-          <div style={{ fontSize:36, marginBottom:12 }}>⚠️</div>
+          <div style={{ marginBottom:12 }}><AlertTriangle size={36} /></div>
           <p style={{ color:C.text, fontSize:14, lineHeight:1.6 }}>
             ¿Eliminar <strong style={{ color:C.accent2 }}>{prod?.nombre}</strong>?<br />
             <span style={{ color:C.muted, fontSize:12 }}>Esta acción no se puede deshacer.</span>
@@ -343,7 +344,7 @@ export default function AdminProductosExternos() {
       });
       const d = await r.json();
       if (r.ok && d.success !== false) {
-        showToast("🗑️ Producto eliminado");
+        showToast("Producto eliminado");
         setMElim(null);
         fetchProds();
       } else {
@@ -362,12 +363,12 @@ export default function AdminProductosExternos() {
 
   // Mapa extendido de íconos para todas las categorías
   const CAT_ICONS = {
-    electronico:"📱", gaming:"🎮", audio:"🎧", celulares:"📲",
-    computadoras:"💻", fotografia:"📷",
-    ropa:"👕", ropa_hombre:"👔", ropa_mujer:"👗", calzado:"👟", accesorios:"👜",
-    hogar:"🏠", cocina:"🍳", dormitorio:"🛏️", decoracion:"🖼️",
-    deportes:"⚽", fitness:"🏋️", futbol:"⚽", outdoor:"🏕️",
-    otros:"📦", juguetes:"🧸", libros:"📚",
+    electronico:<Smartphone size={14} />, gaming:<Gamepad2 size={14} />, audio:<Headphones size={14} />, celulares:<Smartphone size={14} />,
+    computadoras:<Laptop size={14} />, fotografia:<Camera size={14} />,
+    ropa:<Shirt size={14} />, ropa_hombre:<Shirt size={14} />, ropa_mujer:<Shirt size={14} />, calzado:<Footprints size={14} />, accesorios:<ShoppingBag size={14} />,
+    hogar:<Home size={14} />, cocina:<CookingPot size={14} />, dormitorio:<Bed size={14} />, decoracion:<Image size={14} />,
+    deportes:<Circle size={14} />, fitness:<Dumbbell size={14} />, futbol:<Circle size={14} />, outdoor:<Tent size={14} />,
+    otros:<Package size={14} />, juguetes:<Gift size={14} />, libros:<Book size={14} />,
   };
 
   return (
@@ -386,14 +387,14 @@ export default function AdminProductosExternos() {
           flexWrap:"wrap", gap:12 }}>
           <div>
             <h1 style={{ color:C.accent2, fontSize:26, fontWeight:700, margin:0 }}>
-              🛍️ Productos Externos
+              <ShoppingBag size={20} /> Productos Externos
             </h1>
             <p style={{ color:C.muted, fontSize:13, margin:"4px 0 0" }}>
               Amazon & eBay — {prods.length} producto{prods.length !== 1 ? "s" : ""} registrado{prods.length !== 1 ? "s" : ""}
             </p>
           </div>
           <button onClick={() => setMAgregar(true)} style={btnP}>
-            ➕ Agregar Producto Externo
+            <Plus size={16} /> Agregar Producto Externo
           </button>
         </div>
 
@@ -422,7 +423,7 @@ export default function AdminProductosExternos() {
                   {prods.length === 0 ? (
                     <tr>
                       <td colSpan={8} style={{ padding:50, textAlign:"center", color:C.muted }}>
-                        <div style={{ fontSize:36, marginBottom:10 }}>📭</div>
+                        <div style={{ marginBottom:10 }}><Package size={36} /></div>
                         No hay productos externos registrados.<br />
                         <button onClick={() => setMAgregar(true)}
                           style={{ ...btnP, marginTop:14, fontSize:12 }}>
@@ -453,7 +454,7 @@ export default function AdminProductosExternos() {
                             {p.enlace && (
                               <a href={p.enlace} target="_blank" rel="noreferrer"
                                 style={{ color:C.info, fontSize:10, textDecoration:"none" }}>
-                                🔗 Ver original
+                                <Link size={12} /> Ver original
                               </a>
                             )}
                           </div>
@@ -467,7 +468,7 @@ export default function AdminProductosExternos() {
 
                       {/* Categoría */}
                       <td style={{ padding:"10px 14px", color:C.text }}>
-                        {CAT_ICONS[p.categoria] || "📦"} {p.categoria ? p.categoria.charAt(0).toUpperCase() + p.categoria.slice(1).replace("_", " ") : "—"}
+                        {CAT_ICONS[p.categoria] || <Package size={14} />} {p.categoria ? p.categoria.charAt(0).toUpperCase() + p.categoria.slice(1).replace("_", " ") : "—"}
                       </td>
 
                       {/* Precio */}
@@ -483,7 +484,7 @@ export default function AdminProductosExternos() {
                       {/* Destacado */}
                       <td style={{ padding:"10px 14px" }}>
                         {p.destacado
-                          ? <span style={{ color:C.warning, fontSize:14 }}>⭐</span>
+                          ? <span style={{ color:C.warning }}><Star size={14} /></span>
                           : <span style={{ color:"#444", fontSize:12 }}>—</span>}
                       </td>
 
@@ -505,12 +506,12 @@ export default function AdminProductosExternos() {
                             style={{ padding:"5px 10px", background:"rgba(59,130,246,0.12)",
                               border:"1px solid rgba(59,130,246,0.3)", borderRadius:6,
                               color:C.info, cursor:"pointer", fontSize:13 }}
-                            title="Editar">✏️</button>
+                            title="Editar"><Pencil size={14} /></button>
                           <button onClick={() => setMElim(p)}
                             style={{ padding:"5px 10px", background:"rgba(239,68,68,0.12)",
                               border:"1px solid rgba(239,68,68,0.3)", borderRadius:6,
                               color:C.danger, cursor:"pointer", fontSize:13 }}
-                            title="Eliminar">🗑️</button>
+                            title="Eliminar"><Trash2 size={14} /></button>
                         </div>
                       </td>
                     </tr>

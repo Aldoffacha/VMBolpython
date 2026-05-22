@@ -610,9 +610,9 @@ export default function LoginPage() {
           </form>
 
           <div className="lp-footer">
-            <a href="/registro">
-              ¿No tienes cuenta? <strong>Regístrate aquí</strong>
-            </a>
+            <span style={{ color: "var(--text-muted)", fontSize: "clamp(12px, 2.8vw, 13px)" }}>
+              Sistema de Importación VMBol en Red
+            </span>
           </div>
         </div>
       </div>
