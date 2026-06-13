@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ShoppingBag, Plus, Pencil, Trash2, Package, ShoppingCart, X, Save, Star, AlertTriangle, Link, Smartphone, Gamepad2, Headphones, Laptop, Camera, Shirt, Home, CookingPot, Bed, Image, Dumbbell, Tent, Gift, Book, Footprints, Circle } from "lucide-react";
+import { useAdminCurrency } from "@/lib/AdminCurrencyContext";
 
 
 const API = "http://localhost:8000";
@@ -304,6 +305,7 @@ export default function AdminProductosExternos() {
   const [elimLoad, setElimLoad] = useState(false);
   const [toast,    setToast]    = useState("");
   const [token,    setToken]    = useState("");
+  const { formatPrice } = useAdminCurrency();
 
   useEffect(() => {
     const stored = sessionStorage.getItem("user");
@@ -473,7 +475,7 @@ export default function AdminProductosExternos() {
 
                       {/* Precio */}
                       <td style={{ padding:"10px 14px", fontWeight:700, color:C.success }}>
-                        ${parseFloat(p.precio||0).toFixed(2)}
+                        {formatPrice(p.precio)}
                       </td>
 
                       {/* Peso */}

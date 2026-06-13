@@ -2,13 +2,14 @@ from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 import json, os, shutil, uuid
 
 from app.database import get_db
 from app.models.user import Configuracion, DepositoMiami, TiendaUSA, Auditoria
 from app.utils.dependencies import require_role
+from app.services.tipo_cambio import fetch_tipo_cambio
 
 router = APIRouter(prefix="/admin/configuracion", tags=["admin-configuracion"])
 
@@ -64,6 +65,8 @@ def get_configuracion(
             "email_contacto":    config.email_contacto,
             "telefono_contacto": config.telefono_contacto,
             "moneda":            config.moneda,
+            "tipo_cambio":       config.tipo_cambio or 9.17,
+            "tipo_cambio_actualizacion": config.tipo_cambio_actualizacion.isoformat() if config.tipo_cambio_actualizacion else None,
             "qr_filename":       config.qr_filename or "",
         },
         "depositos": [
@@ -98,6 +101,7 @@ def guardar_general(
     email_contacto:    str = Form(...),
     telefono_contacto: str = Form(...),
     moneda:            str = Form(...),
+    tipo_cambio:       Optional[float] = Form(None),
     db: Session = Depends(get_db),
     current_user: dict = Depends(require_role("administrador"))
 ):
@@ -116,6 +120,8 @@ def guardar_general(
     config.email_contacto    = email_contacto
     config.telefono_contacto = telefono_contacto
     config.moneda            = moneda
+    if tipo_cambio is not None:
+        config.tipo_cambio = tipo_cambio
     
     db.commit()
 
@@ -289,3 +295,32 @@ def eliminar_tienda(
         id_usuario=current_user.get("id") or 0
     )
     return {"ok": True, "mensaje": "Tienda eliminada"}
+# ─────────────────────────────────────────────
+#  POST - Actualizar tipo de cambio desde API externa
+# ─────────────────────────────────────────────
+
+@router.post("/actualizar-tipo-cambio")
+def actualizar_tipo_cambio(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(require_role("administrador"))
+):
+    rate = fetch_tipo_cambio()
+    if rate is None:
+        return JSONResponse(
+            status_code=502,
+            content={"ok": False, "mensaje": "No se pudo obtener el tipo de cambio desde la API externa"}
+        )
+
+    config = db.query(Configuracion).filter(Configuracion.id == 1).first()
+    if not config:
+        raise HTTPException(404, "Configuración no encontrada")
+
+    config.tipo_cambio = rate
+    config.tipo_cambio_actualizacion = datetime.now(timezone.utc)
+    db.commit()
+
+    return {
+        "ok": True,
+        "tipo_cambio": rate,
+        "mensaje": f"Tipo de cambio actualizado a {rate} BOB/USD"
+    }

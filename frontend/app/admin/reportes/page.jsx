@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useAdminCurrency } from "@/lib/AdminCurrencyContext";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { Printer, Download, ChevronUp, ChevronDown, FileText, BarChart3 } from "lucide-react";
 
@@ -33,6 +34,7 @@ export default function AdminReportes() {
     cliente_id:   "",
   });
   const [tablaVista, setTablaVista] = useState(false);
+  const { formatPrice } = useAdminCurrency();
 
   useEffect(() => {
     const stored = sessionStorage.getItem("user");
@@ -167,10 +169,10 @@ export default function AdminReportes() {
             {/* STATS */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>
               {[
-                { icon: "", label: "Ventas Totales",   value: `$${data.stats.total_ventas.toLocaleString("en", { minimumFractionDigits: 2 })}`, color: "#9a031e",  sub: "Período seleccionado" },
+                { icon: "", label: "Ventas Totales",   value: formatPrice(data.stats.total_ventas), color: "#9a031e",  sub: "Período seleccionado" },
                 { icon: "", label: "Pedidos Activos",  value: data.stats.total_pedidos,     color: "#10b981", sub: "Excluye cancelados" },
                 { icon: "", label: "Clientes Nuevos",  value: data.stats.clientes_nuevos,   color: "#3b82f6", sub: "En el período" },
-                { icon: "", label: "Ticket Promedio",  value: `$${data.stats.ticket_promedio.toFixed(2)}`, color: "#f59e0b", sub: "Por pedido" },
+                { icon: "", label: "Ticket Promedio",  value: formatPrice(data.stats.ticket_promedio), color: "#f59e0b", sub: "Por pedido" },
               ].map(st => (
                 <div key={st.label} style={{ ...s.statCard, borderLeftColor: st.color }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -286,7 +288,7 @@ export default function AdminReportes() {
                       <tr key={i} style={{ background: i % 2 === 0 ? "rgba(154,3,30,0.04)" : "transparent" }}>
                         <td style={s.td}>{p.nombre}</td>
                         <td style={s.td}>{p.cantidad} unidades</td>
-                        <td style={{ ...s.td, fontWeight: 700, color: "#10b981" }}>${p.total.toFixed(2)}</td>
+                        <td style={{ ...s.td, fontWeight: 700, color: "#10b981" }}>{formatPrice(p.total)}</td>
                         <td style={s.td}>
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                             <div style={{ flex: 1, height: 6, background: "rgba(154,3,30,0.15)", borderRadius: 3 }}>
@@ -328,8 +330,8 @@ export default function AdminReportes() {
                           <td style={s.td}>{v.cliente}</td>
                           <td style={s.td}>{v.producto}</td>
                           <td style={s.td}>{v.cantidad}</td>
-                          <td style={s.td}>${v.precio.toFixed(2)}</td>
-                          <td style={{ ...s.td, fontWeight: 700, color: "#10b981" }}>${v.total_linea.toFixed(2)}</td>
+                          <td style={s.td}>{formatPrice(v.precio)}</td>
+                          <td style={{ ...s.td, fontWeight: 700, color: "#10b981" }}>{formatPrice(v.total_linea)}</td>
                           <td style={s.td}><span style={{ ...s.badge, background: "rgba(154,3,30,0.1)", color: "#c1121f", border: "1px solid rgba(154,3,30,0.2)" }}>{v.estado}</span></td>
                         </tr>
                       ))}

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useAdminCurrency } from "@/lib/AdminCurrencyContext";
 
 
 const API = "http://localhost:8000";
@@ -47,6 +48,7 @@ const POR_PAGINA = 15;
 
 export default function AdminPedidos() {
   const router = useRouter();
+  const { formatPrice } = useAdminCurrency();
   const [pedidos, setPedidos] = useState([]);
   const [contadores, setContadores] = useState({ total: 0, pendiente: 0, pagado: 0, enviado: 0, cancelado: 0 });
   const [filtro, setFiltro] = useState("todos");
@@ -234,7 +236,7 @@ export default function AdminPedidos() {
                             <div style={{ fontWeight: 600 }}>{p.cliente_nombre}</div>
                             <div style={{ color: "#a0a0a0", fontSize: 12 }}>{p.cliente_email}</div>
                           </td>
-                          <td style={{ ...s.td, fontWeight: 700, color: "#10b981" }}>${p.total.toFixed(2)}</td>
+                          <td style={{ ...s.td, fontWeight: 700, color: "#10b981" }}>{formatPrice(p.total)}</td>
                           <td style={s.td}>
                             <span style={{ ...s.badge, background: est.bg, color: est.color, border: `1px solid ${est.border}` }}>
                               {est.label}
@@ -329,7 +331,7 @@ export default function AdminPedidos() {
                       <p style={s.infoRow}>
                         <b>Total:</b>{" "}
                         <span style={{ color: "#10b981", fontWeight: 700 }}>
-                          ${detalle.pedido.total.toFixed(2)}
+                          {formatPrice(detalle.pedido.total)}
                         </span>
                       </p>
                     </div>
@@ -390,9 +392,9 @@ export default function AdminPedidos() {
                             </td>
 
                             <td style={s.td}>{prod.cantidad}</td>
-                            <td style={s.td}>${parseFloat(prod.precio_unit || 0).toFixed(2)}</td>
+                            <td style={s.td}>{formatPrice(prod.precio_unit)}</td>
                             <td style={{ ...s.td, fontWeight: 700, color: "#10b981" }}>
-                              ${parseFloat(prod.subtotal || 0).toFixed(2)}
+                              {formatPrice(prod.subtotal)}
                             </td>
                           </tr>
                         );
@@ -402,7 +404,7 @@ export default function AdminPedidos() {
                       <tr>
                         <td colSpan={4} style={{ ...s.td, textAlign: "right", fontWeight: 700 }}>Total:</td>
                         <td style={{ ...s.td, fontWeight: 700, color: "#10b981", fontSize: 16 }}>
-                          ${detalle.pedido.total.toFixed(2)}
+                          {formatPrice(detalle.pedido.total)}
                         </td>
                       </tr>
                     </tbody>

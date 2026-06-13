@@ -4,8 +4,9 @@ import { useRouter } from "next/navigation";
 import ClienteSidebar from "@/components/ClienteSidebar";
 import "@/styles/dashboard.css";
 import "@/styles/perfil.css";
-import { X, AlertTriangle, Check } from "lucide-react";
+import { X, AlertTriangle, Check, DollarSign } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
+import { getClienteMoneda, setClienteMoneda, formatPriceCliente } from "@/lib/clienteMoneda";
 
 const API = "http://localhost:8000";
 
@@ -102,6 +103,25 @@ export default function ClientePerfil() {
   const [passMatch, setPassMatch] = useState(null);
   const [previewFoto, setPreviewFoto] = useState(null);
   const fileRef = useRef(null);
+
+  const [moneda, setMoneda] = useState("USD");
+  const [tipoCambio, setTipoCambio] = useState(9.17);
+
+  useEffect(() => {
+    setMoneda(getClienteMoneda());
+    fetch(`${API}/cliente/dashboard`, {
+      headers: { Authorization: `Bearer ${document.cookie.split(";").find(c => c.trim().startsWith("access_token="))?.split("=")[1] }` },
+    })
+      .then(r => r.json())
+      .then(d => { if (d?.tipo_cambio) setTipoCambio(d.tipo_cambio); })
+      .catch(() => {});
+  }, []);
+
+  const toggleMoneda = () => {
+    const next = moneda === "USD" ? "BOB" : "USD";
+    setMoneda(next);
+    setClienteMoneda(next);
+  };
 
   /* ── Cargar datos ──────────────────────────────────────────────────────── */
   useEffect(() => {
@@ -398,6 +418,29 @@ export default function ClientePerfil() {
                   <span className="prf-info-row__k">Desde</span>
                   <span className="prf-info-row__v">{miembro}</span>
                 </div>
+              </div>
+            </Card>
+
+            {/* Moneda preferida */}
+            <Card title="Moneda" icon={<DollarSign size={18} />}>
+              <div>
+                <div className="prf-info-row">
+                  <span className="prf-info-row__k">Ver precios en</span>
+                  <span className="prf-info-row__v">{moneda === "USD" ? "Dólares ($)" : "Bolivianos (Bs)"}</span>
+                </div>
+                <p className="prf-field__hint" style={{ margin: "8px 0 12px" }}>
+                  {moneda === "BOB" && (
+                    <>Tipo de cambio: {tipoCambio} Bs/$ · </>
+                  )}
+                  Solo afecta la vista, no los cálculos
+                </p>
+                <button
+                  className="btn btn-out prf-btn-full"
+                  onClick={toggleMoneda}
+                >
+                  <DollarSign size={16} style={{ marginRight: 6 }} />
+                  {moneda === "USD" ? "Mostrar en Bolivianos" : "Mostrar en Dólares"}
+                </button>
               </div>
             </Card>
 

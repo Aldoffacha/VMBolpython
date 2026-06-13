@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAdminCurrency } from "@/lib/AdminCurrencyContext";
 import { Users, DollarSign, ShoppingCart, Package, ClipboardList, TrendingUp, Zap, ShoppingBag, X } from "lucide-react";
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -28,6 +29,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null);
   const [user, setUser] = useState(null);
+  const { formatPrice } = useAdminCurrency();
 
   useEffect(() => {
     const stored = sessionStorage.getItem("user");
@@ -93,7 +95,7 @@ export default function AdminDashboard() {
           <StatCard icon={<Users size={28} />} label="Clientes Activos" value={stats.clientes}
             sub="Click para ver últimos 5" accent="#9a031e"
             onClick={() => setModal("clientes")} />
-          <StatCard icon={<DollarSign size={28} />} label="Ventas del Mes" value={`$${stats.ventas_mes.toLocaleString("en", { minimumFractionDigits: 2 })}`}
+          <StatCard icon={<DollarSign size={28} />} label="Ventas del Mes" value={formatPrice(stats.ventas_mes)}
             sub={`${stats.crecimiento >= 0 ? "↑" : "↓"} ${Math.abs(stats.crecimiento)}% vs mes anterior`}
             subColor={stats.crecimiento >= 0 ? "#10b981" : "#ef4444"}
             accent="#10b981" onClick={() => setModal("ventas")} />
@@ -126,7 +128,7 @@ export default function AdminDashboard() {
                       <tr key={p.id_pedido} style={{ background: i % 2 === 0 ? "rgba(154,3,30,0.04)" : "transparent" }}>
                         <td style={styles.td}>#{p.id_pedido}</td>
                         <td style={styles.td}>{p.cliente}</td>
-                        <td style={styles.td}>${p.total.toFixed(2)}</td>
+                        <td style={styles.td}>{formatPrice(p.total)}</td>
                         <td style={styles.td}>
                           <span style={{ ...styles.badge, background: ESTADO_BADGE[p.estado]?.color + "25", color: ESTADO_BADGE[p.estado]?.color, border: `1px solid ${ESTADO_BADGE[p.estado]?.color}` }}>
                             {ESTADO_BADGE[p.estado]?.label}
@@ -193,7 +195,7 @@ export default function AdminDashboard() {
               </div>
               <div style={styles.quickGrid}>
                 {[
-                  { icon: <DollarSign size={28} />, label: "Ventas Mes",     value: `$${stats.ventas_mes.toFixed(0)}`, color: "#10b981" },
+                  { icon: <DollarSign size={28} />, label: "Ventas Mes",     value: formatPrice(stats.ventas_mes), color: "#10b981" },
                   { icon: <ShoppingCart size={28} />, label: "Total Pedidos",  value: stats.pedidos,                      color: "#3b82f6" },
                   { icon: <Users size={28} />, label: "Clientes",       value: stats.clientes,                     color: "#9a031e" },
                   { icon: <Package size={28} />, label: "Productos",      value: stats.productos,                    color: "#f59e0b" },
@@ -232,7 +234,7 @@ export default function AdminDashboard() {
                       <td style={styles.td}>{p.categoria}</td>
                       <td style={{ ...styles.td, color: "#10b981", fontWeight: 700 }}>{p.total_vendido}</td>
                       <td style={{ ...styles.td, color: p.stock <= 5 ? "#ef4444" : "#d9d9d9", fontWeight: p.stock <= 5 ? 700 : 400 }}>{p.stock}</td>
-                      <td style={styles.td}>${p.precio.toFixed(2)}</td>
+                      <td style={styles.td}>{formatPrice(p.precio)}</td>
                     </tr>
                   ))}
                   {productos_mas_vendidos.length === 0 && (
@@ -263,8 +265,8 @@ export default function AdminDashboard() {
               {modal === "ventas" && (
                 <div style={styles.modalCards}>
                   {[
-                    { label: "Total Mes",   value: `$${stats.ventas_mes.toFixed(2)}`,        color: "#9a031e" },
-                    { label: "Mes Anterior",value: `$${stats.ventas_mes_anterior?.toFixed(2) ?? "0.00"}`, color: "#3b82f6" },
+                    { label: "Total Mes",   value: formatPrice(stats.ventas_mes),        color: "#9a031e" },
+                    { label: "Mes Anterior",value: formatPrice(stats.ventas_mes_anterior ?? 0), color: "#3b82f6" },
                     { label: "Crecimiento", value: `${stats.crecimiento}%`, color: stats.crecimiento >= 0 ? "#10b981" : "#ef4444" },
                   ].map(c => (
                     <div key={c.label} style={{ ...styles.modalCard, borderColor: c.color }}>
@@ -315,7 +317,7 @@ export default function AdminDashboard() {
                       <tr key={p.id_pedido} style={{ background: i % 2 === 0 ? "rgba(154,3,30,0.04)" : "transparent" }}>
                         <td style={styles.td}>#{p.id_pedido}</td>
                         <td style={styles.td}>{p.cliente}</td>
-                        <td style={styles.td}>${p.total.toFixed(2)}</td>
+                        <td style={styles.td}>{formatPrice(p.total)}</td>
                         <td style={styles.td}><span style={{ ...styles.badge, background: ESTADO_BADGE[p.estado]?.color + "25", color: ESTADO_BADGE[p.estado]?.color, border: `1px solid ${ESTADO_BADGE[p.estado]?.color}` }}>{ESTADO_BADGE[p.estado]?.label}</span></td>
                         <td style={styles.td}>{p.fecha}</td>
                       </tr>
@@ -324,7 +326,7 @@ export default function AdminDashboard() {
                       <tr key={p.id_pedido} style={{ background: i % 2 === 0 ? "rgba(154,3,30,0.04)" : "transparent" }}>
                         <td style={styles.td}>#{p.id_pedido}</td>
                         <td style={styles.td}>{p.cliente}</td>
-                        <td style={styles.td}>${p.total.toFixed(2)}</td>
+                        <td style={styles.td}>{formatPrice(p.total)}</td>
                         <td style={styles.td}><span style={{ ...styles.badge, background: ESTADO_BADGE[p.estado]?.color + "25", color: ESTADO_BADGE[p.estado]?.color, border: `1px solid ${ESTADO_BADGE[p.estado]?.color}` }}>{ESTADO_BADGE[p.estado]?.label}</span></td>
                         <td style={styles.td}>{p.fecha}</td>
                       </tr>
@@ -333,7 +335,7 @@ export default function AdminDashboard() {
                       <tr key={p.id_producto} style={{ background: i % 2 === 0 ? "rgba(154,3,30,0.04)" : "transparent" }}>
                         <td style={styles.td}>{p.id_producto}</td>
                         <td style={styles.td}>{p.nombre}</td>
-                        <td style={styles.td}>${p.precio.toFixed(2)}</td>
+                        <td style={styles.td}>{formatPrice(p.precio)}</td>
                         <td style={{ ...styles.td, color: p.stock <= 5 ? "#ef4444" : "#d9d9d9", fontWeight: p.stock <= 5 ? 700 : 400 }}>{p.stock}</td>
                         <td style={styles.td}>{p.fecha_registro}</td>
                       </tr>

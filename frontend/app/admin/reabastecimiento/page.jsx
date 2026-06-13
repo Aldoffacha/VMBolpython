@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAdminCurrency } from "@/lib/AdminCurrencyContext";
 import { Package, TrendingUp, AlertTriangle, RefreshCw } from "lucide-react";
 
 const API = "http://localhost:8000";
@@ -12,6 +13,7 @@ function getToken() {
 
 export default function ReabastecimientoPage() {
   const router = useRouter();
+  const { formatPrice } = useAdminCurrency();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ total: 0, bajo: 0, critico: 0 });
@@ -105,7 +107,7 @@ export default function ReabastecimientoPage() {
                     <td style={{ padding: "10px 16px", color: "#d9d9d9", borderBottom: "1px solid rgba(154,3,30,0.08)" }}>{p.categoria}</td>
                     <td style={{ padding: "10px 16px", borderBottom: "1px solid rgba(154,3,30,0.08)", fontWeight: 700, color: p.stock <= 3 ? "#ef4444" : "#f59e0b", fontSize: 16 }}>{p.stock}</td>
                     <td style={{ padding: "10px 16px", borderBottom: "1px solid rgba(154,3,30,0.08)", color: "#10b981", fontWeight: 700 }}>{p.total_vendido}</td>
-                    <td style={{ padding: "10px 16px", color: "#d9d9d9", borderBottom: "1px solid rgba(154,3,30,0.08)" }}>${p.precio.toFixed(2)}</td>
+                    <td style={{ padding: "10px 16px", color: "#d9d9d9", borderBottom: "1px solid rgba(154,3,30,0.08)" }}>{formatPrice(p.precio)}</td>
                     <td style={{ padding: "10px 16px", borderBottom: "1px solid rgba(154,3,30,0.08)" }}>
                       <span style={{
                         padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700,

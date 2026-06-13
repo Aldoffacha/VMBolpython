@@ -199,6 +199,18 @@ def subir_foto_perfil(
 
 TIPO_CAMBIO_DEFAULT = 9.17
 
+
+def get_tipo_cambio(db: Session) -> float:
+    try:
+        result = db.execute(
+            text("SELECT tipo_cambio FROM configuracion LIMIT 1")
+        ).scalar()
+        if result:
+            return float(result)
+    except Exception as e:
+        print(f"[tipo_cambio] Error reading from DB: {e}")
+    return TIPO_CAMBIO_DEFAULT
+
 TARIFAS_ALMACEN = [
     (20,20,15,15,1,1,100,135),
     (20,20,15,15,15,15,100,180),
@@ -321,6 +333,7 @@ def dashboard_cliente(
     db: Session = Depends(get_db)
 ):
     uid = get_uid(current_user)
+    tc = get_tipo_cambio(db)
 
     total_pedidos = db.execute(
         text("SELECT COUNT(*) FROM pedidos WHERE id_cliente=:u AND estado != 'cancelado'"),
@@ -417,7 +430,7 @@ def dashboard_cliente(
         lista = []
         for r in prods:
             d = dict(r._mapping)
-            cot = calcular_importacion(float(d["precio"]), 0.5, d.get("categoria", "otros"))
+            cot = calcular_importacion(float(d["precio"]), 0.5, d.get("categoria", "otros"), tipo_cambio=tc)
             d["imagen_url"] = imagen_url(d.get("imagen"), d.get("nombre", ""))
             d["costo_total_importacion"] = cot["total"]
 
@@ -437,7 +450,7 @@ def dashboard_cliente(
     productos_externos = []
     for r in ext_rows:
         d = dict(r._mapping)
-        cot = calcular_importacion(float(d["precio"]), float(d.get("peso") or 0.5), d.get("categoria", "otros"))
+        cot = calcular_importacion(float(d["precio"]), float(d.get("peso") or 0.5), d.get("categoria", "otros"), tipo_cambio=tc)
         d["costo_total_importacion"] = cot["total"]
 
         if d.get("fecha_agregado"):
@@ -455,7 +468,7 @@ def dashboard_cliente(
     productos_destacados = []
     for r in dest_rows:
         d = dict(r._mapping)
-        cot = calcular_importacion(float(d["precio"]), 0.5, d.get("categoria", "otros"))
+        cot = calcular_importacion(float(d["precio"]), 0.5, d.get("categoria", "otros"), tipo_cambio=tc)
         d["imagen_url"] = imagen_url(d.get("imagen"), d.get("nombre", ""))
         d["costo_total_importacion"] = cot["total"]
 
@@ -480,7 +493,7 @@ def dashboard_cliente(
         "productos_externos": productos_externos,
         "productos_destacados": productos_destacados,
         "pedidos_ids": [p["id_pedido"] for p in pedidos_recientes],
-        "tipo_cambio": TIPO_CAMBIO_DEFAULT,
+        "tipo_cambio": get_tipo_cambio(db),
     }
 
 
@@ -631,6 +644,8 @@ def tienda(
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    tc = get_tipo_cambio(db)
+
     q = "SELECT * FROM productos WHERE estado=1"
     params = {}
     if busqueda:
@@ -645,7 +660,7 @@ def tienda(
     productos_locales = []
     for r in rows:
         d = dict(r._mapping)
-        cot = calcular_importacion(float(d["precio"]), 0.5, d.get("categoria","otros"))
+        cot = calcular_importacion(float(d["precio"]), 0.5, d.get("categoria","otros"), tipo_cambio=tc)
         d["imagen_url"] = imagen_url(d.get("imagen"), d.get("nombre",""))
         d["plataforma"] = "local"
         d["costo_total_importacion"] = cot["total"]
@@ -668,7 +683,7 @@ def tienda(
     productos_externos = []
     for r in ext_rows:
         d = dict(r._mapping)
-        cot = calcular_importacion(float(d["precio"]), float(d.get("peso") or 0.5), d.get("categoria","otros"))
+        cot = calcular_importacion(float(d["precio"]), float(d.get("peso") or 0.5), d.get("categoria","otros"), tipo_cambio=tc)
         d["costo_total_importacion"] = cot["total"]
         d["id_producto"] = f"ext_{d['id_producto_exterior']}"
         if d.get("fecha_agregado"): d["fecha_agregado"] = d["fecha_agregado"].isoformat()
@@ -683,7 +698,7 @@ def tienda(
         "productos_externos": productos_externos,
         "total_locales": len(productos_locales),
         "total_externos": len(productos_externos),
-        "tipo_cambio": TIPO_CAMBIO_DEFAULT,
+        "tipo_cambio": get_tipo_cambio(db),
     }
 # ─── CARRITO: AGREGAR ──────────────────────────────────────────────────────────
 
@@ -769,6 +784,7 @@ def obtener_carrito(
     db: Session = Depends(get_db)
 ):
     uid = get_uid(current_user)
+    tc = get_tipo_cambio(db)
 
     rows = db.execute(
         text("""SELECT c.id_carrito, c.cantidad, c.tipo_producto,
@@ -783,7 +799,7 @@ def obtener_carrito(
         d = dict(r._mapping)
         d["imagen_url"] = imagen_url(d.get("imagen"), d.get("nombre",""))
         d["plataforma"] = "local"
-        cot = calcular_importacion(float(d["precio"]), 0.5, d.get("categoria","otros"))
+        cot = calcular_importacion(float(d["precio"]), 0.5, d.get("categoria","otros"), tipo_cambio=tc)
         d["costo_total_importacion"] = cot["total"]
         items_locales.append(d)
 
@@ -796,7 +812,7 @@ def obtener_carrito(
     for r in ext_rows:
         d = dict(r._mapping)
         if d.get("fecha_agregado"): d["fecha_agregado"] = d["fecha_agregado"].isoformat()
-        cot = calcular_importacion(float(d["precio"]), float(d.get("peso") or 0.5), d.get("categoria","otros"))
+        cot = calcular_importacion(float(d["precio"]), float(d.get("peso") or 0.5), d.get("categoria","otros"), tipo_cambio=tc)
         d["costo_total_importacion"] = cot["total"]
         items_externos.append(d)
 
@@ -1176,7 +1192,8 @@ def calcular_cotizacion(
     if precio <= 0 or peso <= 0:
         raise HTTPException(status_code=400, detail="Precio y peso deben ser mayores a 0")
 
-    return calcular_importacion(precio, peso, categoria, largo, ancho, alto)
+    tc = get_tipo_cambio(db)
+    return calcular_importacion(precio, peso, categoria, largo, ancho, alto, tipo_cambio=tc)
 
 
 # ─── COTIZACIÓN: GUARDAR ──────────────────────────────────────────────────────
@@ -1197,7 +1214,8 @@ def guardar_cotizacion(
     nombre_producto = data.get("nombre_producto", "Producto")
     tamano = data.get("tamano", f"{largo}x{ancho}x{alto}")
 
-    cot = calcular_importacion(precio, peso, categoria, largo, ancho, alto)
+    tc = get_tipo_cambio(db)
+    cot = calcular_importacion(precio, peso, categoria, largo, ancho, alto, tipo_cambio=tc)
 
     db.execute(
         text("""INSERT INTO cotizaciones

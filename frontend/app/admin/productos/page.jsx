@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, Fragment } from "react";
 import { useRouter } from "next/navigation";
+import { useAdminCurrency } from "@/lib/AdminCurrencyContext";
 
 
 const API = "http://localhost:8000";
@@ -62,6 +63,7 @@ export default function AdminProductos() {
   const [user, setUser] = useState(null);
   const [sortField, setSortField] = useState("id_producto");
   const [sortDir, setSortDir] = useState("desc");
+  const { formatPrice } = useAdminCurrency();
 
   useEffect(() => {
     const stored = sessionStorage.getItem("user");
@@ -270,7 +272,7 @@ export default function AdminProductos() {
                       <td style={{ ...s.td, maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {p.descripcion ? p.descripcion.substring(0, 50) + "..." : "—"}
                       </td>
-                      <td style={s.td}>${p.precio.toFixed(2)}</td>
+                      <td style={s.td}>{formatPrice(p.precio)}</td>
                       <td style={{ ...s.td, color: p.stock <= 5 ? "#ef4444" : "#d9d9d9", fontWeight: p.stock <= 5 ? 700 : 400 }}>
                         {p.stock} {p.stock <= 5 && <span style={{ fontSize: 10 }}> bajo</span>}
                       </td>

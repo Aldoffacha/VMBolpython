@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useAdminCurrency } from "@/lib/AdminCurrencyContext";
 import { CreditCard, Clock, CheckCircle, DollarSign, X, Link } from "lucide-react";
 
 
@@ -21,6 +22,7 @@ const ESTADO_COLORS = {
 
 export default function AdminPagos() {
   const router = useRouter();
+  const { formatPrice } = useAdminCurrency();
   const [pagos, setPagos] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -111,7 +113,7 @@ export default function AdminPagos() {
               { icon: <CreditCard size={30} />, label: "Total Pagos",   value: stats.total_pagos,                                          color: "#9a031e" },
               { icon: <Clock size={30} />,      label: "Pendientes",     value: stats.pendientes,                                           color: "#f59e0b" },
               { icon: <CheckCircle size={30} />, label: "Confirmados",    value: stats.confirmados,                                          color: "#10b981" },
-              { icon: <DollarSign size={30} />, label: "Monto Confirmado", value: `$${stats.monto_total.toLocaleString("en", { minimumFractionDigits: 2 })}`, color: "#3b82f6" },
+               { icon: <DollarSign size={30} />, label: "Monto Confirmado", value: formatPrice(stats.monto_total), color: "#3b82f6" },
             ].map(st => (
               <div key={st.label} style={{ ...s.statCard, borderLeftColor: st.color }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -167,7 +169,7 @@ export default function AdminPagos() {
                       <td style={s.td}>#{p.id_pago}</td>
                       <td style={s.td}>#{p.id_pedido}</td>
                       <td style={s.td}>{p.cliente_nombre}</td>
-                      <td style={{ ...s.td, fontWeight: 700, color: "#10b981" }}>${p.monto.toFixed(2)}</td>
+                       <td style={{ ...s.td, fontWeight: 700, color: "#10b981" }}>{formatPrice(p.monto)}</td>
                       <td style={s.td}>
                         <span style={s.metodoBadge}>{p.metodo}</span>
                       </td>

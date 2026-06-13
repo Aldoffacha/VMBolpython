@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAdminCurrency } from "@/lib/AdminCurrencyContext";
 import { Zap, TrendingUp, Target, Activity, RefreshCw } from "lucide-react";
 
 const API = "http://localhost:8000";
@@ -12,6 +13,7 @@ function getToken() {
 
 export default function PrediccionMLPage() {
   const router = useRouter();
+  const { formatPrice } = useAdminCurrency();
   const [data, setData] = useState([]);
   const [meta, setMeta] = useState({ total_reglas: 0, promedio_lift: 0 });
   const [loading, setLoading] = useState(true);
@@ -104,7 +106,7 @@ export default function PrediccionMLPage() {
                   <div style={{ fontSize: 14, color: "#d9d9d9", fontWeight: 600 }}>{p.nombre}</div>
                   <div style={{ fontSize: 12, color: "#a0a0a0", marginTop: 2, display: "flex", gap: 12, flexWrap: "wrap" }}>
                     <span>{p.categoria}</span>
-                    <span>${p.precio.toFixed(2)}</span>
+                    <span>{formatPrice(p.precio)}</span>
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 16, alignItems: "center", flexShrink: 0 }}>

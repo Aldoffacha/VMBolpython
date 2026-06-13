@@ -1,6 +1,6 @@
 from sqlalchemy import (
     Column, Integer, SmallInteger, String, Text, Numeric,
-    DateTime, Date, Boolean, Double, ForeignKey, Index
+    DateTime, Date, Boolean, Double, Float, ForeignKey, Index
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
@@ -500,5 +500,7 @@ class Configuracion(Base):
     email_contacto      = Column(String(255), nullable=False, default="info@vmbol.com")
     telefono_contacto   = Column(String(50), nullable=False, default="+591 777 12345")
     moneda              = Column(String(10), nullable=False, default="USD")
+    tipo_cambio         = Column(Float, default=9.17)
+    tipo_cambio_actualizacion = Column(DateTime, nullable=True)
     fecha_actualizacion = Column(DateTime, server_default=func.now(), onupdate=func.now())
     qr_filename         = Column(String(255))

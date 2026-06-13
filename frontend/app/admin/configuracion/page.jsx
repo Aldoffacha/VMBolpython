@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { X, Trash2, Save, CheckCircle, XCircle, Plus, Upload } from "lucide-react";
+import { X, Trash2, Save, CheckCircle, XCircle, Plus, Upload, RefreshCw } from "lucide-react";
 
 
 const API = "http://localhost:8000";
@@ -20,11 +20,13 @@ export default function AdminConfiguracion() {
   const [modal, setModal]   = useState(null); // 'deposito' | 'tienda'
   const [saving, setSaving] = useState(false);
   const [qrPreview, setQrPreview] = useState(null);
+  const [actualizandoTc, setActualizandoTc] = useState(false);
+  const [tcInfo, setTcInfo] = useState(null);
   const qrInputRef = useRef(null);
 
   // Form states
   const [general, setGeneral] = useState({
-    nombre_empresa: "", email_contacto: "", telefono_contacto: "", moneda: "USD"
+    nombre_empresa: "", email_contacto: "", telefono_contacto: "", moneda: "USD", tipo_cambio: 9.17
   });
   const [formDeposito, setFormDeposito] = useState({ nombre_deposito: "", direccion: "", telefono: "", contacto: "" });
   const [formTienda,   setFormTienda]   = useState({ nombre_tienda: "", url_tienda: "", tipo: "amazon", api_key: "" });
@@ -36,17 +38,27 @@ export default function AdminConfiguracion() {
   }, []);
 
   const fetchData = async () => {
-    const token = getToken();
-    const res   = await fetch(`${API}/admin/configuracion`, { headers: { Authorization: `Bearer ${token}` } });
-    if (res.status === 401) { router.push("/login"); return; }
-    const json = await res.json();
-    setData(json);
-    setGeneral({
-      nombre_empresa:    json.config.nombre_empresa,
-      email_contacto:    json.config.email_contacto,
-      telefono_contacto: json.config.telefono_contacto,
-      moneda:            json.config.moneda,
-    });
+    try {
+      const token = getToken();
+      const res   = await fetch(`${API}/admin/configuracion`, { headers: { Authorization: `Bearer ${token}` } });
+      if (res.status === 401) { router.push("/login"); return; }
+      const json = await res.json();
+      if (!json?.config) return;
+      setData(json);
+      setGeneral({
+        nombre_empresa:    json.config.nombre_empresa,
+        email_contacto:    json.config.email_contacto,
+        telefono_contacto: json.config.telefono_contacto,
+        moneda:            json.config.moneda,
+        tipo_cambio:       json.config.tipo_cambio,
+      });
+      setTcInfo({
+        tipo_cambio: json.config.tipo_cambio,
+        actualizacion: json.config.tipo_cambio_actualizacion,
+      });
+    } catch (e) {
+      console.error("Error fetching config:", e);
+    }
   };
 
   const showToast = (msg, ok = true) => {
@@ -66,6 +78,23 @@ export default function AdminConfiguracion() {
     const json = await res.json();
     setSaving(false);
     showToast(json.mensaje, res.ok);
+  };
+
+  // ── Actualizar tipo de cambio ──
+  const actualizarTc = async () => {
+    setActualizandoTc(true);
+    const token = getToken();
+    const res = await fetch(`${API}/admin/configuracion/actualizar-tipo-cambio`, {
+      method: "POST", headers: { Authorization: `Bearer ${token}` },
+    });
+    const json = await res.json();
+    setActualizandoTc(false);
+    if (res.ok) {
+      setTcInfo({ tipo_cambio: json.tipo_cambio, actualizacion: new Date().toISOString() });
+      showToast(json.mensaje, true);
+    } else {
+      showToast(json.mensaje || "Error al actualizar tipo de cambio", false);
+    }
   };
 
   // ── Subir QR ──
@@ -190,6 +219,25 @@ export default function AdminConfiguracion() {
                     <option value="USD">Dólar Americano (USD)</option>
                     <option value="BOB">Boliviano (BOB)</option>
                   </select>
+                </div>
+                <div style={s.formGroup}>
+                  <label style={s.label}>Tipo de Cambio (BOB/USD)</label>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <input style={{ ...s.input, flex: 1 }} type="number" step="0.01" min="0"
+                      value={general.tipo_cambio ?? tcInfo?.tipo_cambio ?? 9.17}
+                      onChange={e => setGeneral({ ...general, tipo_cambio: parseFloat(e.target.value) || 0 })} />
+                    <button onClick={actualizarTc} disabled={actualizandoTc} style={{
+                      ...s.btnSecondary, padding: "9px 12px", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 6,
+                    }}>
+                      <RefreshCw size={14} className={actualizandoTc ? "spin" : ""} />
+                      {actualizandoTc ? "..." : "Auto"}
+                    </button>
+                  </div>
+                  {tcInfo?.actualizacion && (
+                    <span style={{ color: "#a0a0a0", fontSize: 11, marginTop: 4, display: "block" }}>
+                      Última actualización: {new Date(tcInfo.actualizacion).toLocaleString("es-BO")}
+                    </span>
+                  )}
                 </div>
                 <button onClick={guardarGeneral} disabled={saving} style={s.btnPrimary}>
                   {saving ? "Guardando..." : <><Save size={14} /> Guardar Configuración</>}
