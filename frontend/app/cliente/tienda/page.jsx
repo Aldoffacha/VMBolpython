@@ -6,6 +6,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { Home, Package, ShoppingCart, ShoppingBag, X, Link, BarChart3, Globe, Hash, Search, Check } from "lucide-react";
 import "@/styles/dashboard.css";
 import "@/styles/tienda.css";
+import { useClienteMoneda } from "@/lib/ClienteMonedaContext";
 
 const API = "http://localhost:8000";
 
@@ -32,7 +33,6 @@ function calcImport(precio, peso = 0.5, subcatOrCat = "otros", tc = 9.17) {
   return precio + flete + seguro + aduana + alm;
 }
 
-const fmt = n => `$${parseFloat(n || 0).toFixed(2)}`;
 
 /* ── Subcategorías & grupos ──────────────────────────────────────────── */
 const SUBCATEGORIAS = [
@@ -161,6 +161,7 @@ function SelectCategoriasLink({ value, onChange, className }) {
 
 /* ── Card de producto ─────────────────────────────────────────────────── */
 function ProdCard({ prod, tc, onVer }) {
+  const { formatPrice } = useClienteMoneda();
   const total = calcImport(parseFloat(prod.precio || 0), prod.peso || 0.5, prod.categoria || "otros", tc);
   const img   = prod.imagen_url || prod.imagen || "";
   const PLAT  = {
@@ -181,14 +182,14 @@ function ProdCard({ prod, tc, onVer }) {
         />
         <div className="p-card__fade" />
         <span className="p-card__plat" style={{ background: plat.bg, color: plat.col }}>{plat.txt}</span>
-        <span className="p-card__price">{fmt(prod.precio)}</span>
+        <span className="p-card__price">{formatPrice(prod.precio)}</span>
         <button className="p-card__cta" onClick={() => onVer(prod)}>Ver detalle</button>
       </div>
       <div className="p-card__body">
         <p className="p-card__name">{prod.nombre || "Producto"}</p>
         <div className="p-card__foot">
           <span className="p-card__imp-lbl">Con importación</span>
-          <span className="p-card__imp-val">{fmt(total)}</span>
+          <span className="p-card__imp-val">{formatPrice(total)}</span>
         </div>
       </div>
     </div>
@@ -197,6 +198,7 @@ function ProdCard({ prod, tc, onVer }) {
 
 /* ── Modal Detalle ────────────────────────────────────────────────────── */
 function ModalDetalle({ prod, tc, token, onClose, onSuccess }) {
+  const { formatPrice, formatPriceUSD, formatPriceBOB, tipoCambio } = useClienteMoneda();
   const [qty,  setQty]  = useState(1);
   const [load, setLoad] = useState(false);
   if (!prod) return null;
@@ -250,7 +252,7 @@ function ModalDetalle({ prod, tc, token, onClose, onSuccess }) {
             <div className="det-info">
               <PlatBadge plat={prod.plataforma} />
               <h3 className="det-name">{prod.nombre}</h3>
-              <div className="det-price">{fmt(prod.precio)}</div>
+              <div className="det-price">{formatPrice(prod.precio)}</div>
               <p className="det-desc">{prod.descripcion || "Sin descripción"}</p>
               {prod.enlace && (
                 <a href={prod.enlace} target="_blank" rel="noreferrer" className="det-link">
@@ -271,12 +273,21 @@ function ModalDetalle({ prod, tc, token, onClose, onSuccess }) {
             ].map(([k, v]) => (
               <div className="cot-row" key={k}>
                 <span className="cot-row__k">{k}</span>
-                <span className="cot-row__v">{fmt(v)}</span>
+                <span className="cot-row__v cot-row__v--dual">
+                  <span>{formatPriceUSD(v)}</span>
+                  <span style={{ marginLeft: 16 }}>{formatPriceBOB(v)}</span>
+                </span>
               </div>
             ))}
             <div className="cot-total">
               <span className="cot-total__k">Total × {qty}</span>
-              <span className="cot-total__v">{fmt(tot1 * qty)}</span>
+              <span className="cot-total__v cot-total__v--dual">
+                <span>{formatPriceUSD(tot1 * qty)}</span>
+                <span style={{ marginLeft: 16 }}>{formatPriceBOB(tot1 * qty)}</span>
+              </span>
+            </div>
+            <div style={{ textAlign: "right", fontSize: 10, color: "var(--text-3)", marginTop: 6 }}>
+              T/C: Bs. {tipoCambio.toFixed(2)}
             </div>
           </div>
 
@@ -306,6 +317,7 @@ const ALM_BS_MAP = {
 };
 
 function ModalAgregarLink({ tc, token, onClose, onSuccess }) {
+  const { formatPriceUSD, formatPriceBOB, tipoCambio } = useClienteMoneda();
   const [form, setForm] = useState({
     url: "", nombre: "", precio: "", peso: "0.5",
     categoria: "gaming", tamano: "20x15x1",
@@ -439,15 +451,21 @@ function ModalAgregarLink({ tc, token, onClose, onSuccess }) {
               ].map(([k, v]) => (
                 <div className="cot-row" key={k}>
                   <span className="cot-row__k">{k}</span>
-                  <span className="cot-row__v">{fmt(v)}</span>
+                  <span className="cot-row__v cot-row__v--dual">
+                    <span>{formatPriceUSD(v)}</span>
+                    <span style={{ marginLeft: 16 }}>{formatPriceBOB(v)}</span>
+                  </span>
                 </div>
               ))}
               <div className="cot-total">
                 <span className="cot-total__k">Total</span>
-                <span className="cot-total__v">{fmt(cotizacion.total)}</span>
+                <span className="cot-total__v cot-total__v--dual">
+                  <span>{formatPriceUSD(cotizacion.total)}</span>
+                  <span style={{ marginLeft: 16 }}>{formatPriceBOB(cotizacion.total)}</span>
+                </span>
               </div>
               <div style={{ textAlign: "right", fontSize: 10, color: "var(--text-3)", marginTop: 6 }}>
-                T/C: Bs. {tc.toFixed(2)}
+                T/C: Bs. {tipoCambio.toFixed(2)}
               </div>
             </div>
           )}

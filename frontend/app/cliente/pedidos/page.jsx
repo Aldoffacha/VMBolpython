@@ -3,12 +3,12 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import ClienteSidebar from "@/components/ClienteSidebar";
 import { useTheme } from "@/context/ThemeContext";
+import { useClienteMoneda } from "@/lib/ClienteMonedaContext";
 import { Package, Bike, Calendar, Globe, Home, MapPin, AlertTriangle, CheckCircle, CreditCard, Building2, Plane, ShieldCheck, Zap, Check, X, Phone, User, Pencil } from "lucide-react";
 import "@/styles/dashboard.css"; // mismas variables CSS del dashboard
 
 const API = "http://localhost:8000";
 
-const fmt   = n => `$${parseFloat(n||0).toFixed(2)}`;
 const fDate = iso => iso
   ? new Date(iso).toLocaleDateString("es-BO",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"})
   : "—";
@@ -224,6 +224,7 @@ function ModalSeguimiento({ idPedido, token, onClose }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [tracking, setTracking] = useState(null);
+  const { formatPrice } = useClienteMoneda();
 
   const cargar = useCallback(async (t,id)=>{
     setLoading(true);
@@ -422,7 +423,7 @@ function ModalSeguimiento({ idPedido, token, onClose }) {
                           {d.nombre||"Producto"}
                         </div>
                         <div style={{fontFamily:"var(--font-c)",fontSize:"10px",letterSpacing:"1px",color:"var(--text-3)",textTransform:"uppercase"}}>
-                          ×{d.cantidad} · {fmt(d.precio)} c/u
+                          ×{d.cantidad} · {formatPrice(d.precio)} c/u
                         </div>
                       </div>
                     </div>
@@ -477,6 +478,7 @@ const FILTROS = ["todos","sin_pago","pagado","enviado","en_camino","entregado"];
 export default function MisPedidos() {
   const { theme } = useTheme();
   const router = useRouter();
+  const { formatPrice, formatPriceUSD, formatPriceBOB, tipoCambio } = useClienteMoneda();
   const [user,    setUser]    = useState(null);
   const [token,   setToken]   = useState("");
   const [pedidos, setPedidos] = useState([]);
@@ -850,7 +852,8 @@ export default function MisPedidos() {
                 <div className="ped-card__body">
                   <div className="ped-card__meta">
                     <span className="ped-card__date"><Calendar size={14} /> {fDate(p.fecha)}</span>
-                    <span className="ped-card__total">{fmt(p.total)}</span>
+                    <span className="ped-card__total">{formatPriceUSD(p.total)}
+                      <span style={{fontSize:"11px",fontWeight:"400",fontFamily:"var(--font-c)",letterSpacing:"1px",color:"var(--text-3)",display:"block",marginTop:"2px"}}>{formatPriceBOB(p.total)} · TC {tipoCambio}</span></span>
                   </div>
 
                   <div className="ped-card__details">

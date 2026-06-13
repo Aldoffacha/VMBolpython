@@ -6,7 +6,7 @@ import "@/styles/dashboard.css";
 import "@/styles/perfil.css";
 import { X, AlertTriangle, Check, DollarSign } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
-import { getClienteMoneda, setClienteMoneda, formatPriceCliente } from "@/lib/clienteMoneda";
+import { useClienteMoneda } from "@/lib/ClienteMonedaContext";
 
 const API = "http://localhost:8000";
 
@@ -104,24 +104,7 @@ export default function ClientePerfil() {
   const [previewFoto, setPreviewFoto] = useState(null);
   const fileRef = useRef(null);
 
-  const [moneda, setMoneda] = useState("USD");
-  const [tipoCambio, setTipoCambio] = useState(9.17);
-
-  useEffect(() => {
-    setMoneda(getClienteMoneda());
-    fetch(`${API}/cliente/dashboard`, {
-      headers: { Authorization: `Bearer ${document.cookie.split(";").find(c => c.trim().startsWith("access_token="))?.split("=")[1] }` },
-    })
-      .then(r => r.json())
-      .then(d => { if (d?.tipo_cambio) setTipoCambio(d.tipo_cambio); })
-      .catch(() => {});
-  }, []);
-
-  const toggleMoneda = () => {
-    const next = moneda === "USD" ? "BOB" : "USD";
-    setMoneda(next);
-    setClienteMoneda(next);
-  };
+  const { moneda, tipoCambio, toggleMoneda } = useClienteMoneda();
 
   /* ── Cargar datos ──────────────────────────────────────────────────────── */
   useEffect(() => {

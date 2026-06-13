@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import ClienteSidebar from "@/components/ClienteSidebar";
 import "@/styles/dashboard.css";
 import { useTheme } from "@/context/ThemeContext";
+import { useClienteMoneda } from "@/lib/ClienteMonedaContext";
 import { X, Check, Truck, DollarSign, ShoppingCart } from "lucide-react";
 const API = "http://localhost:8000";
 
@@ -29,8 +30,6 @@ function calcImport(precio, peso=.5, cat="otros", l=20, a=15, h=1, tc=9.17) {
   };
 }
 
-const fmt  = n => `$${parseFloat(n||0).toFixed(2)}`;
-
 /* ─── Plataformas ──────────────────────────────────────────────────────── */
 const PLAT = {
   amazon:{ bg:"#f59e0b", col:"#000", txt:"Amazon" },
@@ -39,6 +38,7 @@ const PLAT = {
 
 /* ─── ProdCard ─────────────────────────────────────────────────────────── */
 function ProdCard({ prod, tc, onAdd }) {
+  const { formatPrice, formatPriceUSD, formatPriceBOB } = useClienteMoneda();
   const cot  = calcImport(parseFloat(prod.precio||0), prod.peso||.5, prod.categoria||"otros", 20, 15, 1, tc);
   const plat = PLAT[prod.plataforma] || { bg:"#10b981", col:"#fff", txt:"Local" };
   const img  = prod.imagen_url || prod.imagen || "";
@@ -55,7 +55,7 @@ function ProdCard({ prod, tc, onAdd }) {
         />
         <div className="p-card__fade" />
         <span className="p-card__plat" style={{ background:plat.bg, color:plat.col }}>{plat.txt}</span>
-        <span className="p-card__price">{fmt(prod.precio)}</span>
+        <span className="p-card__price">{formatPrice(prod.precio)}</span>
         <button className="p-card__cta" onClick={() => onAdd(prod)}>+ Agregar al carrito</button>
       </div>
 
@@ -63,7 +63,8 @@ function ProdCard({ prod, tc, onAdd }) {
         <p className="p-card__name">{prod.nombre || "Producto"}</p>
         <div className="p-card__foot">
           <span className="p-card__imp-lbl">Con importación</span>
-          <span className="p-card__imp-val">{fmt(cot.total)}</span>
+          <span className="p-card__imp-val">{formatPrice(cot.total)}</span>
+          <span className="p-card__imp-val" style={{ fontSize:10, opacity:0.7 }}>{formatPriceBOB(cot.total)}</span>
         </div>
       </div>
     </div>
@@ -165,6 +166,7 @@ function Modal({ title, onClose, foot, wide, children }) {
 
 /* ─── Modal Agregar Carrito ────────────────────────────────────────────── */
 function ModalAddCart({ prod, tc, token, onClose, onOk }) {
+  const { formatPrice, formatPriceUSD, formatPriceBOB } = useClienteMoneda();
   const [qty,  setQty]  = useState(1);
   const [busy, setBusy] = useState(false);
   if (!prod) return null;
@@ -201,7 +203,7 @@ function ModalAddCart({ prod, tc, token, onClose, onOk }) {
           onError={e => { e.target.onerror=null; e.target.src="https://via.placeholder.com/120x120/0d1117/3b82f6?text=IMG"; }} />
         <div style={{ flex:1, minWidth:180 }}>
           <p className="m-prod__name">{prod.nombre}</p>
-          <p className="m-prod__price">{fmt(prod.precio)}</p>
+          <p className="m-prod__price">{formatPrice(prod.precio)}</p>
           <div className="qty-row">
             <button className="qty-btn" onClick={() => setQty(q => Math.max(1, q-1))}>−</button>
             <span className="qty-num">{qty}</span>
@@ -210,13 +212,21 @@ function ModalAddCart({ prod, tc, token, onClose, onOk }) {
         </div>
       </div>
       <div className="summary">
-        <div className="sum-row">
+        <div className="sum-row" style={{ borderBottom:"1px solid rgba(255,255,255,0.06)", paddingBottom:8, marginBottom:8 }}>
           <span className="sum-k">Importación</span>
-          <span className="sum-v">{fmt((cot.total - parseFloat(prod.precio||0)) * qty)}</span>
+          <span className="sum-v">{formatPrice((cot.total - parseFloat(prod.precio||0)) * qty)}</span>
+        </div>
+        <div className="sum-row">
+          <span className="sum-k">En USD</span>
+          <span className="sum-v">{formatPrice(cot.total * qty)}</span>
+        </div>
+        <div className="sum-row">
+          <span className="sum-k">En BOB</span>
+          <span className="sum-v">{formatPriceBOB(cot.total * qty)}</span>
         </div>
         <div className="sum-total">
           <span className="sum-total__k">Total ×{qty}</span>
-          <span className="sum-total__v">{fmt(cot.total * qty)}</span>
+          <span className="sum-total__v">{formatPrice(cot.total * qty)}</span>
         </div>
         <div style={{ textAlign:"right", fontSize:"10px", color:"var(--text-3)", marginTop:6 }}>
           T/C: Bs. {tc.toFixed(2)}
@@ -234,6 +244,7 @@ const DIMS = {
 };
 
 function ModalCot({ tc, token, onClose }) {
+  const { formatPrice, formatPriceUSD, formatPriceBOB } = useClienteMoneda();
   const [form, setForm] = useState({ precio:"", peso:"", categoria:"electronico", tamano:"20x15x1" });
   const [res,  setRes]  = useState(null);
   const [busy, setBusy] = useState(false);
@@ -305,7 +316,10 @@ function ModalCot({ tc, token, onClose }) {
       </div>
       {res && (
         <div className="cot-box">
-          <div className="cot-box__title">Desglose</div>
+          <div className="cot-box__title">
+            Desglose
+            <span style={{ fontSize:10, color:"var(--text-3)", marginLeft:8 }}>T/C: Bs. {tc.toFixed(2)}</span>
+          </div>
           {[
             ["Producto",         res.desglose.producto],
             ["Flete",            res.desglose.flete],
@@ -315,12 +329,14 @@ function ModalCot({ tc, token, onClose }) {
           ].map(([k,v]) => (
             <div className="cot-row" key={k}>
               <span className="cot-row__k">{k}</span>
-              <span className="cot-row__v">{fmt(v)}</span>
+              <span className="cot-row__v">{formatPriceUSD(v)}</span>
+              <span className="cot-row__v" style={{ fontSize:10, opacity:0.6, marginLeft:8 }}>{formatPriceBOB(v)}</span>
             </div>
           ))}
           <div className="cot-total">
             <span className="cot-total__k">Total</span>
-            <span className="cot-total__v">{fmt(res.total)}</span>
+            <span className="cot-total__v">{formatPriceUSD(res.total)}</span>
+            <span className="cot-total__v" style={{ fontSize:11, opacity:0.6, marginLeft:8 }}>{formatPriceBOB(res.total)}</span>
           </div>
         </div>
       )}
@@ -330,6 +346,7 @@ function ModalCot({ tc, token, onClose }) {
 
 /* ─── Modal Envíos ─────────────────────────────────────────────────────── */
 function ModalEnvios({ items, onClose }) {
+  const { formatPrice } = useClienteMoneda();
   return (
     <Modal title="Envíos en camino" onClose={onClose}
       foot={<>
@@ -343,7 +360,7 @@ function ModalEnvios({ items, onClose }) {
             <div className="m-item__row">
               <div>
                 <div className="m-item__id">#VM{e.id_pedido}</div>
-                <div className="m-item__meta">Total: {fmt(e.total)}</div>
+                <div className="m-item__meta">Total: {formatPrice(e.total)}</div>
                 <div className="m-item__meta">Guía: <span className="m-item__hl">{e.guia_aerea || "Pendiente"}</span></div>
               </div>
               <div style={{ textAlign:"right" }}>
@@ -361,6 +378,7 @@ function ModalEnvios({ items, onClose }) {
 
 /* ─── Modal Cotizaciones ───────────────────────────────────────────────── */
 function ModalCots({ items, onClose, onNueva }) {
+  const { formatPrice, formatPriceBOB } = useClienteMoneda();
   return (
     <Modal title="Cotizaciones" onClose={onClose}
       foot={<>
@@ -375,10 +393,11 @@ function ModalCots({ items, onClose, onNueva }) {
               <div>
                 <div className="m-item__id" style={{ fontSize:18 }}>#{c.id_cotizacion}</div>
                 <div className="m-item__meta">{c.nombre_producto}</div>
-                <div className="m-item__meta">Base: {fmt(c.precio_base)} · {c.peso}kg</div>
+                <div className="m-item__meta">Base: {formatPrice(c.precio_base)} · {c.peso}kg</div>
               </div>
               <div style={{ textAlign:"right" }}>
-                <div style={{ fontFamily:"var(--font-d)", fontSize:24, color:"var(--green)", letterSpacing:2 }}>{fmt(c.costo_total)}</div>
+                <div style={{ fontFamily:"var(--font-d)", fontSize:24, color:"var(--green)", letterSpacing:2 }}>{formatPrice(c.costo_total)}</div>
+                <div style={{ fontSize:11, color:"var(--text-3)", marginTop:2 }}>{formatPriceBOB(c.costo_total)}</div>
                 <span className="m-item__badge" style={{ background:"var(--amber)", color:"#000" }}>Pendiente</span>
               </div>
             </div>
@@ -391,6 +410,7 @@ function ModalCots({ items, onClose, onNueva }) {
 
 /* ─── Modal Carrito ────────────────────────────────────────────────────── */
 function ModalCarrito({ items, total, onClose }) {
+  const { formatPrice } = useClienteMoneda();
   return (
     <Modal title="Tu carrito" onClose={onClose}
       foot={<>
@@ -407,14 +427,14 @@ function ModalCarrito({ items, total, onClose }) {
                 onError={e => { e.target.onerror=null; e.target.src="https://via.placeholder.com/56x56/0d1117/3b82f6?text=IMG"; }} />
               <div style={{ flex:1 }}>
                 <div className="cart-item__name">{item.nombre}</div>
-                <div className="cart-item__qty">{fmt(item.precio)} × {item.cantidad}</div>
+                <div className="cart-item__qty">{formatPrice(item.precio)} × {item.cantidad}</div>
               </div>
-              <span className="cart-item__price">{fmt(item.precio * item.cantidad)}</span>
+              <span className="cart-item__price">{formatPrice(item.precio * item.cantidad)}</span>
             </div>
           ))}
           <div className="cart-total">
             <span className="cart-total__lbl">Total</span>
-            <span className="cart-total__val">{fmt(total)}</span>
+            <span className="cart-total__val">{formatPrice(total)}</span>
           </div>
         </>
       }

@@ -3,13 +3,12 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import ClienteSidebar from "@/components/ClienteSidebar";
 import { useTheme } from "@/context/ThemeContext";
+import { useClienteMoneda } from "@/lib/ClienteMonedaContext";
 import { Package, Trash2, CreditCard, X, Smartphone, FileText, Paperclip, AlertTriangle, Upload, ShoppingCart, ShoppingBag, Home, Globe, ClipboardList } from "lucide-react";
 import "@/styles/dashboard.css";
 import "@/styles/carrito.css";
 
 const API = "http://localhost:8000";
-
-const fmt = n => `$${parseFloat(n || 0).toFixed(2)}`;
 
 const PLAT = {
   amazon: { bg: "#f59e0b", col: "#000", txt: "Amazon" },
@@ -40,6 +39,7 @@ function CantidadCtrl({ value, onChange, disabled }) {
 
 /* ── Fila de item ─────────────────────────────────────────────────────── */
 function ItemRow({ item, tipo, onCantidad, onEliminar, updating }) {
+  const { formatPrice } = useClienteMoneda();
   const plat       = PLAT[item.plataforma || "local"] || PLAT.local;
   const [confirmDel, setConfirmDel] = useState(false);
   const id         = tipo === "externo" ? item.id_carrito_externo : item.id_carrito;
@@ -64,7 +64,7 @@ function ItemRow({ item, tipo, onCantidad, onEliminar, updating }) {
           </span>
         </div>
         <div className="crt-item__meta">
-          {item.categoria ? `${item.categoria} · ` : ""}precio unitario: {fmt(item.precio)}
+          {item.categoria ? `${item.categoria} · ` : ""}precio unitario: {formatPrice(item.precio)}
         </div>
       </div>
 
@@ -77,7 +77,7 @@ function ItemRow({ item, tipo, onCantidad, onEliminar, updating }) {
 
       {/* Subtotal */}
       <div className="crt-item__subtotal">
-        <div className="crt-item__subtotal-val">{fmt(parseFloat(item.precio) * item.cantidad)}</div>
+        <div className="crt-item__subtotal-val">{formatPrice(parseFloat(item.precio) * item.cantidad)}</div>
         <div className="crt-item__subtotal-lbl">subtotal</div>
       </div>
 
@@ -101,6 +101,7 @@ function ItemRow({ item, tipo, onCantidad, onEliminar, updating }) {
 
 /* ── Modal de Pago ────────────────────────────────────────────────────── */
 function ModalPago({ idPedido, total, token, onClose, onSuccess }) {
+  const { formatPrice } = useClienteMoneda();
   const [infoQR,  setInfoQR]  = useState(null);
   const [archivo, setArchivo] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -149,7 +150,7 @@ function ModalPago({ idPedido, total, token, onClose, onSuccess }) {
           {/* Total */}
           <div className="pago-total-box">
             <div className="pago-total-lbl">Total a pagar</div>
-            <div className="pago-total-val">{fmt(total)}</div>
+            <div className="pago-total-val">{formatPrice(total)}</div>
           </div>
 
           {/* QR */}
@@ -178,7 +179,7 @@ function ModalPago({ idPedido, total, token, onClose, onSuccess }) {
           <div style={{ marginBottom: 16 }}>
             <label className="f-lbl">Monto a pagar (USD)</label>
             <div className="pago-field-readonly" style={{ justifyContent: "space-between" }}>
-              <span style={{ fontSize: 16, fontWeight: 800 }}>{fmt(total)}</span>
+              <span style={{ fontSize: 16, fontWeight: 800 }}>{formatPrice(total)}</span>
               <span style={{ fontSize: 11, color: "var(--text-3)", fontWeight: 400 }}>monto fijo</span>
             </div>
           </div>
@@ -228,6 +229,7 @@ function ModalPago({ idPedido, total, token, onClose, onSuccess }) {
 export default function CarritoPage() {
   const router    = useRouter();
   const { theme } = useTheme();
+  const { formatPrice, formatPriceUSD, formatPriceBOB } = useClienteMoneda();
 
   const [user,     setUser]     = useState(null);
   const [token,    setToken]    = useState("");
@@ -332,7 +334,7 @@ export default function CarritoPage() {
               </h1>
               <p className="crt-hero__sub">
                 {nItems} producto{nItems !== 1 ? "s" : ""} · Total:{" "}
-                <span style={{ color: "var(--green)", fontWeight: 700 }}>{fmt(total)}</span>
+                <span style={{ color: "var(--green)", fontWeight: 700 }}>{formatPrice(total)}</span>
               </p>
             </div>
 
@@ -427,7 +429,7 @@ export default function CarritoPage() {
                               {(item.nombre || "").slice(0, 28)}… ×{item.cantidad}
                             </span>
                             <span className="crt-summary__val">
-                              {fmt(parseFloat(item.precio) * item.cantidad)}
+                              {formatPrice(parseFloat(item.precio) * item.cantidad)}
                             </span>
                           </div>
                         );
@@ -437,8 +439,12 @@ export default function CarritoPage() {
                     {/* Total */}
                     <div className="crt-summary__total">
                       <div className="crt-summary__total-row">
-                        <span className="crt-summary__total-lbl">Total</span>
-                        <span className="crt-summary__total-val">{fmt(total)}</span>
+                        <span className="crt-summary__total-lbl">Total (USD)</span>
+                        <span className="crt-summary__total-val">{formatPriceUSD(total)}</span>
+                      </div>
+                      <div className="crt-summary__total-row">
+                        <span className="crt-summary__total-lbl">Total (BOB)</span>
+                        <span className="crt-summary__total-val">{formatPriceBOB(total)}</span>
                       </div>
                       <div className="crt-summary__hint">* Costos de importación estimados por ítem</div>
                     </div>

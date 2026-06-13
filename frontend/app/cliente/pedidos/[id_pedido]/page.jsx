@@ -3,12 +3,12 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import ClienteSidebar from "@/components/ClienteSidebar";
 import { useTheme } from "@/context/ThemeContext";
+import { useClienteMoneda } from "@/lib/ClienteMonedaContext";
 import { Building2, Plane, ShieldCheck, CheckCircle, Zap, Check, Calendar, MapPin, Bike, X, Save, AlertTriangle, CreditCard, Package, Globe, Home, Phone, User, Pencil, MessageCircle, Send } from "lucide-react";
 import "@/styles/dashboard.css";
 
 const API = "http://localhost:8000";
 
-const fmt   = n => `$${parseFloat(n||0).toFixed(2)}`;
 const fDate = iso => iso
   ? new Date(iso).toLocaleDateString("es-BO",{day:"2-digit",month:"2-digit",year:"numeric"})
   : "—";
@@ -309,6 +309,7 @@ export default function DetallePedido() {
   const params = useParams();
   const idPed  = params?.id_pedido;
   const { theme } = useTheme();
+  const { formatPrice, formatPriceUSD, formatPriceBOB, tipoCambio } = useClienteMoneda();
 
   const [user,     setUser]     = useState(null);
   const [token,    setToken]    = useState("");
@@ -665,7 +666,8 @@ export default function DetallePedido() {
               </div>
             </div>
             <div className="det-hero__right">
-              <div className="det-hero__total">{fmt(total)}</div>
+              <div className="det-hero__total">{formatPriceUSD(total)}
+                    <span style={{fontSize:"12px",fontWeight:"400",fontFamily:"var(--font-c)",letterSpacing:"1px",color:"var(--text-3)",display:"block",marginTop:"4px"}}>{formatPriceBOB(total)} · TC {tipoCambio}</span></div>
               <div className="det-hero__date"><Calendar size={14} /> {fDate(fecha)}</div>
             </div>
           </div>
@@ -748,7 +750,7 @@ export default function DetallePedido() {
                     </div>
                   </div>
                   <div style={{textAlign:"right",flexShrink:0}}>
-                    <div className="det-prod-price">{fmt(d.precio)}</div>
+                    <div className="det-prod-price">{formatPrice(d.precio)}</div>
                     <div style={{fontFamily:"var(--font-c)",fontSize:"9px",letterSpacing:"1px",
                       color:"var(--text-3)",textTransform:"uppercase"}}>c/u</div>
                   </div>
@@ -756,7 +758,8 @@ export default function DetallePedido() {
               ))}
               <div className="det-total-row">
                 <span className="det-total-lbl">Total</span>
-                <span className="det-total-val">{fmt(total)}</span>
+                <span className="det-total-val">{formatPriceUSD(total)}
+                      <span style={{fontSize:"12px",fontWeight:"400",fontFamily:"var(--font-c)",letterSpacing:"1px",color:"var(--text-3)",display:"block",marginTop:"2px"}}>{formatPriceBOB(total)} · TC {tipoCambio}</span></span>
               </div>
             </div>
           </div>
