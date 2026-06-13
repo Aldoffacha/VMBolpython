@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ShoppingCart, X, Check } from "lucide-react";
+import LandingNav from "@/components/LandingNav";
 import "@/styles/dashboard.css";
 
 const API = "http://localhost:8000";
@@ -32,35 +31,19 @@ const SLIDES = [
 ];
 
 export default function HomePage() {
-  const router = useRouter();
   const [slide, setSlide] = useState(0);
   const intervalRef = useRef(null);
   const trackRef = useRef(null);
-  const [guestCount, setGuestCount] = useState(0);
-
-  const isLogged = typeof window !== "undefined" && document.cookie.includes("access_token=");
-  const isRojo = true;
 
   const c = {
-    prim: isRojo ? "#9a031e" : "#2563eb",
-    bright: isRojo ? "#c1121f" : "#3b82f6",
-    glow: isRojo ? "rgba(154,3,30,0.45)" : "rgba(37,99,235,0.45)",
-    border: isRojo ? "rgba(154,3,30,0.3)" : "rgba(37,99,235,0.3)",
+    prim: "#2563eb",
+    bright: "#3b82f6",
+    glow: "rgba(37,99,235,0.45)",
+    border: "rgba(37,99,235,0.3)",
     card: "rgba(18,21,26,0.85)",
   };
 
-  const handleCartClick = () => {
-    if (isLogged) {
-      router.push("/cliente/carrito");
-    } else {
-      router.push("/login");
-    }
-  };
-
   useEffect(() => {
-    const cart = JSON.parse(localStorage.getItem("guest_cart") || "[]");
-    setGuestCount(cart.length);
-
     intervalRef.current = setInterval(() => {
       setSlide(s => (s + 1) % SLIDES.length);
     }, 6000);
@@ -78,91 +61,12 @@ export default function HomePage() {
       background: "#0d0f12",
       color: "#e8e4e0",
       minHeight: "100vh",
-      fontFamily: "'DM Sans', sans-serif",
+      fontFamily: "'Barlow', sans-serif",
     }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@300;400;600;700&display=swap');
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        .lp-nav {
-          position: fixed; top: 0; left: 0; right: 0;
-          z-index: 100;
-          display: flex; align-items: center; justify-content: space-between;
-          padding: 12px 28px;
-          background: rgba(13,15,18,0.9);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border-bottom: 1px solid ${c.border};
-          transition: border-color 0.4s;
-        }
-
-        .lp-nav__brand {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 20px; font-weight: 700;
-          color: ${c.bright};
-          letter-spacing: 0.06em;
-          text-decoration: none;
-          transition: color 0.4s;
-        }
-
-        .lp-nav__links { display: flex; gap: 24px; align-items: center; }
-
-        .lp-nav__link {
-          font-size: 13px; font-weight: 500;
-          color: #7a7570;
-          text-decoration: none;
-          letter-spacing: 0.04em;
-          transition: color 0.2s;
-          cursor: pointer;
-          background: none; border: none;
-          font-family: 'DM Sans', sans-serif;
-        }
-        .lp-nav__link:hover { color: ${c.bright}; }
-        .lp-nav__link.active { color: ${c.bright}; font-weight: 600; }
-
-        .lp-nav__right { display: flex; gap: 12px; align-items: center; }
-
-        .lp-nav__cart-btn {
-          position: relative;
-          padding: 8px 12px;
-          background: transparent;
-          border: 1px solid ${c.border};
-          border-radius: 8px;
-          color: #e8e4e0;
-          cursor: pointer;
-          font-size: 16px;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          transition: border-color 0.2s, color 0.4s;
-        }
-        .lp-nav__cart-btn:hover { border-color: ${c.bright}; }
-        .lp-nav__cart-badge {
-          position: absolute;
-          top: -6px; right: -6px;
-          background: ${c.bright};
-          color: #fff;
-          border-radius: 50%;
-          width: 18px; height: 18px;
-          font-size: 10px; font-weight: 800;
-          display: flex; align-items: center; justify-content: center;
-        }
-
-        .lp-nav__login {
-          padding: 8px 18px;
-          background: linear-gradient(135deg, ${c.prim}, ${c.bright});
-          border: none; border-radius: 8px;
-          color: #fff; font-family: 'DM Sans', sans-serif;
-          font-size: 13px; font-weight: 600;
-          cursor: pointer; text-decoration: none;
-          letter-spacing: 0.05em;
-          transition: transform 0.2s, box-shadow 0.2s, background 0.4s;
-        }
-        .lp-nav__login:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 4px 16px ${c.glow};
-        }
 
         .lp-hero {
           height: 100vh;
@@ -209,9 +113,10 @@ export default function HomePage() {
         }
 
         .lp-hero__title {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: clamp(36px, 8vw, 64px);
-          font-weight: 700;
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: clamp(48px, 10vw, 80px);
+          font-weight: 400;
+          letter-spacing: 0.04em;
           color: #e8e4e0;
           line-height: 1.05;
           margin-bottom: 16px;
@@ -240,9 +145,9 @@ export default function HomePage() {
           background: linear-gradient(135deg, ${c.prim}, ${c.bright});
           border: none; border-radius: 10px;
           color: #fff;
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 16px; font-weight: 600;
-          letter-spacing: 0.08em;
+          font-family: 'Barlow Condensed', sans-serif;
+          font-size: 15px; font-weight: 600;
+          letter-spacing: 0.12em;
           cursor: pointer; text-decoration: none;
           transition: transform 0.25s, box-shadow 0.25s, background 0.4s;
         }
@@ -303,7 +208,7 @@ export default function HomePage() {
         }
         .lp-hero__arrow:hover {
           border-color: ${c.bright};
-          background: rgba(154,3,30,0.15);
+          background: ${c.border};
         }
 
         .lp-hero__scroll {
@@ -327,20 +232,7 @@ export default function HomePage() {
         }
       `}</style>
 
-      <nav className="lp-nav">
-        <Link href="/" className="lp-nav__brand">VMBol en Red</Link>
-        <div className="lp-nav__links">
-          <Link href="/" className="lp-nav__link active">Dashboard</Link>
-          <Link href="/tienda" className="lp-nav__link">Tienda</Link>
-        </div>
-        <div className="lp-nav__right">
-          <button className="lp-nav__cart-btn" onClick={handleCartClick}>
-            <ShoppingCart size={18} />
-            {guestCount > 0 && <span className="lp-nav__cart-badge">{guestCount}</span>}
-          </button>
-          <Link href="/login" className="lp-nav__login">Iniciar Sesi&oacute;n</Link>
-        </div>
-      </nav>
+      <LandingNav />
 
       <section className="lp-hero">
         <div className="lp-hero__track" ref={trackRef}>

@@ -69,8 +69,7 @@ export default function AdminDashboard() {
 
   const { stats, ventas_mensuales, pedidos_recientes, clientes_recientes,
           ventas_detalladas, productos_recientes, pedidos_activos,
-          productos_mas_vendidos = [], recomendaciones_reabastecimiento = [],
-          prediccion_ml = {} } = data;
+          productos_mas_vendidos = [] } = data;
 
   const pieData = [
     { name: "Pendientes", value: stats.pendientes },
@@ -209,120 +208,39 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
-        {/* ── Top Selling & Restock Recommendations ────────────── */}
-        <div style={{ ...styles.contentRow, marginTop: 20 }}>
-          <div style={styles.leftCol}>
-            <div style={styles.card}>
-              <div style={styles.cardHeader}>
-                <span style={styles.cardTitle}><ShoppingBag size={16} style={{ verticalAlign: "middle", marginRight: 6 }} /> Productos más vendidos</span>
-              </div>
-              <div style={styles.tableWrapper}>
-                <table style={styles.table}>
-                  <thead>
-                    <tr>
-                      {["#", "Nombre", "Categoría", "Vendido", "Stock", "Precio"].map(h => (
-                        <th key={h} style={styles.th}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {productos_mas_vendidos.map((p, i) => (
-                      <tr key={p.id_producto} style={{ background: i % 2 === 0 ? "rgba(154,3,30,0.04)" : "transparent" }}>
-                        <td style={styles.td}>{i + 1}</td>
-                        <td style={styles.td}>{p.nombre}</td>
-                        <td style={styles.td}>{p.categoria}</td>
-                        <td style={{ ...styles.td, color: "#10b981", fontWeight: 700 }}>{p.total_vendido}</td>
-                        <td style={{ ...styles.td, color: p.stock <= 5 ? "#ef4444" : "#d9d9d9", fontWeight: p.stock <= 5 ? 700 : 400 }}>{p.stock}</td>
-                        <td style={styles.td}>${p.precio.toFixed(2)}</td>
-                      </tr>
+        {/* ── Top Selling ────────────── */}
+        <div style={{ marginTop: 20 }}>
+          <div style={styles.card}>
+            <div style={styles.cardHeader}>
+              <span style={styles.cardTitle}><ShoppingBag size={16} style={{ verticalAlign: "middle", marginRight: 6 }} /> Productos más vendidos</span>
+              <a href="/admin/reabastecimiento" style={styles.cardLink}>Ver reabastecimiento →</a>
+            </div>
+            <div style={styles.tableWrapper}>
+              <table style={styles.table}>
+                <thead>
+                  <tr>
+                    {["#", "Nombre", "Categoría", "Vendido", "Stock", "Precio"].map(h => (
+                      <th key={h} style={styles.th}>{h}</th>
                     ))}
-                    {productos_mas_vendidos.length === 0 && (
-                      <tr><td colSpan={6} style={{ ...styles.td, textAlign: "center", color: "#a0a0a0" }}>Sin datos de ventas aún</td></tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <div style={styles.rightCol}>
-            <div style={styles.card}>
-              <div style={styles.cardHeader}>
-                <span style={styles.cardTitle}><TrendingUp size={16} style={{ verticalAlign: "middle", marginRight: 6 }} /> Recomendaciones de reabastecimiento</span>
-              </div>
-              <div style={{ padding: 16 }}>
-                {recomendaciones_reabastecimiento.length === 0 ? (
-                  <div style={{ color: "#a0a0a0", fontSize: 13, textAlign: "center", padding: 20 }}>
-                    No hay productos con stock bajo
-                  </div>
-                ) : (
-                  recomendaciones_reabastecimiento.map((p, i) => (
-                    <div key={p.id_producto} style={{
-                      display: "flex", alignItems: "center", gap: 12,
-                      padding: "10px 0", borderBottom: i < recomendaciones_reabastecimiento.length - 1 ? "1px solid rgba(154,3,30,0.08)" : "none"
-                    }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 13, color: "#d9d9d9", fontWeight: 600 }}>{p.nombre}</div>
-                        <div style={{ fontSize: 11, color: "#a0a0a0", marginTop: 2 }}>
-                          {p.categoria} · ${p.precio.toFixed(2)}
-                        </div>
-                      </div>
-                      <div style={{ textAlign: "right" }}>
-                        <div style={{ fontSize: 11, color: "#a0a0a0" }}>Stock</div>
-                        <div style={{ fontSize: 18, fontWeight: 700, color: p.stock <= 3 ? "#ef4444" : "#f59e0b" }}>{p.stock}</div>
-                      </div>
-                      <div style={{ textAlign: "right" }}>
-                        <div style={{ fontSize: 11, color: "#a0a0a0" }}>Vendido</div>
-                        <div style={{ fontSize: 18, fontWeight: 700, color: "#10b981" }}>{p.total_vendido}</div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            {(prediccion_ml.recomendaciones || []).length > 0 && (
-              <div style={styles.card}>
-                <div style={styles.cardHeader}>
-                  <span style={styles.cardTitle}><Zap size={16} style={{ verticalAlign: "middle", marginRight: 6 }} /> Predicción ML</span>
-                </div>
-                <div style={{ padding: 16 }}>
-                  <div style={{ fontSize: 11, color: "#a0a0a0", marginBottom: 12 }}>
-                    Basado en los productos más vendidos + reglas de asociación Apriori
-                    {prediccion_ml.total_reglas && (
-                      <span> · {prediccion_ml.total_reglas} reglas · Lift promedio {prediccion_ml.promedio_lift}</span>
-                    )}
-                  </div>
-                  {prediccion_ml.recomendaciones.map((p, i) => (
-                    <div key={p.id_producto} style={{
-                      display: "flex", alignItems: "center", gap: 12,
-                      padding: "10px 0", borderBottom: i < prediccion_ml.recomendaciones.length - 1 ? "1px solid rgba(154,3,30,0.08)" : "none"
-                    }}>
-                      <img src={p.imagen || `https://via.placeholder.com/40/1f2429/3b82f6?text=${encodeURIComponent((p.nombre||"").slice(0,2))}`}
-                        alt={p.nombre}
-                        style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover", border: "1px solid rgba(154,3,30,0.2)" }}
-                        onError={e => { e.target.onerror=null; e.target.src="https://via.placeholder.com/40/1f2429/3b82f6?text=P"; }}
-                      />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 13, color: "#d9d9d9", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nombre}</div>
-                        <div style={{ fontSize: 11, color: "#a0a0a0", marginTop: 1 }}>
-                          {p.categoria} · ${p.precio.toFixed(2)}
-                        </div>
-                        <div style={{ fontSize: 10, color: "#3b82f6", marginTop: 2 }}>
-                          Lift: {p.lift} · Confianza: {(p.confidence * 100).toFixed(0)}%
-                        </div>
-                      </div>
-                      <div style={{ textAlign: "right", fontSize: 10, color: "#a0a0a0", maxWidth: 100 }}>
-                        <div style={{ fontWeight: 600, color: "#f59e0b", marginBottom: 2 }}>Basado en:</div>
-                        {p.basado_en_nombres?.slice(0, 2).map((n, idx) => (
-                          <div key={idx} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{n}</div>
-                        ))}
-                      </div>
-                    </div>
+                  </tr>
+                </thead>
+                <tbody>
+                  {productos_mas_vendidos.map((p, i) => (
+                    <tr key={p.id_producto} style={{ background: i % 2 === 0 ? "rgba(154,3,30,0.04)" : "transparent" }}>
+                      <td style={styles.td}>{i + 1}</td>
+                      <td style={styles.td}>{p.nombre}</td>
+                      <td style={styles.td}>{p.categoria}</td>
+                      <td style={{ ...styles.td, color: "#10b981", fontWeight: 700 }}>{p.total_vendido}</td>
+                      <td style={{ ...styles.td, color: p.stock <= 5 ? "#ef4444" : "#d9d9d9", fontWeight: p.stock <= 5 ? 700 : 400 }}>{p.stock}</td>
+                      <td style={styles.td}>${p.precio.toFixed(2)}</td>
+                    </tr>
                   ))}
-                </div>
-              </div>
-            )}
+                  {productos_mas_vendidos.length === 0 && (
+                    <tr><td colSpan={6} style={{ ...styles.td, textAlign: "center", color: "#a0a0a0" }}>Sin datos de ventas aún</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -502,11 +420,11 @@ const styles = {
   statIcon: { fontSize: 28 },
   statSub: { fontSize: 12, margin: 0 },
 
-  contentRow: { display: "grid", gridTemplateColumns: "1fr 320px", gap: 20 },
-  leftCol: { display: "flex", flexDirection: "column", gap: 20 },
-  rightCol: { display: "flex", flexDirection: "column", gap: 20 },
+  contentRow: { display: "grid", gridTemplateColumns: "minmax(0, 1fr) 320px", gap: 20 },
+  leftCol: { display: "flex", flexDirection: "column", gap: 20, minWidth: 0 },
+  rightCol: { display: "flex", flexDirection: "column", gap: 20, minWidth: 0 },
 
-  card: { background: "#1f2429", borderRadius: 12, border: "1px solid rgba(154,3,30,0.2)", overflow: "hidden" },
+  card: { background: "#1f2429", borderRadius: 12, border: "1px solid rgba(154,3,30,0.2)", overflow: "hidden", minWidth: 0 },
   cardHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", borderBottom: "2px solid #9a031e", background: "#121418" },
   cardTitle: { color: "#c1121f", fontWeight: 700, fontSize: 14 },
   cardLink: { color: "#9a031e", fontSize: 12, textDecoration: "none" },

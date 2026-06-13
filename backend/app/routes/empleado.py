@@ -45,6 +45,7 @@ def listar_pedidos(
             LEFT JOIN ubicacion_entrega ue ON p.id_pedido = ue.id_pedido
             WHERE p.estado_entrega = 'sin_asignar'
               AND p.estado NOT IN ('cancelado')
+              AND ue.id IS NOT NULL
             ORDER BY p.fecha ASC
         """),
     ).fetchall()
@@ -102,6 +103,16 @@ def asignar_pedido(
         raise HTTPException(status_code=404, detail="Pedido no encontrado")
     if pedido.estado_entrega != "sin_asignar":
         raise HTTPException(status_code=400, detail="El pedido ya está asignado o en curso")
+
+    ubicacion = db.execute(
+        text("SELECT id FROM ubicacion_entrega WHERE id_pedido = :pid"),
+        {"pid": id_pedido},
+    ).fetchone()
+    if not ubicacion:
+        raise HTTPException(
+            status_code=400,
+            detail="El cliente aún no ha establecido una ubicación de entrega para este pedido"
+        )
 
     ya_asignado = db.execute(
         text("SELECT id FROM pedido_empleado WHERE id_pedido = :pid AND id_empleado = :uid"),

@@ -480,6 +480,18 @@ class Notificacion(Base):
     meta_data       = Column("metadata", JSONB)
 
 
+class MensajeChat(Base):
+    __tablename__ = "mensajes_chat"
+
+    id              = Column(Integer, primary_key=True, index=True)
+    id_pedido       = Column(Integer, ForeignKey("pedidos.id_pedido"), nullable=False)
+    remitente_id    = Column(Integer, nullable=False)
+    remitente_tipo  = Column(String(20), nullable=False)
+    mensaje         = Column(Text, nullable=False)
+    fecha_creacion  = Column(DateTime, server_default=func.now())
+    leido           = Column(Boolean, default=False)
+
+
 class Configuracion(Base):
     __tablename__ = "configuracion"
 

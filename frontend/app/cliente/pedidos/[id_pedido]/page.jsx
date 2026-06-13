@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import ClienteSidebar from "@/components/ClienteSidebar";
 import { useTheme } from "@/context/ThemeContext";
-import { Building2, Plane, ShieldCheck, CheckCircle, Zap, Check, Calendar, MapPin, Bike, X, Save, AlertTriangle, CreditCard, Package, Globe, Home, Phone, User, Pencil } from "lucide-react";
+import { Building2, Plane, ShieldCheck, CheckCircle, Zap, Check, Calendar, MapPin, Bike, X, Save, AlertTriangle, CreditCard, Package, Globe, Home, Phone, User, Pencil, MessageCircle, Send } from "lucide-react";
 import "@/styles/dashboard.css";
 
 const API = "http://localhost:8000";
@@ -317,6 +317,11 @@ export default function DetallePedido() {
   const [toast,    setToast]    = useState({ msg:"", ok:true });
   const [mUbi,     setMUbi]     = useState(false);
   const [tracking, setTracking] = useState(null);
+  const [chatAbierto, setChatAbierto] = useState(false);
+  const [chatMsgs, setChatMsgs] = useState([]);
+  const [chatTxt, setChatTxt] = useState("");
+  const chatEndRef = useRef(null);
+  const [chatLeido, setChatLeido] = useState(false);
 
   const showToast = (msg, ok=true) => {
     setToast({msg,ok}); setTimeout(()=>setToast({msg:""}),3500);
@@ -347,6 +352,45 @@ export default function DetallePedido() {
     }, 5000);
     return ()=>clearInterval(iv);
   },[token,idPed]);
+
+  const cargarChat = useCallback(async ()=>{
+    if (!token||!idPed) return;
+    try {
+      const r = await fetch(`${API}/chat/${idPed}`,{headers:{Authorization:`Bearer ${token}`}});
+      if (!r.ok) return;
+      const d = await r.json();
+      setChatMsgs(d.mensajes||[]);
+    } catch {}
+  },[token,idPed]);
+
+  useEffect(()=>{
+    if (!pedido || pedido.estado_entrega !== "en_camino") return;
+    cargarChat();
+    fetch(`${API}/chat/${idPed}/leer`,{method:"PUT",headers:{Authorization:`Bearer ${token}`}}).catch(()=>{});
+  },[pedido,idPed,token,cargarChat]);
+
+  useEffect(()=>{
+    if (!pedido || pedido.estado_entrega !== "en_camino") return;
+    const iv = setInterval(cargarChat, 3000);
+    return ()=>clearInterval(iv);
+  },[pedido,idPed,cargarChat]);
+
+  useEffect(()=>{
+    chatEndRef.current?.scrollIntoView({behavior:"smooth"});
+  },[chatMsgs]);
+
+  async function enviarChat() {
+    const txt = chatTxt.trim();
+    if (!txt||!token||!idPed) return;
+    try {
+      const r = await fetch(`${API}/chat/${idPed}`,{
+        method:"POST",
+        headers:{"Content-Type":"application/json",Authorization:`Bearer ${token}`},
+        body:JSON.stringify({mensaje:txt}),
+      });
+      if (r.ok) { setChatTxt(""); cargarChat(); }
+    } catch {}
+  }
 
   async function marcarEntregado() {
     if (!confirm("¿Confirmas que ya recibiste tu pedido?")) return;
@@ -826,6 +870,110 @@ export default function DetallePedido() {
           </div>
 
         </div>
+
+        {/* ── Chat widget (solo en_camino) ── */}
+        {estado_entrega === "en_camino" && (
+          <>
+            {!chatAbierto && (
+              <button onClick={()=>{setChatAbierto(true);cargarChat();setChatLeido(true);}}
+                style={{
+                  position:"fixed",bottom:"24px",right:"24px",zIndex:9998,
+                  width:"56px",height:"56px",borderRadius:"50%",
+                  background:"var(--blue)",border:"none",cursor:"pointer",
+                  display:"flex",alignItems:"center",justifyContent:"center",
+                  boxShadow:"0 4px 20px rgba(37,99,235,.5)",
+                  transition:"all .2s",
+                }}
+                onMouseEnter={e=>e.currentTarget.style.transform="scale(1.08)"}
+                onMouseLeave={e=>e.currentTarget.style.transform="scale(1)"}>
+                <MessageCircle size={24} color="#fff" />
+              </button>
+            )}
+
+            {chatAbierto && (
+              <div style={{
+                position:"fixed",bottom:"24px",right:"24px",zIndex:9998,
+                width:"360px",maxHeight:"520px",
+                background:"var(--card)",borderRadius:"var(--r-l)",
+                border:"1px solid var(--border)",
+                boxShadow:"0 8px 40px rgba(0,0,0,.4)",
+                display:"flex",flexDirection:"column",overflow:"hidden",
+              }}>
+                {/* Titlebar */}
+                <div style={{
+                  display:"flex",alignItems:"center",justifyContent:"space-between",
+                  padding:"12px 16px",background:"var(--bg-3)",
+                  borderBottom:"2px solid var(--blue)",flexShrink:0,
+                  cursor:"default",userSelect:"none",
+                }}>
+                  <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
+                    <MessageCircle size={16} color="var(--blue-bright)" />
+                    <span style={{fontFamily:"var(--font-d)",fontSize:"13px",letterSpacing:"2px",color:"var(--blue-bright)",textTransform:"uppercase"}}>
+                      Chat con Repartidor
+                    </span>
+                  </div>
+                  <button onClick={()=>setChatAbierto(false)}
+                    style={{background:"transparent",border:"none",color:"var(--text-3)",cursor:"pointer",padding:"2px",display:"flex"}}>
+                    <X size={18} />
+                  </button>
+                </div>
+
+                {/* Messages */}
+                <div style={{flex:1,overflowY:"auto",padding:"12px 16px",display:"flex",flexDirection:"column",gap:"8px",minHeight:"200px"}}>
+                  {chatMsgs.length===0 && (
+                    <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"var(--font-c)",fontSize:"10px",letterSpacing:"2px",color:"var(--text-3)",textTransform:"uppercase"}}>
+                      Sin mensajes todavía
+                    </div>
+                  )}
+                  {chatMsgs.map((m,i)=>(
+                    <div key={m.id||i} style={{
+                      display:"flex",flexDirection:"column",
+                      alignItems: m.remitente_tipo==="cliente" ? "flex-end" : "flex-start",
+                    }}>
+                      <div style={{
+                        maxWidth:"85%",padding:"8px 12px",borderRadius:"var(--r-s)",
+                        background: m.remitente_tipo==="cliente" ? "var(--blue)" : "var(--bg-3)",
+                        color: m.remitente_tipo==="cliente" ? "#fff" : "var(--text)",
+                        fontSize:"13px",lineHeight:1.4,
+                      }}>
+                        {m.mensaje}
+                      </div>
+                      <span style={{
+                        fontFamily:"var(--font-c)",fontSize:"8px",letterSpacing:"1px",
+                        color:"var(--text-3)",marginTop:"2px",
+                      }}>
+                        {m.remitente_tipo==="cliente" ? "Tú" : "Repartidor"} · {m.fecha_creacion ? new Date(m.fecha_creacion).toLocaleTimeString("es-BO",{hour:"2-digit",minute:"2-digit"}) : ""}
+                      </span>
+                    </div>
+                  ))}
+                  <div ref={chatEndRef} />
+                </div>
+
+                {/* Input */}
+                <div style={{display:"flex",gap:"8px",padding:"10px 16px",borderTop:"1px solid var(--border)",background:"var(--bg)"}}>
+                  <input value={chatTxt} onChange={e=>setChatTxt(e.target.value)}
+                    onKeyDown={e=>{if(e.key==="Enter")enviarChat()}}
+                    placeholder="Escribe un mensaje..."
+                    style={{
+                      flex:1,padding:"8px 12px",borderRadius:"var(--r-s)",
+                      border:"1px solid var(--border)",background:"var(--bg-3)",
+                      color:"var(--text)",fontSize:"13px",outline:"none",
+                      fontFamily:"inherit",
+                    }}/>
+                  <button onClick={enviarChat}
+                    style={{
+                      width:"36px",height:"36px",borderRadius:"var(--r-s)",
+                      background:"var(--blue)",border:"none",cursor:"pointer",
+                      display:"flex",alignItems:"center",justifyContent:"center",
+                      flexShrink:0,
+                    }}>
+                    <Send size={16} color="#fff" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </main>
 
       {mUbi && (

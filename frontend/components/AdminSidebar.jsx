@@ -16,18 +16,55 @@ const C = {
   danger:  "#ef4444",
 };
 
-const LINKS = [
-  { icon: "", label: "Dashboard",      href: "/admin/dashboard" },
-  { icon: "", label: "Pedidos",        href: "/admin/pedidos" },
-  { icon: "", label: "Productos",     href: "/admin/productos" },
-  { icon: "", label: "Usuarios",       href: "/admin/usuarios" },
-  { icon: "", label: "Empleados",      href: "/admin/empleados" },
-  { icon: "", label: "Pagos",          href: "/admin/pagos" },
-  { icon: "", label: "Reportes",       href: "/admin/reportes" },
-  { icon: "", label: "Auditoría",      href: "/admin/auditoria" },
-  { icon: "", label: "Configuración", href: "/admin/configuracion" },
-  { icon: "", label: "Prod. Externos", href: "/admin/productos-externos" },
-  { icon: "", label: "ML Recomendaciones", href: "/admin/recomendaciones" },
+const SECTIONS = [
+  {
+    title: "Panel Principal",
+    links: [
+      { icon: "", label: "Dashboard", href: "/admin/dashboard" },
+    ],
+  },
+  {
+    title: "Inventario",
+    links: [
+      { icon: "", label: "Productos", href: "/admin/productos" },
+      { icon: "", label: "Prod. Externos", href: "/admin/productos-externos" },
+    ],
+  },
+  {
+    title: "Ventas",
+    links: [
+      { icon: "", label: "Pedidos", href: "/admin/pedidos" },
+      { icon: "", label: "Pagos", href: "/admin/pagos" },
+    ],
+  },
+  {
+    title: "Usuarios",
+    links: [
+      { icon: "", label: "Clientes", href: "/admin/usuarios" },
+      { icon: "", label: "Empleados", href: "/admin/empleados" },
+    ],
+  },
+  {
+    title: "Reportes",
+    links: [
+      { icon: "", label: "Reportes", href: "/admin/reportes" },
+      { icon: "", label: "Auditoría", href: "/admin/auditoria" },
+    ],
+  },
+  {
+    title: "Machine Learning",
+    links: [
+      { icon: "", label: "ML Recomendaciones", href: "/admin/recomendaciones" },
+      { icon: "", label: "Predicción ML", href: "/admin/prediccion-ml" },
+      { icon: "", label: "Reabastecimiento", href: "/admin/reabastecimiento" },
+    ],
+  },
+  {
+    title: "Sistema",
+    links: [
+      { icon: "", label: "Configuración", href: "/admin/configuracion" },
+    ],
+  },
 ];
 
 const IconBell = ({ size = 18 }) => (
@@ -363,30 +400,39 @@ export default function AdminSidebar({ user }) {
         )}
 
         {/* ── Navegación ── */}
-        <ul style={{ listStyle: "none", padding: "12px 0", margin: 0, flex: 1 }}>
-          {LINKS.map(link => {
-            const active = pathname === link.href;
-            return (
-              <li key={link.href} style={{ margin: "2px 10px" }}>
-                <a href={link.href} style={{
-                  display: "flex", alignItems: "center", gap: "12px",
-                  padding: "10px 13px", borderRadius: "8px", textDecoration: "none",
-                  color: active ? "#fff" : C.muted,
-                  background: active ? `rgba(154,3,30,0.25)` : "transparent",
-                  borderLeft: active ? `3px solid ${C.accent2}` : "3px solid transparent",
-                  boxShadow: active ? `0 2px 8px rgba(154,3,30,0.25)` : "none",
-                  fontSize: "13px", fontWeight: active ? "700" : "500",
-                  transition: "all 0.2s",
-                }}>
-                  <span style={{ fontSize: "16px", width: "20px", textAlign: "center", flexShrink: 0 }}>
-                    {link.icon}
-                  </span>
-                  <span style={{ flex: 1 }}>{link.label}</span>
-                </a>
-              </li>
-            );
-          })}
-        </ul>
+        <div style={{ flex: 1, overflowY: "auto", padding: "8px 0", scrollbarWidth: "none", msOverflowStyle: "none" }}>
+          {SECTIONS.map(section => (
+            <div key={section.title}>
+              <div style={{
+                padding: "16px 18px 6px", fontSize: "10px", fontWeight: "800",
+                color: C.accent2, textTransform: "uppercase", letterSpacing: "1.5px",
+              }}>
+                {section.title}
+              </div>
+              {section.links.map(link => {
+                const active = pathname === link.href;
+                return (
+                  <a key={link.href} href={link.href} style={{
+                    display: "flex", alignItems: "center", gap: "12px",
+                    padding: "9px 18px", margin: "1px 10px", borderRadius: "8px",
+                    textDecoration: "none",
+                    color: active ? "#fff" : C.muted,
+                    background: active ? `rgba(154,3,30,0.25)` : "transparent",
+                    borderLeft: active ? `3px solid ${C.accent2}` : "3px solid transparent",
+                    boxShadow: active ? `0 2px 8px rgba(154,3,30,0.25)` : "none",
+                    fontSize: "13px", fontWeight: active ? "700" : "500",
+                    transition: "all 0.2s",
+                  }}>
+                    <span style={{ fontSize: "15px", width: "20px", textAlign: "center", flexShrink: 0 }}>
+                      {link.icon}
+                    </span>
+                    <span style={{ flex: 1 }}>{link.label}</span>
+                  </a>
+                );
+              })}
+            </div>
+          ))}
+        </div>
 
         {/* ── Cerrar Sesión ── */}
         <div style={{ padding: "14px 16px", borderTop: `1px solid rgba(154,3,30,0.25)` }}>

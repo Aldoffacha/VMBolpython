@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ShoppingCart, X, Check, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Check, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import LandingNav from "@/components/LandingNav";
 import "@/styles/dashboard.css";
 
 const API = "http://localhost:8000";
@@ -218,16 +217,12 @@ function GuestModalAddCart({ prod, tc, onClose, onOk }) {
 }
 
 export default function TiendaPage() {
-  const router = useRouter();
-
   const [data,   setData]   = useState(null);
   const [load,   setLoad]   = useState(true);
   const [tc,     setTc]     = useState(9.17);
   const [mAdd,   setMAdd]   = useState(null);
   const [toast,  setToast]  = useState("");
   const [guestCount, setGuestCount] = useState(0);
-
-  const isLogged = typeof window !== "undefined" && document.cookie.includes("access_token=");
 
   const showToast = msg => {
     setToast(msg);
@@ -237,14 +232,6 @@ export default function TiendaPage() {
   const updateGuestCount = () => {
     const cart = JSON.parse(localStorage.getItem("guest_cart") || "[]");
     setGuestCount(cart.length);
-  };
-
-  const handleCartClick = () => {
-    if (isLogged) {
-      router.push("/cliente/carrito");
-    } else {
-      router.push("/login");
-    }
   };
 
   useEffect(() => {
@@ -279,87 +266,17 @@ export default function TiendaPage() {
       background: "#0d0f12",
       color: "#e8e4e0",
       minHeight: "100vh",
-      fontFamily: "'DM Sans', sans-serif",
+      fontFamily: "'Barlow', sans-serif",
     }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        .tnd-nav {
-          position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-          display: flex; align-items: center; justify-content: space-between;
-          padding: 12px 28px;
-          background: rgba(13,15,18,0.9);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border-bottom: 1px solid rgba(154,3,30,0.3);
-        }
-        .tnd-nav__brand {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 20px; font-weight: 700;
-          color: #c1121f;
-          letter-spacing: 0.06em;
-          text-decoration: none;
-        }
-        .tnd-nav__links { display: flex; gap: 24px; align-items: center; }
-        .tnd-nav__link {
-          font-size: 13px; font-weight: 500;
-          color: #7a7570;
-          text-decoration: none;
-          letter-spacing: 0.04em;
-          transition: color 0.2s;
-          cursor: pointer;
-          background: none; border: none;
-          font-family: 'DM Sans', sans-serif;
-        }
-        .tnd-nav__link:hover, .tnd-nav__link.active { color: #c1121f; font-weight: 600; }
-
-        .tnd-nav__right { display: flex; gap: 12px; align-items: center; }
-
-        .tnd-cart-btn {
-          position: relative;
-          padding: 8px 12px;
-          background: transparent;
-          border: 1px solid rgba(154,3,30,0.3);
-          border-radius: 8px;
-          color: #e8e4e0;
-          cursor: pointer;
-          font-size: 16px;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          transition: border-color 0.2s;
-        }
-        .tnd-cart-btn:hover { border-color: #c1121f; }
-        .tnd-cart-badge {
-          position: absolute;
-          top: -6px; right: -6px;
-          background: #c1121f; color: #fff;
-          border-radius: 50%;
-          width: 18px; height: 18px;
-          font-size: 10px; font-weight: 800;
-          display: flex; align-items: center; justify-content: center;
-        }
-        .tnd-login-btn {
-          padding: 8px 18px;
-          background: linear-gradient(135deg, #9a031e, #c1121f);
-          border: none; border-radius: 8px;
-          color: #fff; font-family: 'DM Sans', sans-serif;
-          font-size: 13px; font-weight: 600;
-          cursor: pointer; text-decoration: none;
-          letter-spacing: 0.05em;
-          transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .tnd-login-btn:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 4px 16px rgba(154,3,30,0.45);
-        }
 
         .tnd-hero {
           padding: 100px 28px 50px;
           text-align: center;
           background:
-            radial-gradient(ellipse 60% 50% at 50% 35%, rgba(154,3,30,0.35) 0%, transparent 70%),
+            radial-gradient(ellipse 60% 50% at 50% 35%, rgba(37,99,235,0.35) 0%, transparent 70%),
             radial-gradient(ellipse 40% 30% at 80% 80%, rgba(37,99,235,0.08) 0%, transparent 60%);
         }
         .tnd-hero__tag {
@@ -367,24 +284,27 @@ export default function TiendaPage() {
           padding: 5px 14px; border-radius: 20px;
           font-size: 11px; font-weight: 600;
           letter-spacing: 0.12em; text-transform: uppercase;
-          background: rgba(154,3,30,0.3); color: #c1121f;
+          background: rgba(37,99,235,0.3); color: #3b82f6;
           margin-bottom: 16px;
+          font-family: 'Barlow Condensed', sans-serif;
         }
         .tnd-hero__title {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: clamp(36px, 6vw, 52px);
-          font-weight: 700;
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: clamp(42px, 7vw, 60px);
+          font-weight: 400;
           color: #e8e4e0;
           line-height: 1.05;
           margin-bottom: 10px;
+          letter-spacing: 0.02em;
         }
-        .tnd-hero__title span { color: #c1121f; }
+        .tnd-hero__title span { color: #3b82f6; }
         .tnd-hero__sub {
           font-size: clamp(14px, 2vw, 17px);
           color: #7a7570;
           font-weight: 300;
           max-width: 500px;
           margin: 0 auto 24px;
+          font-family: 'Barlow', sans-serif;
         }
         .tnd-hero__stats {
           display: flex;
@@ -396,16 +316,18 @@ export default function TiendaPage() {
           text-align: center;
         }
         .tnd-hero__stat-num {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 28px;
-          font-weight: 700;
-          color: #c1121f;
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: 32px;
+          font-weight: 400;
+          color: #3b82f6;
+          letter-spacing: 0.03em;
         }
         .tnd-hero__stat-lbl {
           font-size: 11px;
           color: #7a7570;
           letter-spacing: 0.06em;
           text-transform: uppercase;
+          font-family: 'Barlow Condensed', sans-serif;
         }
 
         .tnd-body {
@@ -440,12 +362,12 @@ export default function TiendaPage() {
           text-align: center;
           padding: 24px 16px;
           margin-top: 20px;
-          border-top: 1px solid rgba(154,3,30,0.15);
+          border-top: 1px solid rgba(37,99,235,0.15);
           color: #7a7570;
           font-size: 13px;
         }
         .tnd-footer a {
-          color: #c1121f;
+          color: #3b82f6;
           font-weight: 600;
           text-decoration: none;
         }
@@ -457,38 +379,21 @@ export default function TiendaPage() {
         }
         .tnd-loading__ring {
           width: 36px; height: 36px;
-          border: 3px solid rgba(154,3,30,0.2);
-          border-top-color: #c1121f;
+          border: 3px solid rgba(37,99,235,0.2);
+          border-top-color: #3b82f6;
           border-radius: 50%;
           animation: spin 0.8s linear infinite;
         }
         .tnd-loading__text {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 14px;
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: 16px;
           letter-spacing: 4px;
           color: #7a7570;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
 
-      <nav className="tnd-nav">
-        <Link href="/" className="tnd-nav__brand">VMBol en Red</Link>
-        <div className="tnd-nav__links">
-          <Link href="/" className="tnd-nav__link">Inicio</Link>
-          <Link href="/tienda" className="tnd-nav__link active">Tienda</Link>
-        </div>
-        <div className="tnd-nav__right">
-          <button className="tnd-cart-btn" onClick={handleCartClick}>
-            <ShoppingCart size={18} />
-            {guestCount > 0 && <span className="tnd-cart-badge">{guestCount}</span>}
-          </button>
-          {!isLogged ? (
-            <Link href="/login" className="tnd-login-btn">Iniciar Sesi&oacute;n</Link>
-          ) : (
-            <Link href="/cliente/dashboard" className="tnd-login-btn">Mi Panel</Link>
-          )}
-        </div>
-      </nav>
+      <LandingNav />
 
       <section className="tnd-hero">
         <span className="tnd-hero__tag">Tienda Pública</span>

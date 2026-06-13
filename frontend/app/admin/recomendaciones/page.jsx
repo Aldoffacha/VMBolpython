@@ -21,6 +21,7 @@ export default function AdminRecomendaciones() {
   const [user, setUser] = useState(null);
   const [pagina, setPagina] = useState(1);
   const [stats, setStats] = useState({ avgLift: 0, avgConfidence: 0, avgSupport: 0 });
+const [modelStats, setModelStats] = useState([]);
 
   useEffect(() => {
     const stored = sessionStorage.getItem("user");
@@ -47,6 +48,14 @@ export default function AdminRecomendaciones() {
         const avgSupport = data.reglas.reduce((s, r) => s + r.support, 0) / data.reglas.length;
         setStats({ avgLift, avgConfidence, avgSupport });
       }
+
+      const statsRes = await fetch(`${API}/api/recomendaciones/stats`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (statsRes.ok) {
+        const statsData = await statsRes.json();
+        setModelStats(statsData.stats || []);
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -58,7 +67,16 @@ export default function AdminRecomendaciones() {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await fetchReglas(true);
+    try {
+      const token = getToken();
+      await fetch(`${API}/api/recomendaciones/entrenar`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      await fetchReglas(false);
+    } catch (e) {
+      console.error(e);
+    }
     setTimeout(() => setRefreshing(false), 500);
   };
 
@@ -105,6 +123,23 @@ export default function AdminRecomendaciones() {
           </div>
         )}
 
+        {/* MODEL STATS PER CATEGORY */}
+        {!loading && modelStats.length > 0 && (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12, marginBottom: 20 }}>
+            {modelStats.map(ms => (
+              <div key={`${ms.categoria}-${ms.origen}`} style={{ ...s.statCard, borderLeftColor: ms.origen === "local" ? "#10b981" : "#3b82f6", padding: "12px 14px" }}>
+                <p style={{ margin: "0 0 2px", fontSize: 11, color: "#a0a0a0", textTransform: "uppercase", letterSpacing: 0.5 }}>
+                  {ms.categoria} <span style={{ color: ms.origen === "local" ? "#10b981" : "#3b82f6" }}>({ms.origen})</span>
+                </p>
+                <p style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>{ms.total_reglas} reglas</p>
+                <p style={{ margin: 0, fontSize: 10, color: "#a0a0a0" }}>
+                  Lift {ms.avg_lift} · Conf {ms.avg_confidence}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* CARD TABLA */}
         <div style={s.card}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
@@ -125,13 +160,13 @@ export default function AdminRecomendaciones() {
                 <table style={s.table}>
                   <thead>
                     <tr>
-                      {["#", "Antecedentes (Si compran...)", "Consecuentes (Recomendar...)", "Soporte", "Confianza", "Lift", "Interpretación"].map(h => (
+                      {["#", "Antecedentes (Si compran...)", "Consecuentes (Recomendar...)", "Categoría", "Origen", "Soporte", "Confianza", "Lift", "Interpretación"].map(h => (
                         <th key={h} style={s.th}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {reglas.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA).map((r, i) => {
+                      {reglas.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA).map((r, i) => {
                       const idx = (pagina - 1) * POR_PAGINA + i + 1;
                       return (
                         <tr key={idx} style={{ background: i % 2 === 0 ? "rgba(154,3,30,0.04)" : "transparent" }}>
@@ -149,6 +184,17 @@ export default function AdminRecomendaciones() {
                                 <span key={c.id} style={{ ...s.badge, background: "rgba(16,185,129,0.15)", color: "#10b981", border: "1px solid rgba(16,185,129,0.3)" }}>{c.nombre}</span>
                               ))}
                             </div>
+                          </td>
+                          <td style={{ ...s.td, fontSize: 12 }}>
+                            <span style={{ ...s.badge, background: "rgba(245,158,11,0.15)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.3)" }}>{r.categoria}</span>
+                          </td>
+                          <td style={{ ...s.td, fontSize: 12 }}>
+                            <span style={{
+                              ...s.badge,
+                              background: r.origen === "local" ? "rgba(16,185,129,0.15)" : "rgba(59,130,246,0.15)",
+                              color: r.origen === "local" ? "#10b981" : "#3b82f6",
+                              border: `1px solid ${r.origen === "local" ? "rgba(16,185,129,0.3)" : "rgba(59,130,246,0.3)"}`,
+                            }}>{r.origen}</span>
                           </td>
                           <td style={s.td}>{(r.support * 100).toFixed(2)}%</td>
                           <td style={s.td}>{(r.confidence * 100).toFixed(1)}%</td>
