@@ -17,6 +17,8 @@ def registrar_auditoria(db, current_user):
     tipo = current_user.get("tipo_usuario") or "administrador"
     db.execute(text("SET LOCAL app.usuario_id = :uid"),   {"uid":  int(uid)})
     db.execute(text("SET LOCAL app.tipo_usuario = :tipo"), {"tipo": tipo})
+
+
 # ─────────────────────────────────────────────
 #  DASHBOARD - STATS
 # ─────────────────────────────────────────────
@@ -125,7 +127,7 @@ def get_dashboard(
         for p in pedidos_activos_raw
     ]
 
-    # ── Top selling products ─────────────────────────────────
+    # ── Top selling products ──────────────────────────────────
     top_selling_raw = db.execute(text("""
         SELECT p.id_producto, p.nombre, p.precio, p.imagen, p.categoria, p.stock,
                SUM(pd.cantidad)::int as total_vendido
@@ -138,6 +140,7 @@ def get_dashboard(
         ORDER BY total_vendido DESC
         LIMIT 10
     """)).fetchall()
+
     productos_mas_vendidos = [
         {"id_producto": r.id_producto, "nombre": r.nombre, "precio": float(r.precio),
          "imagen": r.imagen or "", "categoria": r.categoria, "stock": r.stock,
@@ -145,7 +148,47 @@ def get_dashboard(
         for r in top_selling_raw
     ]
 
-    # ── Restock recommendations (low stock + high demand) ────
+    # ── Ventas mensuales por producto (últimos 12 meses) ─────
+    if top_selling_raw:
+        top_ids = [r.id_producto for r in top_selling_raw]
+        fecha_inicio = (hoy.replace(day=1) - timedelta(days=11 * 30)).strftime("%Y-%m-%d")
+
+        monthly_raw = db.execute(text("""
+            SELECT pd.id_producto,
+                   EXTRACT(YEAR  FROM pe.fecha)::int as anio,
+                   EXTRACT(MONTH FROM pe.fecha)::int as mes,
+                   SUM(pd.cantidad)::int as total
+            FROM pedido_detalles pd
+            JOIN pedidos pe ON pd.id_pedido = pe.id_pedido
+            WHERE pe.estado IN ('pagado', 'enviado')
+              AND pd.id_producto = ANY(:product_ids)
+              AND pe.fecha >= :fecha_inicio
+            GROUP BY pd.id_producto, anio, mes
+            ORDER BY pd.id_producto, anio, mes
+        """), {"product_ids": top_ids, "fecha_inicio": fecha_inicio}).fetchall()
+
+        # Generar los 12 meses de referencia y rellenar con 0 donde no hay ventas
+        meses_ref = []
+        for i in range(11, -1, -1):
+            ref = hoy.replace(day=1) - timedelta(days=i * 30)
+            meses_ref.append((ref.year, ref.month))
+
+        monthly_map = {pid: {(anio, mes): 0 for (anio, mes) in meses_ref} for pid in top_ids}
+
+        for r in monthly_raw:
+            pid = int(r.id_producto)
+            key = (int(r.anio), int(r.mes))
+            if pid in monthly_map and key in monthly_map[pid]:
+                monthly_map[pid][key] = r.total
+
+        for prod in productos_mas_vendidos:
+            pid = prod["id_producto"]
+            prod["ventas_mensuales"] = [monthly_map[pid][k] for k in meses_ref]
+    else:
+        for prod in productos_mas_vendidos:
+            prod["ventas_mensuales"] = []
+
+    # ── Restock recommendations ───────────────────────────────
     restock_raw = db.execute(text("""
         SELECT p.id_producto, p.nombre, p.precio, p.imagen, p.categoria, p.stock,
                COALESCE(SUM(pd.cantidad)::int, 0) as total_vendido
@@ -158,6 +201,7 @@ def get_dashboard(
         ORDER BY total_vendido DESC, p.stock ASC
         LIMIT 10
     """)).fetchall()
+
     recomendaciones_reabastecimiento = [
         {"id_producto": r.id_producto, "nombre": r.nombre, "precio": float(r.precio),
          "imagen": r.imagen or "", "categoria": r.categoria, "stock": r.stock,
@@ -165,7 +209,7 @@ def get_dashboard(
         for r in restock_raw
     ]
 
-    # ── ML Prediction: based on top sellers, what to stock next (via Apriori) ────
+    # ── ML Prediction (Apriori) ───────────────────────────────
     prediccion_ml = {"recomendaciones": [], "total_reglas": 0, "promedio_lift": 0}
     if top_selling_raw:
         top_ids = [r.id_producto for r in top_selling_raw]
@@ -315,7 +359,7 @@ def crear_usuario(
         direccion=data.get("direccion"),
     )
     db.add(nuevo)
-    registrar_auditoria(db, current_user)  # ← auditoría
+    registrar_auditoria(db, current_user)
     db.commit()
     db.refresh(nuevo)
     return {"mensaje": "Usuario creado exitosamente", "id": nuevo.id_cliente}
@@ -337,7 +381,7 @@ def editar_usuario(
     cliente.telefono = data.get("telefono", cliente.telefono)
     cliente.direccion = data.get("direccion", cliente.direccion)
 
-    registrar_auditoria(db, current_user)  # ← auditoría
+    registrar_auditoria(db, current_user)
     db.commit()
     return {"mensaje": "Usuario actualizado exitosamente"}
 
@@ -353,7 +397,7 @@ def eliminar_usuario(
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
     cliente.estado = 0
-    registrar_auditoria(db, current_user)  # ← auditoría
+    registrar_auditoria(db, current_user)
     db.commit()
     return {"mensaje": "Usuario eliminado exitosamente"}
 
