@@ -713,7 +713,6 @@ _HEADERS = {
 }
 
 def _amazon_peso(html: str) -> float | None:
-    # Extract all th/td pairs from product detail tables (prodDetTable)
     for m in re.finditer(
         r'<tr[^>]*>\s*<th[^>]*>(.*?)</th>\s*<td[^>]*>(.*?)</td>',
         html, re.DOTALL | re.IGNORECASE
@@ -723,6 +722,7 @@ def _amazon_peso(html: str) -> float | None:
         if 'peso' in label or 'weight' in label:
             txt = re.sub(r'<[^>]+>', ' ', m.group(2)).strip()
             txt = re.sub(r'\s+', ' ', txt)
+            txt = re.sub(r'&\w+;|&#\d+;', ' ', txt)
             n = re.search(r'([\d,]+\.?\d*)\s*(kg|kilo|kilogramos?|g\b|gramos?|libras?|pounds?|lbs?|oz|onzas?)', txt, re.IGNORECASE)
             if n:
                 val = float(n.group(1).replace(",", "."))
@@ -741,6 +741,105 @@ def _amazon_peso(html: str) -> float | None:
                 except ValueError:
                     pass
     return None
+
+def _amazon_dimensiones(html: str) -> str | None:
+    for m in re.finditer(
+        r'<tr[^>]*>\s*<th[^>]*>(.*?)</th>\s*<td[^>]*>(.*?)</td>',
+        html, re.DOTALL | re.IGNORECASE
+    ):
+        label = re.sub(r'<[^>]+>', '', m.group(1)).strip()
+        label = re.sub(r'\s+', ' ', label).lower()
+        if ('dimensi' in label or 'tamaño' in label or 'tamano' in label or
+            (('medida' in label or 'medidas' in label) and 'precio' not in label)):
+            txt = re.sub(r'<[^>]+>', ' ', m.group(2)).strip()
+            txt = re.sub(r'\s+', ' ', txt)
+            txt = re.sub(r'&\w+;|&#\d+;', ' ', txt)
+            if re.search(r'\d+[.,]?\d*\s*(?:x|por|by|")', txt, re.IGNORECASE) or re.search(r'\d+[.,]\d+', txt):
+                return txt
+    return None
+
+_CAMBIO_BOX_SIZES = [
+    (20, 15, 1,   "20x15x1",    None),
+    (20, 15, 15,  "20x15x15",   None),
+    (25, 15, 15,  "25x15x15",   None),
+    (30, 20, 20,  "30x20x20",   None),
+    (35, 20, 20,  "35x20x20",   None),
+    (50, 40, 10,  "50x40x10",   None),
+    (50, 40, 50,  "50x40x50",   10),
+    (60, 60, 60,  "60x60x60",   20),
+    (100, 100, 60,"100x100x60", 25),
+    (150, 100, 100,"150x100x100", 30),
+]
+
+def _sugerir_tamano(dim_str: str | None, peso: float | None = None) -> str:
+    if not dim_str:
+        return "20x15x1"
+    dim_str = re.sub(r'&\w+;|&#\d+;', ' ', dim_str)
+    nums = [float(x.replace(",", ".")) for x in re.findall(r'(\d+[.,]?\d*)', dim_str)]
+    if not nums:
+        return "20x15x1"
+    while len(nums) < 3:
+        nums.append(0.5)
+    nums = sorted([max(x, 0.1) for x in nums[:3]], reverse=True)
+    lower = dim_str.lower()
+    if 'cm' not in lower and 'centímetro' not in lower and 'centimetro' not in lower:
+        nums = [round(x * 2.54, 1) for x in nums]
+    for w, d, h, key, max_kg in _CAMBIO_BOX_SIZES:
+        box = sorted([w, d, h], reverse=True)
+        if not all(p <= b for p, b in zip(nums, box)):
+            continue
+        if max_kg is not None and peso is not None and peso > max_kg:
+            continue
+        return key
+    return "150x100x100"
+
+def _inferir_categoria(nombre: str) -> str:
+    if not nombre:
+        return "gaming"
+    n = nombre.lower()
+    if any(kw in n for kw in ['grill', 'parrilla', 'cocina', 'kitchen', 'cook', 'cocinar',
+                               'olla', 'sarten', 'sartén', 'utensilio', 'cuchillo', 'knife',
+                               'espatula', 'espátula']):
+        return "cocina"
+    if any(kw in n for kw in ['cama', 'bed ', 'dormitorio', 'bedroom', 'colchon', 'almohada',
+                               'sabana', 'cortina', 'sábanas']):
+        return "dormitorio"
+    if any(kw in n for kw in ['decoracion', 'decoración', 'lampara', 'luz ', 'light',
+                               'cuadro', 'espejo', 'mirror', 'adorno']):
+        return "decoracion"
+    if any(kw in n for kw in ['gaming', 'gamer', 'mouse', 'teclado', 'keyboard', 'headset',
+                               'audifonos', 'auricular', 'headphone', 'juegos', 'juego']):
+        return "gaming"
+    if any(kw in n for kw in ['audio', 'speaker', 'parlante', 'bocina', 'sonido']):
+        return "audio"
+    if any(kw in n for kw in ['celular', 'smartphone', 'iphone', 'samsung galaxy', 'movil', 'móvil']):
+        return "celulares"
+    if any(kw in n for kw in ['computadora', 'laptop', 'notebook', 'computer', 'portatil', 'portátil',
+                               'monitor', 'tablet', 'ipad', 'disco duro', 'ssd', 'memoria']):
+        return "computadoras"
+    if any(kw in n for kw in ['camara', 'cámara', 'foto', 'camera', 'lente', 'lentes',
+                               'fotografia', 'fotografía']):
+        return "fotografia"
+    if any(kw in n for kw in ['camisa', 'camiseta', 'pantalon', 'pantalón', 'chaqueta',
+                               'jacket', 'vestido', 'shirt', 'pants', 'short']):
+        return "ropa_hombre"
+    if any(kw in n for kw in ['zapato', 'shoe', 'sneaker', 'calzado', 'sandalia', 'zapatilla']):
+        return "calzado"
+    if any(kw in n for kw in ['bolso', 'mochila', 'cartera', 'reloj', 'watch', 'bag',
+                               'accesorio', 'accessory', 'gafas']):
+        return "accesorios"
+    if any(kw in n for kw in ['fitness', 'gym', 'ejercicio', 'exercise', 'yoga', 'pesa',
+                               'mancuerna', 'dumbbell', 'entrenamiento']):
+        return "fitness"
+    if any(kw in n for kw in ['futbol', 'fútbol', 'soccer', 'fifa', 'world cup', 'balon', 'pelota']):
+        return "futbol"
+    if any(kw in n for kw in ['outdoor', 'camping', 'hiking', 'senderismo', 'pesca', 'fishing']):
+        return "outdoor"
+    if any(kw in n for kw in ['juguete', 'toy', 'juego de', 'board game', 'muñeco', 'lego']):
+        return "juguetes"
+    if any(kw in n for kw in ['libro', 'book', 'kindle']):
+        return "libros"
+    return "gaming"
 
 def _extract_amazon(html: str) -> dict:
     r = {"nombre": "", "precio": 0.0, "peso": None}
@@ -781,6 +880,15 @@ def _extract_amazon(html: str) -> dict:
     peso = _amazon_peso(html)
     if peso:
         r["peso"] = peso
+    # Dimensions
+    dim = _amazon_dimensiones(html)
+    if dim:
+        r["dimensiones"] = dim
+    # Category
+    r["categoria"] = _inferir_categoria(r["nombre"])
+    # Box size
+    if r.get("dimensiones"):
+        r["tamano"] = _sugerir_tamano(r["dimensiones"], r.get("peso"))
     return r
 
 def _extract_ebay(html: str) -> dict:
@@ -845,7 +953,15 @@ def scrape_producto(
     if not info["precio"] or info["precio"] <= 0:
         info["precio"] = 0.0
 
-    return {"nombre": info["nombre"], "precio": info["precio"], "peso": info.get("peso"), "plataforma": plataforma}
+    return {
+        "nombre": info["nombre"],
+        "precio": info["precio"],
+        "peso": info.get("peso"),
+        "dimensiones": info.get("dimensiones"),
+        "tamano": info.get("tamano"),
+        "categoria": info.get("categoria"),
+        "plataforma": plataforma,
+    }
 
 # ─── CARRITO: AGREGAR ──────────────────────────────────────────────────────────
 

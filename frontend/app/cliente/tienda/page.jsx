@@ -315,7 +315,8 @@ function ModalDetalle({ prod, tc, token, onClose, onSuccess }) {
 /* ── Modal Agregar por Link ───────────────────────────────────────────── */
 const ALM_BS_MAP = {
   "20x15x1": 135, "20x15x15": 180, "25x15x15": 225,
-  "30x20x20": 270, "35x20x20": 360, "50x40x10": 450, "60x60x60": 1800,
+  "30x20x20": 270, "35x20x20": 360, "50x40x10": 450,
+  "50x40x50": 1350, "60x60x60": 1800, "100x100x60": 2250, "150x100x100": 3150,
 };
 
 function ModalAgregarLink({ tc, token, onClose, onSuccess }) {
@@ -328,6 +329,7 @@ function ModalAgregarLink({ tc, token, onClose, onSuccess }) {
   const [load, setLoad] = useState(false);
   const [ok,   setOk]   = useState("");
   const [scraping, setScraping] = useState(false);
+  const [scrapedDim, setScrapedDim] = useState(null);
   const scrapeRef = useRef(null);
 
   const plataforma = form.url.includes("amazon") ? "amazon"
@@ -352,7 +354,10 @@ function ModalAgregarLink({ tc, token, onClose, onSuccess }) {
               nombre: d.nombre || f.nombre,
               precio: d.precio > 0 ? String(d.precio) : f.precio,
               peso: d.peso > 0 ? String(d.peso) : f.peso,
+              categoria: d.categoria || f.categoria,
+              tamano: d.tamano || f.tamano,
             }));
+            setScrapedDim(d.dimensiones || null);
           }
         }).catch(() => {}).finally(() => setScraping(false));
       }, 700);
@@ -456,6 +461,13 @@ function ModalAgregarLink({ tc, token, onClose, onSuccess }) {
               <input className="f-inp" type="number" step="0.1" placeholder="0.5"
                 value={form.peso}
                 onChange={e => { setForm({ ...form, peso: e.target.value }); setCotizacion(null); }} />
+              {scrapedDim !== null && (
+                <div style={{marginTop:4,fontSize:11,color:"var(--text-3)"}}>
+                  {scrapedDim
+                    ? <>Dimensiones detectadas: <strong>{scrapedDim}</strong></>
+                    : <span style={{color:"var(--red, #e74c3c)"}}>No se detectaron dimensiones — estímalas manualmente</span>}
+                </div>
+              )}
             </div>
             <div>
               <label className="f-lbl">Subcategoría</label>
@@ -475,7 +487,10 @@ function ModalAgregarLink({ tc, token, onClose, onSuccess }) {
                 <option value="30x20x20">Extra 30×20×20 — Bs.270</option>
                 <option value="35x20x20">35×20×20 — Bs.360</option>
                 <option value="50x40x10">Laptop 50×40×10 — Bs.450</option>
-                <option value="60x60x60">Grande 60×60×60 — Bs.1800</option>
+                <option value="50x40x50">50×40×50 (10 Kilos) — Bs.1.350</option>
+                <option value="60x60x60">60×60×60 (20 Kilos) — Bs.1.800</option>
+                <option value="100x100x60">100×100×60 (25 Kilos) — Bs.2.250</option>
+                <option value="150x100x100">150×100×100 (30 Kilos) — Bs.3.150</option>
               </select>
             </div>
           </div>

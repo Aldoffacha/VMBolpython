@@ -240,7 +240,8 @@ function ModalAddCart({ prod, tc, token, onClose, onOk }) {
 const DIMS = {
   "20x15x1":{l:20,a:15,h:1},"20x15x15":{l:20,a:15,h:15},"25x15x15":{l:25,a:15,h:15},
   "30x20x20":{l:30,a:20,h:20},"35x20x20":{l:35,a:20,h:20},"50x40x10":{l:50,a:40,h:10},
-  "60x60x60":{l:60,a:60,h:60},
+  "50x40x50":{l:50,a:40,h:50},"60x60x60":{l:60,a:60,h:60},
+  "100x100x60":{l:100,a:100,h:60},"150x100x100":{l:150,a:100,h:100},
 };
 
 function ModalCot({ tc, token, onClose }) {
@@ -310,7 +311,10 @@ function ModalCot({ tc, token, onClose }) {
             <option value="30x20x20">Extra 30×20×20 — Bs.270</option>
             <option value="35x20x20">35×20×20 — Bs.360</option>
             <option value="50x40x10">Laptop 50×40×10 — Bs.450</option>
-            <option value="60x60x60">Grande 60×60×60 — Bs.1800</option>
+            <option value="50x40x50">50×40×50 (10 Kilos) — Bs.1.350</option>
+            <option value="60x60x60">60×60×60 (20 Kilos) — Bs.1.800</option>
+            <option value="100x100x60">100×100×60 (25 Kilos) — Bs.2.250</option>
+            <option value="150x100x100">150×100×100 (30 Kilos) — Bs.3.150</option>
           </select>
         </div>
       </div>
