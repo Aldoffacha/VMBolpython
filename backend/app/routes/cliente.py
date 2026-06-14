@@ -5,7 +5,7 @@ from sqlalchemy import text
 from app.database import get_db
 from app.utils.dependencies import get_current_user, require_role
 from typing import Optional
-import json, os, shutil
+import json, os, shutil, re, requests
 from fastapi import UploadFile, File, Form
 from pydantic import BaseModel as _Base
 from typing import Optional as _Opt
@@ -704,6 +704,115 @@ def tienda(
         "total_externos": len(productos_externos),
         "tipo_cambio": tc_actual,
     }
+
+# ─── SCRAPE: DETECTAR NOMBRE Y PRECIO DESDE URL ────────────────────────────────
+
+_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+    "Accept-Language": "en-US,en;q=0.9",
+}
+
+def _extract_amazon(html: str) -> dict:
+    r = {"nombre": "", "precio": 0.0}
+    # Title: #productTitle or og:title
+    m = re.search(r'<span[^>]*id="productTitle"[^>]*>(.*?)</span>', html, re.DOTALL)
+    if m:
+        r["nombre"] = re.sub(r'\s+', ' ', m.group(1)).strip()
+    if not r["nombre"]:
+        m = re.search(r'<meta\s+property="og:title"\s+content="([^"]+)"', html)
+        if m:
+            r["nombre"] = m.group(1)
+    # Price: try a-offscreen first (formats: "BOB10,733.68", "$1,099.00", "10,733.68")
+    m = re.search(r'class="a-offscreen"[^>]*>([^<]+)<', html)
+    if m:
+        raw = m.group(1).strip()
+        num_m = re.search(r'([\d,]+\.?\d*)', raw)
+        if num_m:
+            precio = float(num_m.group(1).replace(",", ""))
+            # Amazon's rate for Bolivia is 6.9250 BOB/USD — convert to USD
+            if raw.startswith("BOB") or raw.startswith("Bs"):
+                precio = round(precio / 6.9250, 2)
+            r["precio"] = precio
+    else:
+        # JSON-LD price
+        m = re.search(r'"price"\s*:\s*"?\s*([\d.]+)\s*"?', html)
+        if m and float(m.group(1)) > 0:
+            r["precio"] = float(m.group(1))
+        else:
+            m = re.search(r'class="a-price-whole"[^>]*>([\d,]+)<', html)
+            if m:
+                cents = re.search(r'class="a-price-fraction"[^>]*>(\d+)<', html)
+                r["precio"] = float(m.group(1).replace(",", "")) + (float(cents.group(1)) / 100 if cents else 0)
+            else:
+                m = re.search(r'id="priceblock_ourprice"[^>]*>\$?([\d,]+\.?\d*)', html)
+                if m:
+                    r["precio"] = float(m.group(1).replace(",", ""))
+    return r
+
+def _extract_ebay(html: str) -> dict:
+    r = {"nombre": "", "precio": 0.0}
+    # Title: #itemTitle or og:title
+    m = re.search(r'<h1[^>]*id="itemTitle"[^>]*>(.*?)</h1>', html, re.DOTALL)
+    if m:
+        txt = re.sub(r'<[^>]+>', '', m.group(1))
+        r["nombre"] = re.sub(r'\s+', ' ', txt).strip()
+    if not r["nombre"]:
+        m = re.search(r'<meta\s+property="og:title"\s+content="([^"]+)"', html)
+        if m:
+            r["nombre"] = m.group(1)
+    # Price: JSON-LD, prcIsum, or itemprop
+    m = re.search(r'"price"\s*:\s*"?\s*([\d.]+)\s*"?', html)
+    if m and float(m.group(1)) > 0:
+        r["precio"] = float(m.group(1))
+    else:
+        m = re.search(r'<span[^>]*id="prcIsum"[^>]*>\$?([\d,]+\.?\d*)', html)
+        if m:
+            r["precio"] = float(m.group(1).replace(",", ""))
+        else:
+            m = re.search(r'itemprop="price"[^>]+content="([\d.]+)"', html)
+            if m:
+                r["precio"] = float(m.group(1))
+    return r
+
+@router.post("/tienda/scrape")
+def scrape_producto(
+    data: dict,
+    current_user: dict = Depends(get_current_user),
+):
+    url = (data.get("url") or "").strip()
+    if not url.startswith("http"):
+        raise HTTPException(400, "URL inválida")
+
+    url_lower = url.lower()
+    if "amazon" in url_lower:
+        plataforma = "amazon"
+    elif "ebay" in url_lower:
+        plataforma = "ebay"
+    else:
+        raise HTTPException(400, "Solo se soportan URLs de Amazon o eBay")
+
+    try:
+        resp = requests.get(url, headers=_HEADERS, timeout=15)
+        resp.raise_for_status()
+        html = resp.text
+    except Exception as e:
+        raise HTTPException(502, f"No se pudo obtener la página: {str(e)[:80]}")
+
+    try:
+        if plataforma == "amazon":
+            info = _extract_amazon(html)
+        else:
+            info = _extract_ebay(html)
+    except Exception as e:
+        raise HTTPException(502, f"Error al procesar: {str(e)[:80]}")
+
+    if not info["nombre"]:
+        info["nombre"] = ""
+    if not info["precio"] or info["precio"] <= 0:
+        info["precio"] = 0.0
+
+    return {"nombre": info["nombre"], "precio": info["precio"], "plataforma": plataforma}
+
 # ─── CARRITO: AGREGAR ──────────────────────────────────────────────────────────
 
 @router.post("/carrito/agregar")

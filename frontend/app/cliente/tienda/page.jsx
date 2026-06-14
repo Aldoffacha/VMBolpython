@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import ClienteSidebar from "@/components/ClienteSidebar";
 import { useTheme } from "@/context/ThemeContext";
@@ -327,9 +327,38 @@ function ModalAgregarLink({ tc, token, onClose, onSuccess }) {
   const [cotizacion, setCotizacion] = useState(null);
   const [load, setLoad] = useState(false);
   const [ok,   setOk]   = useState("");
+  const [scraping, setScraping] = useState(false);
+  const scrapeRef = useRef(null);
 
   const plataforma = form.url.includes("amazon") ? "amazon"
     : form.url.includes("ebay") ? "ebay" : "otros";
+
+  function handleUrlChange(url) {
+    setForm(f => ({ ...f, url }));
+    setCotizacion(null);
+    if (scrapeRef.current) clearTimeout(scrapeRef.current);
+    const soportada = url.includes("amazon.") || url.includes("ebay.");
+    if (soportada && url.length > 15) {
+      setScraping(true);
+      scrapeRef.current = setTimeout(() => {
+        fetch(`${API}/cliente/tienda/scrape`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ url }),
+        }).then(r => r.json()).then(d => {
+          if (d.nombre || d.precio) {
+            setForm(f => ({
+              ...f,
+              nombre: d.nombre || f.nombre,
+              precio: d.precio > 0 ? String(d.precio) : f.precio,
+            }));
+          }
+        }).catch(() => {}).finally(() => setScraping(false));
+      }, 700);
+    } else {
+      setScraping(false);
+    }
+  }
 
   function calcular() {
     const precio = parseFloat(form.precio);
@@ -384,22 +413,29 @@ function ModalAgregarLink({ tc, token, onClose, onSuccess }) {
 
           <div className="link-tip">
             Pega el link de cualquier producto de <strong>Amazon</strong> o{" "}
-            <em>eBay</em>, llena el precio y el peso, y calculamos el costo total con
-            importación a Bolivia.
+            <em>eBay</em> — nombre y precio se detectan automáticamente.
+            El peso puedes dejarlo por defecto o ajustarlo manualmente.
           </div>
 
           <div style={{ marginBottom: 16 }}>
             <label className="f-lbl">URL del Producto *</label>
-            <input className="f-inp" type="url"
-              placeholder="https://amazon.com/dp/... o https://ebay.com/itm/..."
-              value={form.url} onChange={e => { setForm({ ...form, url: e.target.value }); setCotizacion(null); }} />
-            {form.url && (
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <input className="f-inp" type="url" style={{ flex: 1 }}
+                placeholder="https://amazon.com/dp/... o https://ebay.com/itm/..."
+                value={form.url} onChange={e => handleUrlChange(e.target.value)} />
+              {scraping && (
+                <span style={{ fontSize: 11, color: "var(--text-3)", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 4 }}>
+                  <span className="tnd-loading__ring" style={{ width: 14, height: 14, borderWidth: 2 }} /> Detectando…
+                </span>
+              )}
+            </div>
+            {form.url && !scraping && (
               <div style={{ marginTop: 6 }}><PlatBadge plat={plataforma} /></div>
             )}
           </div>
 
           <div style={{ marginBottom: 16 }}>
-            <label className="f-lbl">Nombre del Producto (opcional)</label>
+            <label className="f-lbl">Nombre del Producto {scraping ? <span style={{fontSize:10,color:"var(--text-3)"}}>(detectando…)</span> : "(opcional — se auto-detecta)"}</label>
             <input className="f-inp" type="text"
               placeholder="Ej: Mouse Logitech G502"
               value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} />
@@ -407,13 +443,15 @@ function ModalAgregarLink({ tc, token, onClose, onSuccess }) {
 
           <div className="f-grid" style={{ marginBottom: 16 }}>
             <div>
-              <label className="f-lbl">Precio (USD) *</label>
+              <label className="f-lbl">Precio (USD) * {scraping ? <span style={{fontSize:10,color:"var(--text-3)"}}>(detectando…)</span> : ""}</label>
               <input className="f-inp" type="number" step="0.01" placeholder="0.00"
                 value={form.precio}
                 onChange={e => { setForm({ ...form, precio: e.target.value }); setCotizacion(null); }} />
             </div>
             <div>
-              <label className="f-lbl">Peso estimado (kg) *</label>
+              <label className="f-lbl">
+                Peso estimado (kg) <span style={{fontSize:10,color:"var(--text-3)"}}>(opcional)</span>
+              </label>
               <input className="f-inp" type="number" step="0.1" placeholder="0.5"
                 value={form.peso}
                 onChange={e => { setForm({ ...form, peso: e.target.value }); setCotizacion(null); }} />
