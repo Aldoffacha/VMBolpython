@@ -92,6 +92,7 @@ export default function AdminConfiguracion() {
     setActualizandoTc(false);
     if (res.ok) {
       setTcInfo({ tipo_cambio: json.tipo_cambio, actualizacion: new Date().toISOString() });
+      setGeneral(prev => ({ ...prev, tipo_cambio: json.tipo_cambio }));
       showToast(json.mensaje, true);
     } else {
       showToast(json.mensaje || "Error al actualizar tipo de cambio", false);
