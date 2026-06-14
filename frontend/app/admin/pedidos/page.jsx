@@ -1,5 +1,6 @@
 "use client";
 
+import "@/styles/admin.css";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAdminCurrency } from "@/lib/AdminCurrencyContext";
@@ -152,16 +153,16 @@ export default function AdminPedidos() {
   }
 
   return (
-    <div style={s.page}>
-      {toast && <div style={s.toast}>{toast}</div>}
+    <div>
+      {toast && <div className="admin-toast admin-toast--ok">{toast}</div>}
 
       
 
-      <main style={s.main}>
-        <div style={s.header}>
+      <main>
+        <div className="admin-header">
           <div>
-            <h1 style={s.pageTitle}>Gestión de Pedidos</h1>
-            <p style={s.pageSubtitle}>{contadores.total} pedidos en total</p>
+            <h1 className="admin-header__title">Gestión de Pedidos</h1>
+            <p className="admin-header__sub">{contadores.total} pedidos en total</p>
           </div>
         </div>
 
@@ -203,24 +204,24 @@ export default function AdminPedidos() {
         </div>
 
         {/* TABLA */}
-        <div style={s.card}>
+        <div className="admin-card">
           {loading ? (
-            <div style={s.loadingRow}><div style={s.spinner} /></div>
+            <div className="admin-loading"><div className="admin-spinner" /></div>
           ) : (
             <>
-              <div style={s.tableWrapper}>
-                <table style={s.table}>
+              <div className="admin-table-wrap">
+                <table className="admin-table">
                   <thead>
                     <tr>
                       {["ID Pedido", "Cliente", "Total", "Estado", "Fecha y Hora", "Acciones"].map(h => (
-                        <th key={h} style={s.th}>{h}</th>
+                        <th key={h}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {pedidos.length === 0 ? (
                       <tr>
-                        <td colSpan={6} style={{ ...s.td, textAlign: "center", color: "#a0a0a0", padding: 40 }}>
+                          <td colSpan={6} style={{ textAlign: "center", color: "var(--admin-text-2)", padding: 40 }}>
                           No hay pedidos {filtro !== "todos" ? `con estado "${filtro}"` : ""}
                         </td>
                       </tr>
@@ -228,25 +229,25 @@ export default function AdminPedidos() {
                       const est = ESTADO_STYLE[p.estado] || ESTADO_STYLE.pendiente;
                       return (
                         <tr key={p.id_pedido} style={{ background: i % 2 === 0 ? "rgba(154,3,30,0.04)" : "transparent" }}>
-                          <td style={s.td}>
-                            <strong style={{ color: "#c1121f" }}>#{p.id_pedido}</strong>
-                            <br /><span style={{ color: "#a0a0a0", fontSize: 11 }}>Cliente ID: {p.id_cliente}</span>
+                          <td>
+                            <strong style={{ color: "var(--admin-accent2)" }}>#{p.id_pedido}</strong>
+                            <br /><span style={{ color: "var(--admin-text-2)", fontSize: 11 }}>Cliente ID: {p.id_cliente}</span>
                           </td>
-                          <td style={s.td}>
+                          <td>
                             <div style={{ fontWeight: 600 }}>{p.cliente_nombre}</div>
-                            <div style={{ color: "#a0a0a0", fontSize: 12 }}>{p.cliente_email}</div>
+                            <div style={{ color: "var(--admin-text-2)", fontSize: 12 }}>{p.cliente_email}</div>
                           </td>
-                          <td style={{ ...s.td, fontWeight: 700, color: "#10b981" }}>{formatPrice(p.total)}</td>
-                          <td style={s.td}>
-                            <span style={{ ...s.badge, background: est.bg, color: est.color, border: `1px solid ${est.border}` }}>
+                          <td style={{ fontWeight: 700, color: "#10b981" }}>{formatPrice(p.total)}</td>
+                          <td>
+                            <span className="admin-badge" style={{ background: est.bg, color: est.color, border: `1px solid ${est.border}` }}>
                               {est.label}
                             </span>
                           </td>
-                          <td style={s.td}>
+                          <td>
                             <div style={{ fontSize: 13 }}>{p.fecha.split(" ")[0]}</div>
-                            <div style={{ color: "#a0a0a0", fontSize: 11 }}>{p.fecha.split(" ")[1]}</div>
+                            <div style={{ color: "var(--admin-text-2)", fontSize: 11 }}>{p.fecha.split(" ")[1]}</div>
                           </td>
-                          <td style={s.td}>
+                          <td>
                             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                               <button onClick={() => verDetalle(p.id_pedido)} style={s.btnAccion} title="Ver detalle">
                                 👁️
@@ -274,14 +275,14 @@ export default function AdminPedidos() {
 
               {/* PAGINACION */}
               {pedidos.length > POR_PAGINA && (
-                <div style={s.pagination}>
-                  <button onClick={() => setPagina(1)} disabled={pagina === 1} style={{ ...s.pageBtn, opacity: pagina === 1 ? 0.4 : 1 }}>«</button>
-                  <button onClick={() => setPagina(p => Math.max(1, p - 1))} disabled={pagina === 1} style={{ ...s.pageBtn, opacity: pagina === 1 ? 0.4 : 1 }}>‹ Anterior</button>
-                  <span style={{ color: "#a0a0a0", fontSize: 13, padding: "0 8px" }}>
+                <div className="admin-pagination">
+                  <button onClick={() => setPagina(1)} disabled={pagina === 1} className="admin-page-btn" style={{ opacity: pagina === 1 ? 0.4 : 1 }}>«</button>
+                  <button onClick={() => setPagina(p => Math.max(1, p - 1))} disabled={pagina === 1} className="admin-page-btn" style={{ opacity: pagina === 1 ? 0.4 : 1 }}>‹ Anterior</button>
+                    <span style={{ color: "var(--admin-text-2)", fontSize: 13, padding: "0 8px" }}>
                     Página {pagina} de {Math.ceil(pedidos.length / POR_PAGINA)}
                   </span>
-                  <button onClick={() => setPagina(p => Math.min(Math.ceil(pedidos.length / POR_PAGINA), p + 1))} disabled={pagina === Math.ceil(pedidos.length / POR_PAGINA)} style={{ ...s.pageBtn, opacity: pagina === Math.ceil(pedidos.length / POR_PAGINA) ? 0.4 : 1 }}>Siguiente ›</button>
-                  <button onClick={() => setPagina(Math.ceil(pedidos.length / POR_PAGINA))} disabled={pagina === Math.ceil(pedidos.length / POR_PAGINA)} style={{ ...s.pageBtn, opacity: pagina === Math.ceil(pedidos.length / POR_PAGINA) ? 0.4 : 1 }}>»</button>
+                  <button onClick={() => setPagina(p => Math.min(Math.ceil(pedidos.length / POR_PAGINA), p + 1))} disabled={pagina === Math.ceil(pedidos.length / POR_PAGINA)} className="admin-page-btn" style={{ opacity: pagina === Math.ceil(pedidos.length / POR_PAGINA) ? 0.4 : 1 }}>Siguiente ›</button>
+                  <button onClick={() => setPagina(Math.ceil(pedidos.length / POR_PAGINA))} disabled={pagina === Math.ceil(pedidos.length / POR_PAGINA)} className="admin-page-btn" style={{ opacity: pagina === Math.ceil(pedidos.length / POR_PAGINA) ? 0.4 : 1 }}>»</button>
                 </div>
               )}
             </>
@@ -291,18 +292,18 @@ export default function AdminPedidos() {
 
       {/* ── MODAL DETALLE ────────────────────────────────────────────────────── */}
       {detalle && (
-        <div style={s.modalOverlay} onClick={() => setDetalle(null)}>
-          <div style={{ ...s.modalBox, maxWidth: 760 }} onClick={e => e.stopPropagation()}>
-            <div style={s.modalHeader}>
-              <h2 style={s.modalTitle}>
+        <div className="admin-overlay" onClick={() => setDetalle(null)}>
+          <div className="admin-modal admin-modal--wide" onClick={e => e.stopPropagation()}>
+            <div className="admin-modal__head">
+              <h2 className="admin-modal__title">
                 📦 Detalle del Pedido #{detalle.pedido?.id_pedido}
               </h2>
-              <button onClick={() => setDetalle(null)} style={s.closeBtn}>✕</button>
+              <button onClick={() => setDetalle(null)} className="admin-modal__close">✕</button>
             </div>
 
-            <div style={{ ...s.modalBody, overflowY: "auto", maxHeight: "72vh" }}>
+            <div className="admin-modal__body" style={{ overflowY: "auto", maxHeight: "72vh" }}>
               {loadingDetalle ? (
-                <div style={s.loadingRow}><div style={s.spinner} /></div>
+                <div className="admin-loading"><div className="admin-spinner" /></div>
               ) : detalle.pedido ? (
                 <>
                   {/* Info cliente y pedido */}
@@ -319,8 +320,7 @@ export default function AdminPedidos() {
                       <p style={s.infoRow}><b>ID:</b> #{detalle.pedido.id_pedido}</p>
                       <p style={s.infoRow}><b>Fecha:</b> {detalle.pedido.fecha}</p>
                       <p style={s.infoRow}><b>Estado:</b>{" "}
-                        <span style={{
-                          ...s.badge,
+                        <span className="admin-badge" style={{
                           background: ESTADO_STYLE[detalle.pedido.estado]?.bg,
                           color: ESTADO_STYLE[detalle.pedido.estado]?.color,
                           border: `1px solid ${ESTADO_STYLE[detalle.pedido.estado]?.border}`
@@ -340,18 +340,18 @@ export default function AdminPedidos() {
                   {/* ── Tabla de productos con link para externos ─────────── */}
                   <p style={s.sectionLabel}>🛍️ Productos del Pedido</p>
 
-                  <table style={{ ...s.table, fontSize: 13 }}>
+                  <table className="admin-table" style={{ fontSize: 13 }}>
                     <thead>
                       <tr>
                         {["Producto", "Plataforma", "Cantidad", "Precio Unit.", "Subtotal"].map(h => (
-                          <th key={h} style={s.th}>{h}</th>
+                          <th key={h}>{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {detalle.productos.length === 0 ? (
                         <tr>
-                          <td colSpan={5} style={{ ...s.td, textAlign: "center", color: "#a0a0a0" }}>
+                          <td colSpan={5} style={{ textAlign: "center", color: "var(--admin-text-2)" }}>
                             Sin productos registrados
                           </td>
                         </tr>
@@ -364,8 +364,8 @@ export default function AdminPedidos() {
                         return (
                           <tr key={i} style={{ background: i % 2 === 0 ? "rgba(154,3,30,0.04)" : "transparent" }}>
                             {/* Nombre + link si es externo */}
-                            <td style={s.td}>
-                              <div style={{ fontWeight: 600, color: "#d9d9d9", marginBottom: 4 }}>
+                            <td>
+                              <div style={{ fontWeight: 600, color: "var(--admin-text)", marginBottom: 4 }}>
                                 {nombre}
                               </div>
                               {link && (
@@ -387,13 +387,13 @@ export default function AdminPedidos() {
                             </td>
 
                             {/* Badge plataforma */}
-                            <td style={s.td}>
+                            <td>
                               <PlatBadge plat={plataforma} />
                             </td>
 
-                            <td style={s.td}>{prod.cantidad}</td>
-                            <td style={s.td}>{formatPrice(prod.precio_unit)}</td>
-                            <td style={{ ...s.td, fontWeight: 700, color: "#10b981" }}>
+                            <td>{prod.cantidad}</td>
+                            <td>{formatPrice(prod.precio_unit)}</td>
+                            <td style={{ fontWeight: 700, color: "#10b981" }}>
                               {formatPrice(prod.subtotal)}
                             </td>
                           </tr>
@@ -402,8 +402,8 @@ export default function AdminPedidos() {
 
                       {/* Fila total */}
                       <tr>
-                        <td colSpan={4} style={{ ...s.td, textAlign: "right", fontWeight: 700 }}>Total:</td>
-                        <td style={{ ...s.td, fontWeight: 700, color: "#10b981", fontSize: 16 }}>
+                        <td colSpan={4} style={{ textAlign: "right", fontWeight: 700 }}>Total:</td>
+                        <td style={{ fontWeight: 700, color: "#10b981", fontSize: 16 }}>
                           {formatPrice(detalle.pedido.total)}
                         </td>
                       </tr>
@@ -417,7 +417,7 @@ export default function AdminPedidos() {
                       background: "rgba(59,130,246,0.06)",
                       border: "1px solid rgba(59,130,246,0.2)",
                       borderRadius: 8, padding: "10px 14px",
-                      fontSize: 12, color: "#a0a0a0",
+                      fontSize: 12, color: "var(--admin-text-2)",
                     }}>
                       💡 Este pedido contiene productos de importación (Amazon/eBay).
                       Haz click en <strong style={{ color: "#3b82f6" }}>🔗 Ver en tienda original</strong> para
@@ -426,14 +426,14 @@ export default function AdminPedidos() {
                   )}
                 </>
               ) : (
-                <div style={{ textAlign: "center", color: "#a0a0a0", padding: 40 }}>
+                <div style={{ textAlign: "center", color: "var(--admin-text-2)", padding: 40 }}>
                   No se pudo cargar el detalle del pedido.
                 </div>
               )}
             </div>
 
-            <div style={s.modalFooter}>
-              <button onClick={() => setDetalle(null)} style={s.btnSecondary}>Cerrar</button>
+            <div className="admin-modal__foot">
+              <button onClick={() => setDetalle(null)} className="admin-btn admin-btn--sec">Cerrar</button>
             </div>
           </div>
         </div>
@@ -441,26 +441,26 @@ export default function AdminPedidos() {
 
       {/* ── MODAL CONFIRMAR CAMBIO ───────────────────────────────────────────── */}
       {confirm && (
-        <div style={s.modalOverlay} onClick={() => setConfirm(null)}>
-          <div style={{ ...s.modalBox, maxWidth: 400 }} onClick={e => e.stopPropagation()}>
-            <div style={s.modalHeader}>
-              <h2 style={{ ...s.modalTitle, color: "#f59e0b" }}>Confirmar Cambio</h2>
-              <button onClick={() => setConfirm(null)} style={s.closeBtn}>✕</button>
+        <div className="admin-overlay" onClick={() => setConfirm(null)}>
+          <div className="admin-modal" style={{ maxWidth: 400 }} onClick={e => e.stopPropagation()}>
+            <div className="admin-modal__head">
+              <h2 className="admin-modal__title" style={{ color: "#f59e0b" }}>Confirmar Cambio</h2>
+              <button onClick={() => setConfirm(null)} className="admin-modal__close">✕</button>
             </div>
-            <div style={{ ...s.modalBody, textAlign: "center", padding: 24 }}>
-              <p style={{ color: "#d9d9d9", fontSize: 15 }}>
+            <div className="admin-modal__body" style={{ textAlign: "center", padding: 24 }}>
+              <p style={{ color: "var(--admin-text)", fontSize: 15 }}>
                 ¿Cambiar el pedido{" "}
-                <strong style={{ color: "#c1121f" }}>#{confirm.pedido.id_pedido}</strong> de{" "}
+                <strong style={{ color: "var(--admin-accent2)" }}>#{confirm.pedido.id_pedido}</strong> de{" "}
                 <strong>{confirm.pedido.estado}</strong> a{" "}
                 <strong style={{ color: ESTADO_STYLE[confirm.nuevoEstado]?.color }}>
                   {ESTADO_STYLE[confirm.nuevoEstado]?.label}
                 </strong>?
               </p>
             </div>
-            <div style={s.modalFooter}>
-              <button onClick={() => setConfirm(null)} style={s.btnSecondary}>Cancelar</button>
+            <div className="admin-modal__foot">
+              <button onClick={() => setConfirm(null)} className="admin-btn admin-btn--sec">Cancelar</button>
               <button onClick={confirmarCambio} disabled={!!procesando}
-                style={{ ...s.btnPrimary, opacity: procesando ? 0.6 : 1 }}>
+                className="admin-btn admin-btn--pri" style={{ opacity: procesando ? 0.6 : 1 }}>
                 {procesando ? "Procesando..." : "Confirmar"}
               </button>
             </div>
@@ -472,41 +472,73 @@ export default function AdminPedidos() {
 }
 
 const s = {
-  page:           { display: "flex", minHeight: "100vh", background: "#121418", fontFamily: "'Lato', sans-serif", color: "#d9d9d9" },
-  toast:          { position: "fixed", top: 20, right: 20, background: "#1f2429", border: "1px solid #10b981", borderRadius: 10, padding: "12px 20px", color: "#10b981", fontWeight: 600, fontSize: 14, zIndex: 9999, boxShadow: "0 4px 20px rgba(0,0,0,0.5)" },
-  main:           { flex: 1, padding: "24px 28px" },
-  header:         { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, paddingBottom: 16, borderBottom: "2px solid #9a031e" },
-  pageTitle:      { color: "#c1121f", fontSize: 26, fontWeight: 700, margin: 0 },
-  pageSubtitle:   { color: "#a0a0a0", fontSize: 13, margin: "4px 0 0" },
-  statsGrid:      { display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 14, marginBottom: 20 },
-  statCard:       { background: "#1f2429", padding: "16px 18px", borderRadius: 12, borderLeft: "4px solid #9a031e" },
-  statLabel:      { color: "#a0a0a0", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, margin: 0 },
-  statValue:      { fontSize: 24, fontWeight: 700, margin: "4px 0 0" },
-  filtros:        { display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" },
-  filtroBtn:      { padding: "8px 14px", background: "#1f2429", border: "1px solid rgba(154,3,30,0.2)", borderRadius: 8, color: "#a0a0a0", cursor: "pointer", fontSize: 13 },
-  filtroBtnActive:{ background: "#9a031e", border: "1px solid #9a031e", color: "white" },
-  card:           { background: "#1f2429", borderRadius: 12, border: "1px solid rgba(154,3,30,0.2)", overflow: "hidden" },
-  tableWrapper:   { overflowX: "auto" },
-  table:          { width: "100%", borderCollapse: "collapse", fontSize: 13 },
-  th:             { padding: "12px 14px", textAlign: "left", color: "#a0a0a0", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.8, background: "#121418", borderBottom: "2px solid rgba(154,3,30,0.3)" },
-  td:             { padding: "10px 14px", color: "#d9d9d9", borderBottom: "1px solid rgba(154,3,30,0.08)", verticalAlign: "middle" },
-  badge:          { padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700 },
-  sectionLabel:   { color: "#a0a0a0", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 },
-  loadingRow:     { display: "flex", justifyContent: "center", padding: 40 },
-  spinner:        { width: 32, height: 32, border: "3px solid rgba(154,3,30,0.3)", borderTop: "3px solid #9a031e", borderRadius: "50%", animation: "spin 0.8s linear infinite" },
-  btnAccion:      { padding: "5px 10px", background: "rgba(154,3,30,0.1)", border: "1px solid rgba(154,3,30,0.3)", borderRadius: 6, cursor: "pointer", fontSize: 14 },
-  modalOverlay:   { position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 },
-  modalBox:       { background: "#1f2429", border: "2px solid #9a031e", borderRadius: 16, width: "100%" },
-  modalHeader:    { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", borderBottom: "2px solid #9a031e", background: "#121418" },
-  modalTitle:     { color: "#c1121f", fontSize: 16, fontWeight: 700, margin: 0 },
-  closeBtn:       { background: "none", border: "none", color: "#a0a0a0", fontSize: 18, cursor: "pointer" },
-  modalBody:      { padding: 20 },
-  modalFooter:    { display: "flex", justifyContent: "flex-end", gap: 10, padding: "14px 20px", borderTop: "1px solid rgba(154,3,30,0.2)", background: "#121418" },
-  infoBox:        { background: "#121418", borderRadius: 10, padding: 14, border: "1px solid rgba(154,3,30,0.15)" },
-  infoTitle:      { color: "#c1121f", fontWeight: 700, fontSize: 13, marginBottom: 8 },
-  infoRow:        { color: "#d9d9d9", fontSize: 13, margin: "4px 0" },
-  btnPrimary:     { padding: "9px 20px", background: "#9a031e", border: "none", borderRadius: 8, color: "white", fontWeight: 600, fontSize: 13, cursor: "pointer" },
-  btnSecondary:   { padding: "9px 20px", background: "rgba(154,3,30,0.1)", border: "1px solid rgba(154,3,30,0.3)", borderRadius: 8, color: "#d9d9d9", fontWeight: 600, fontSize: 13, cursor: "pointer" },
-  pagination: { display: "flex", justifyContent: "center", gap: 6, marginTop: 16, padding: "0 20px 20px", flexWrap: "wrap", alignItems: "center" },
-  pageBtn: { padding: "7px 12px", background: "#1f2429", border: "1px solid rgba(154,3,30,0.3)", borderRadius: 6, color: "#d9d9d9", cursor: "pointer", fontSize: 13 },
+  statsGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+    gap: 14,
+    marginBottom: 18,
+  },
+  statCard: {
+    background: "var(--admin-card)",
+    border: "1px solid var(--admin-border)",
+    borderRadius: 14,
+    padding: "14px 16px",
+    boxShadow: "0 10px 24px rgba(0,0,0,0.16)",
+    transition: "transform 0.2s ease, box-shadow 0.2s ease",
+  },
+  statLabel: {
+    color: "var(--admin-text-2)",
+    fontFamily: "var(--font-d)",
+    fontSize: 11,
+    fontWeight: 700,
+    textTransform: "uppercase",
+    letterSpacing: "1.2px",
+    margin: "0 0 4px",
+  },
+  statValue: {
+    fontFamily: "var(--font-d)",
+    fontSize: 26,
+    fontWeight: 800,
+    margin: 0,
+  },
+  filtros: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 16,
+  },
+  filtroBtn: {
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: "var(--admin-border)",
+    background: "var(--admin-surface)",
+    color: "var(--admin-text)",
+    borderRadius: 999,
+    padding: "8px 12px",
+    cursor: "pointer",
+    fontFamily: "var(--font-d)",
+    fontSize: 12,
+    fontWeight: 700,
+    textTransform: "uppercase",
+    letterSpacing: "0.8px",
+  },
+  filtroBtnActive: {
+    background: "linear-gradient(135deg, var(--admin-accent), var(--admin-accent2))",
+    color: "#fff",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: "var(--admin-accent)",
+    boxShadow: "0 8px 18px rgba(154,3,30,0.25)",
+  },
+  infoBox: {
+    background: "var(--admin-surface)",
+    borderRadius: 10,
+    padding: 14,
+    border: "1px solid var(--admin-border)",
+    boxShadow: "0 8px 18px rgba(0,0,0,0.12)",
+  },
+  infoTitle: { color: "var(--admin-accent2)", fontWeight: 700, fontSize: 13, marginBottom: 8 },
+  infoRow: { color: "var(--admin-text)", fontSize: 13, margin: "4px 0" },
+  sectionLabel: { color: "var(--admin-text-2)", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 },
+  btnAccion: { padding: "5px 10px", background: "rgba(154,3,30,0.1)", border: "1px solid rgba(154,3,30,0.3)", borderRadius: 6, cursor: "pointer", fontSize: 14 },
 };

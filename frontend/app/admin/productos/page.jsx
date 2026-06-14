@@ -1,5 +1,7 @@
 "use client";
 
+import "@/styles/admin.css";
+
 import { useEffect, useState, useCallback, Fragment } from "react";
 import { useRouter } from "next/navigation";
 import { useAdminCurrency } from "@/lib/AdminCurrencyContext";
@@ -51,7 +53,7 @@ export default function AdminProductos() {
   const [totalPaginas, setTotalPaginas] = useState(1);
   const [pagina, setPagina] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState(null); // null | 'crear' | 'editar'
+  const [modal, setModal] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [imagenFile, setImagenFile] = useState(null);
   const [imagenPreview, setImagenPreview] = useState("");
@@ -202,31 +204,28 @@ export default function AdminProductos() {
   };
 
   return (
-    <div style={s.page}>
+    <>
       {/* TOAST */}
-      {toast && <div style={s.toast}>{toast}</div>}
-
-      {/* SIDEBAR */}
-      
+      {toast && <div className="admin-toast admin-toast--ok">{toast}</div>}
 
       {/* MAIN */}
-      <main style={s.main}>
+      <div>
         {/* HEADER */}
-        <div style={s.header}>
+        <div className="admin-header">
           <div>
-            <h1 style={s.pageTitle}>Gestión de Productos</h1>
-            <p style={s.pageSubtitle}>{total} productos registrados</p>
+            <h1 className="admin-header__title">Gestión de Productos</h1>
+            <p className="admin-header__sub">{total} productos registrados</p>
           </div>
-          <button onClick={abrirCrear} style={s.btnPrimary}>+ Nuevo Producto</button>
+          <button onClick={abrirCrear} className="admin-btn admin-btn--pri">+ Nuevo Producto</button>
         </div>
 
         {/* TABLA */}
-        <div style={s.card}>
+        <div className="admin-card">
           {loading ? (
-            <div style={s.loadingRow}><div style={s.spinner} /></div>
+            <div className="admin-loading"><div className="admin-spinner" /></div>
           ) : (
-            <div style={s.tableWrapper}>
-              <table style={s.table}>
+            <div className="admin-table-wrap">
+              <table className="admin-table">
                 <thead>
                   <tr>
                     {[
@@ -240,7 +239,7 @@ export default function AdminProductos() {
                       { field: "fecha_registro", label: "Registro" },
                       { field: null, label: "Acciones" },
                     ].map(h => (
-                      <th key={h.label} style={{ ...s.th, cursor: h.field ? "pointer" : "default" }}
+                      <th key={h.label} style={{ cursor: h.field ? "pointer" : "default" }}
                         onClick={() => h.field && handleSort(h.field)}>
                         {h.label}
                         {h.field === sortField && <span style={{ marginLeft: 4 }}>{sortDir === "asc" ? "▲" : "▼"}</span>}
@@ -250,13 +249,13 @@ export default function AdminProductos() {
                 </thead>
                 <tbody>
                   {ordenados.length === 0 ? (
-                    <tr><td colSpan={9} style={{ ...s.td, textAlign: "center", color: "#a0a0a0", padding: 40 }}>
+                    <tr>                      <td colSpan={9} style={{ textAlign: "center", color: "var(--admin-text-2)", padding: 40 }}>
                       No hay productos activos
                     </td></tr>
                   ) : ordenados.map((p, i) => (
                     <tr key={p.id_producto} style={{ background: i % 2 === 0 ? "rgba(154,3,30,0.04)" : "transparent" }}>
-                      <td style={s.td}>{p.id_producto}</td>
-                      <td style={s.td}>
+                      <td>{p.id_producto}</td>
+                      <td>
                         {p.imagen ? (
                           <img
                             src={`${API}/uploads/productos/${p.imagen}`}
@@ -265,25 +264,25 @@ export default function AdminProductos() {
                             onError={e => { e.target.src = "https://placehold.co/50x50/1f2429/9a031e?text=IMG"; }}
                           />
                         ) : (
-                          <div style={s.imgPlaceholder}>📷</div>
+                          <div style={{ width: 50, height: 50, background: "var(--admin-bg-2)", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, border: "1px solid var(--admin-border)" }}>📷</div>
                         )}
                       </td>
-                      <td style={s.td}>{p.nombre}</td>
-                      <td style={{ ...s.td, maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <td>{p.nombre}</td>
+                      <td style={{ maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {p.descripcion ? p.descripcion.substring(0, 50) + "..." : "—"}
                       </td>
-                      <td style={s.td}>{formatPrice(p.precio)}</td>
-                      <td style={{ ...s.td, color: p.stock <= 5 ? "#ef4444" : "#d9d9d9", fontWeight: p.stock <= 5 ? 700 : 400 }}>
+                      <td>{formatPrice(p.precio)}</td>
+                      <td style={{ color: p.stock <= 5 ? "#ef4444" : "var(--admin-text)", fontWeight: p.stock <= 5 ? 700 : 400 }}>
                         {p.stock} {p.stock <= 5 && <span style={{ fontSize: 10 }}> bajo</span>}
                       </td>
-                      <td style={s.td}>
-                        <span style={s.categoriaBadge}>{p.categoria}</span>
+                      <td>
+                        <span className="admin-badge">{p.categoria}</span>
                       </td>
-                      <td style={s.td}>{p.fecha_registro}</td>
-                      <td style={s.td}>
+                      <td>{p.fecha_registro}</td>
+                      <td>
                         <div style={{ display: "flex", gap: 6 }}>
-                          <button onClick={() => abrirEditar(p)} style={s.btnEdit}>✏️</button>
-                          <button onClick={() => setConfirmDelete(p)} style={s.btnDelete}>🗑️</button>
+                          <button onClick={() => abrirEditar(p)} className="admin-btn admin-btn--xs admin-btn--sec2">✏️</button>
+                          <button onClick={() => setConfirmDelete(p)} className="admin-btn admin-btn--xs admin-btn--del">🗑️</button>
                         </div>
                       </td>
                     </tr>
@@ -296,55 +295,55 @@ export default function AdminProductos() {
 
         {/* PAGINACIÓN */}
         {totalPaginas > 1 && (
-          <div style={s.pagination}>
-            <button onClick={() => setPagina(1)} disabled={pagina === 1} style={{ ...s.pageBtn, opacity: pagina === 1 ? 0.4 : 1 }}>«</button>
-            <button onClick={() => setPagina(p => Math.max(1, p - 1))} disabled={pagina === 1} style={{ ...s.pageBtn, opacity: pagina === 1 ? 0.4 : 1 }}>‹ Anterior</button>
+          <div className="admin-pagination">
+            <button onClick={() => setPagina(1)} disabled={pagina === 1} className="admin-page-btn" style={{ opacity: pagina === 1 ? 0.4 : 1 }}>«</button>
+            <button onClick={() => setPagina(p => Math.max(1, p - 1))} disabled={pagina === 1} className="admin-page-btn" style={{ opacity: pagina === 1 ? 0.4 : 1 }}>‹ Anterior</button>
             {Array.from({ length: totalPaginas }, (_, i) => i + 1)
               .filter(p => p === 1 || p === totalPaginas || Math.abs(p - pagina) <= 1)
               .map((p, idx, arr) => (
                 <Fragment key={p}>
-                  {idx > 0 && arr[idx - 1] !== p - 1 && <span style={{ color: "#a0a0a0", padding: "0 4px" }}>...</span>}
-                  <button onClick={() => setPagina(p)} style={{ ...s.pageBtn, ...(p === pagina ? s.pageBtnActive : {}) }}>{p}</button>
+                  {idx > 0 && arr[idx - 1] !== p - 1 && <span style={{ color: "var(--admin-text-2)", padding: "0 4px" }}>...</span>}
+                  <button onClick={() => setPagina(p)} className={`admin-page-btn ${p === pagina ? "admin-page-btn--on" : ""}`}>{p}</button>
                 </Fragment>
               ))
             }
-            <button onClick={() => setPagina(p => Math.min(totalPaginas, p + 1))} disabled={pagina === totalPaginas} style={{ ...s.pageBtn, opacity: pagina === totalPaginas ? 0.4 : 1 }}>Siguiente ›</button>
-            <button onClick={() => setPagina(totalPaginas)} disabled={pagina === totalPaginas} style={{ ...s.pageBtn, opacity: pagina === totalPaginas ? 0.4 : 1 }}>»</button>
+            <button onClick={() => setPagina(p => Math.min(totalPaginas, p + 1))} disabled={pagina === totalPaginas} className="admin-page-btn" style={{ opacity: pagina === totalPaginas ? 0.4 : 1 }}>Siguiente ›</button>
+            <button onClick={() => setPagina(totalPaginas)} disabled={pagina === totalPaginas} className="admin-page-btn" style={{ opacity: pagina === totalPaginas ? 0.4 : 1 }}>»</button>
           </div>
         )}
-        <p style={{ textAlign: "center", color: "#a0a0a0", fontSize: 12, marginTop: 8 }}>
+        <p style={{ textAlign: "center", color: "var(--admin-text-2)", fontSize: 12, marginTop: 8 }}>
           Página {pagina} de {totalPaginas} — {total} productos en total
         </p>
-      </main>
+      </div>
 
       {/* MODAL CREAR / EDITAR */}
       {modal && (
-        <div style={s.modalOverlay} onClick={cerrarModal}>
-          <div style={{ ...s.modalBox, maxWidth: 680 }} onClick={e => e.stopPropagation()}>
-            <div style={s.modalHeader}>
-              <h2 style={s.modalTitle}>{modal === "crear" ? "Nuevo Producto" : "Editar Producto"}</h2>
-              <button onClick={cerrarModal} style={s.closeBtn}>✕</button>
+        <div className="admin-overlay" onClick={cerrarModal}>
+          <div className="admin-modal" style={{ maxWidth: 680 }} onClick={e => e.stopPropagation()}>
+            <div className="admin-modal__head">
+              <h2 className="admin-modal__title">{modal === "crear" ? "Nuevo Producto" : "Editar Producto"}</h2>
+              <button onClick={cerrarModal} className="admin-modal__close">✕</button>
             </div>
-            <div style={{ ...s.modalBody, overflowY: "auto", maxHeight: "65vh" }}>
-              {error && <div style={s.errorBox}> {error}</div>}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <div className="admin-modal__body" style={{ overflowY: "auto", maxHeight: "65vh" }}>
+              {error && <div style={{ background: "rgba(239,68,68,0.1)", border: "1px solid var(--admin-red)", borderRadius: 8, padding: "10px 14px", color: "var(--admin-red)", fontSize: 13, marginBottom: 16 }}>{error}</div>}
+              <div className="admin-grid2">
                 {/* Columna izquierda */}
                 <div>
-                  <div style={s.formGroup}>
-                    <label style={s.formLabel}>Nombre *</label>
-                    <input type="text" value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} style={s.formInput} required />
+                  <div className="admin-form-group">
+                    <label className="admin-form-label">Nombre *</label>
+                    <input type="text" value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} className="admin-form-input" required />
                   </div>
-                  <div style={s.formGroup}>
-                    <label style={s.formLabel}>Precio *</label>
-                    <input type="number" step="0.01" min="0" value={form.precio} onChange={e => setForm({ ...form, precio: e.target.value })} style={s.formInput} required />
+                  <div className="admin-form-group">
+                    <label className="admin-form-label">Precio *</label>
+                    <input type="number" step="0.01" min="0" value={form.precio} onChange={e => setForm({ ...form, precio: e.target.value })} className="admin-form-input" required />
                   </div>
-                  <div style={s.formGroup}>
-                    <label style={s.formLabel}>Stock</label>
-                    <input type="number" min="0" value={form.stock} onChange={e => setForm({ ...form, stock: e.target.value })} style={s.formInput} />
+                  <div className="admin-form-group">
+                    <label className="admin-form-label">Stock</label>
+                    <input type="number" min="0" value={form.stock} onChange={e => setForm({ ...form, stock: e.target.value })} className="admin-form-input" />
                   </div>
-                  <div style={s.formGroup}>
-                    <label style={s.formLabel}>Categoría</label>
-                    <select value={form.categoria} onChange={e => setForm({ ...form, categoria: e.target.value })} style={s.formInput}>
+                  <div className="admin-form-group">
+                    <label className="admin-form-label">Categoría</label>
+                    <select value={form.categoria} onChange={e => setForm({ ...form, categoria: e.target.value })} className="admin-form-select">
   {CATEGORIAS_ADMIN.map(grupo => (
     <optgroup key={grupo.group} label={grupo.group}>
       {grupo.options.map(o => (
@@ -354,10 +353,10 @@ export default function AdminProductos() {
   ))}
 </select>
                   </div>
-                  <div style={s.formGroup}>
-                    <label style={s.formLabel}>Imagen</label>
-                    <input type="file" accept="image/*" onChange={handleImagenChange} style={{ ...s.formInput, padding: "6px 10px" }} />
-                    <p style={{ color: "#a0a0a0", fontSize: 11, marginTop: 4 }}>JPG, PNG, GIF, WEBP</p>
+                  <div className="admin-form-group">
+                    <label className="admin-form-label">Imagen</label>
+                    <input type="file" accept="image/*" onChange={handleImagenChange} className="admin-form-input" style={{ padding: "6px 10px" }} />
+                    <p style={{ color: "var(--admin-text-2)", fontSize: 11, marginTop: 4 }}>JPG, PNG, GIF, WEBP</p>
                     {imagenPreview && (
                       <img src={imagenPreview} alt="preview" style={{ marginTop: 8, maxWidth: "100%", maxHeight: 120, objectFit: "cover", borderRadius: 8, border: "1px solid rgba(154,3,30,0.3)" }} />
                     )}
@@ -365,21 +364,22 @@ export default function AdminProductos() {
                 </div>
                 {/* Columna derecha */}
                 <div>
-                  <div style={s.formGroup}>
-                    <label style={s.formLabel}>Descripción</label>
+                  <div className="admin-form-group">
+                    <label className="admin-form-label">Descripción</label>
                     <textarea
                       value={form.descripcion}
                       onChange={e => setForm({ ...form, descripcion: e.target.value })}
-                      style={{ ...s.formInput, height: 200, resize: "vertical" }}
+                      className="admin-form-textarea"
+                      style={{ height: 200 }}
                       placeholder="Descripción detallada del producto..."
                     />
                   </div>
                 </div>
               </div>
             </div>
-            <div style={s.modalFooter}>
-              <button onClick={cerrarModal} style={s.btnSecondary}>Cancelar</button>
-              <button onClick={handleGuardar} disabled={saving} style={{ ...s.btnPrimary, opacity: saving ? 0.6 : 1 }}>
+            <div className="admin-modal__foot">
+              <button onClick={cerrarModal} className="admin-btn admin-btn--sec">Cancelar</button>
+              <button onClick={handleGuardar} disabled={saving} className="admin-btn admin-btn--pri" style={{ opacity: saving ? 0.6 : 1 }}>
                 {saving ? "Guardando..." : "Guardar"}
               </button>
             </div>
@@ -389,80 +389,27 @@ export default function AdminProductos() {
 
       {/* MODAL CONFIRMAR ELIMINAR */}
       {confirmDelete && (
-        <div style={s.modalOverlay} onClick={() => setConfirmDelete(null)}>
-          <div style={{ ...s.modalBox, maxWidth: 420 }} onClick={e => e.stopPropagation()}>
-            <div style={s.modalHeader}>
-              <h2 style={{ ...s.modalTitle, color: "#ef4444" }}>Confirmar Eliminación</h2>
-              <button onClick={() => setConfirmDelete(null)} style={s.closeBtn}>✕</button>
+        <div className="admin-overlay" onClick={() => setConfirmDelete(null)}>
+          <div className="admin-modal" style={{ maxWidth: 420 }} onClick={e => e.stopPropagation()}>
+            <div className="admin-modal__head">
+              <h2 className="admin-modal__title" style={{ color: "#ef4444" }}>Confirmar Eliminación</h2>
+              <button onClick={() => setConfirmDelete(null)} className="admin-modal__close">✕</button>
             </div>
-            <div style={{ ...s.modalBody, textAlign: "center", padding: 24 }}>
-              <p style={{ color: "#d9d9d9", fontSize: 15 }}>
-                ¿Estás seguro de eliminar <strong style={{ color: "#c1121f" }}>{confirmDelete.nombre}</strong>?
+            <div className="admin-modal__body" style={{ textAlign: "center", padding: 24 }}>
+              <p style={{ color: "var(--admin-text)", fontSize: 15 }}>
+                ¿Estás seguro de eliminar <strong style={{ color: "var(--admin-accent2)" }}>{confirmDelete.nombre}</strong>?
               </p>
-              <p style={{ color: "#a0a0a0", fontSize: 13 }}>Esta acción lo marcará como inactivo.</p>
+              <p style={{ color: "var(--admin-text-2)", fontSize: 13 }}>Esta acción lo marcará como inactivo.</p>
             </div>
-            <div style={s.modalFooter}>
-              <button onClick={() => setConfirmDelete(null)} style={s.btnSecondary}>Cancelar</button>
-              <button onClick={() => handleEliminar(confirmDelete.id_producto)} style={{ ...s.btnPrimary, background: "#dc3545" }}>
+            <div className="admin-modal__foot">
+              <button onClick={() => setConfirmDelete(null)} className="admin-btn admin-btn--sec">Cancelar</button>
+              <button onClick={() => handleEliminar(confirmDelete.id_producto)} className="admin-btn admin-btn--pri" style={{ background: "#dc3545" }}>
                 Sí, eliminar
               </button>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
-
-const s = {
-  page: { display: "flex", minHeight: "100vh", background: "#121418", fontFamily: "'Lato', sans-serif", color: "#d9d9d9" },
-  toast: { position: "fixed", top: 20, right: 20, background: "#1f2429", border: "1px solid #10b981", borderRadius: 10, padding: "12px 20px", color: "#10b981", fontWeight: 600, fontSize: 14, zIndex: 9999, boxShadow: "0 4px 20px rgba(0,0,0,0.5)" },
-  sidebar: { width: 240, background: "#0d0f12", borderRight: "2px solid #9a031e", display: "flex", flexDirection: "column", position: "sticky", top: 0, height: "100vh" },
-  sidebarLogo: { padding: "24px 20px", display: "flex", alignItems: "center", gap: 10, borderBottom: "1px solid rgba(154,3,30,0.3)" },
-  logoText: { color: "#c1121f", fontWeight: 700, fontSize: 16 },
-  nav: { flex: 1, padding: "16px 12px", display: "flex", flexDirection: "column", gap: 4 },
-  navLink: { display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 8, color: "#d9d9d9", textDecoration: "none", fontSize: 14, borderLeft: "3px solid transparent" },
-  navLinkActive: { background: "#9a031e", color: "white", borderLeftColor: "white" },
-  sidebarFooter: { padding: 16, borderTop: "1px solid rgba(154,3,30,0.3)" },
-  userName: { color: "#d9d9d9", fontSize: 13, fontWeight: 600, margin: 0 },
-  userRole: { color: "#9a031e", fontSize: 11, margin: 0 },
-  logoutBtn: { width: "100%", padding: 8, background: "rgba(154,3,30,0.15)", border: "1px solid rgba(154,3,30,0.4)", borderRadius: 8, color: "#d9d9d9", cursor: "pointer", fontSize: 13 },
-
-  main: { flex: 1, padding: "24px 28px" },
-  header: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, paddingBottom: 16, borderBottom: "2px solid #9a031e" },
-  pageTitle: { color: "#c1121f", fontSize: 26, fontWeight: 700, margin: 0 },
-  pageSubtitle: { color: "#a0a0a0", fontSize: 13, margin: "4px 0 0" },
-
-  card: { background: "#1f2429", borderRadius: 12, border: "1px solid rgba(154,3,30,0.2)", overflow: "hidden", marginBottom: 16 },
-  tableWrapper: { overflowX: "auto" },
-  table: { width: "100%", borderCollapse: "collapse", fontSize: 13 },
-  th: { padding: "12px 14px", textAlign: "left", color: "#a0a0a0", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.8, background: "#121418", borderBottom: "2px solid rgba(154,3,30,0.3)" },
-  td: { padding: "10px 14px", color: "#d9d9d9", borderBottom: "1px solid rgba(154,3,30,0.08)" },
-  loadingRow: { display: "flex", justifyContent: "center", padding: 40 },
-  spinner: { width: 32, height: 32, border: "3px solid rgba(154,3,30,0.3)", borderTop: "3px solid #9a031e", borderRadius: "50%", animation: "spin 0.8s linear infinite" },
-  imgPlaceholder: { width: 50, height: 50, background: "#121418", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, border: "1px solid rgba(154,3,30,0.2)" },
-  categoriaBadge: { padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600, background: "rgba(154,3,30,0.15)", color: "#c1121f", border: "1px solid rgba(154,3,30,0.3)" },
-
-  btnEdit: { padding: "5px 10px", background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.4)", borderRadius: 6, cursor: "pointer", fontSize: 13 },
-  btnDelete: { padding: "5px 10px", background: "rgba(220,53,69,0.15)", border: "1px solid rgba(220,53,69,0.4)", borderRadius: 6, cursor: "pointer", fontSize: 13 },
-
-  pagination: { display: "flex", justifyContent: "center", gap: 6, marginTop: 16, flexWrap: "wrap", alignItems: "center" },
-  pageBtn: { padding: "7px 12px", background: "#1f2429", border: "1px solid rgba(154,3,30,0.3)", borderRadius: 6, color: "#d9d9d9", cursor: "pointer", fontSize: 13 },
-  pageBtnActive: { background: "#9a031e", borderColor: "#9a031e", color: "white", fontWeight: 700 },
-
-  modalOverlay: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 },
-  modalBox: { background: "#1f2429", border: "2px solid #9a031e", borderRadius: 16, width: "100%" },
-  modalHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", borderBottom: "2px solid #9a031e", background: "#121418" },
-  modalTitle: { color: "#c1121f", fontSize: 16, fontWeight: 700, margin: 0 },
-  closeBtn: { background: "none", border: "none", color: "#a0a0a0", fontSize: 18, cursor: "pointer" },
-  modalBody: { padding: "20px" },
-  modalFooter: { display: "flex", justifyContent: "flex-end", gap: 10, padding: "14px 20px", borderTop: "1px solid rgba(154,3,30,0.2)", background: "#121418" },
-
-  formGroup: { marginBottom: 16 },
-  formLabel: { display: "block", color: "#a0a0a0", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 },
-  formInput: { width: "100%", padding: "10px 14px", background: "#121418", border: "1px solid rgba(154,3,30,0.3)", borderRadius: 8, color: "#d9d9d9", fontSize: 14, outline: "none", boxSizing: "border-box" },
-
-  errorBox: { background: "rgba(193,18,31,0.12)", border: "1px solid rgba(193,18,31,0.35)", borderRadius: 8, padding: "10px 14px", color: "#f87171", fontSize: 13, marginBottom: 16 },
-  btnPrimary: { padding: "9px 20px", background: "#9a031e", border: "none", borderRadius: 8, color: "white", fontWeight: 600, fontSize: 13, cursor: "pointer" },
-  btnSecondary: { padding: "9px 20px", background: "rgba(154,3,30,0.1)", border: "1px solid rgba(154,3,30,0.3)", borderRadius: 8, color: "#d9d9d9", fontWeight: 600, fontSize: 13, cursor: "pointer" },
-};

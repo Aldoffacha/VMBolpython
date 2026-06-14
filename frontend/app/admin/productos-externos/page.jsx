@@ -1,5 +1,6 @@
 "use client";
 
+import "@/styles/admin.css";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ShoppingBag, Plus, Pencil, Trash2, Package, ShoppingCart, X, Save, Star, AlertTriangle, Link, Smartphone, Gamepad2, Headphones, Laptop, Camera, Shirt, Home, CookingPot, Bed, Image, Dumbbell, Tent, Gift, Book, Footprints, Circle } from "lucide-react";
@@ -12,36 +13,10 @@ function getToken() {
   return document.cookie.split("; ").find(r => r.startsWith("access_token="))?.split("=")[1];
 }
 
-// ── Estilos base ──────────────────────────────────────────────────────────────
+// ── Colores base ──────────────────────────────────────────────────────────────
 const C = {
-  bg: "#121418", card: "#1f2429", accent: "#9a031e", accent2: "#c1121f",
-  text: "#d9d9d9", muted: "#a0a0a0", success: "#10b981", warning: "#f59e0b",
-  danger: "#ef4444", info: "#3b82f6",
+  warning: "#f59e0b", info: "#3b82f6",
 };
-
-const ov   = { position:"fixed", inset:0, background:"rgba(0,0,0,0.82)", zIndex:1000,
-  display:"flex", alignItems:"center", justifyContent:"center", padding:20 };
-const mBox = { background:C.card, border:`2px solid ${C.accent}`, borderRadius:16,
-  width:"100%", maxWidth:640, maxHeight:"92vh", display:"flex", flexDirection:"column" };
-const mHd  = { display:"flex", justifyContent:"space-between", alignItems:"center",
-  padding:"16px 20px", borderBottom:`2px solid ${C.accent}`, background:C.bg, flexShrink:0 };
-const mBd  = { padding:20, overflowY:"auto", flex:1 };
-const mFt  = { display:"flex", justifyContent:"flex-end", gap:10, padding:"14px 20px",
-  borderTop:`1px solid rgba(154,3,30,0.2)`, background:C.bg, flexShrink:0 };
-const mTit = { margin:0, color:C.accent2, fontSize:15, fontWeight:700 };
-const btnX = { background:"transparent", border:"none", color:C.muted, cursor:"pointer", fontSize:18 };
-const btnP = { padding:"9px 20px", background:C.accent, border:"none", borderRadius:8,
-  color:"#fff", fontWeight:600, fontSize:13, cursor:"pointer" };
-const btnS = { padding:"9px 20px", background:"rgba(154,3,30,0.1)",
-  border:"1px solid rgba(154,3,30,0.3)", borderRadius:8,
-  color:C.text, fontWeight:600, fontSize:13, cursor:"pointer" };
-const lbl  = { display:"block", color:C.muted, fontSize:12, marginBottom:5, fontWeight:600 };
-const inp  = { width:"100%", padding:"9px 12px", background:C.bg,
-  border:"2px solid rgba(154,3,30,0.2)", borderRadius:6, color:C.text,
-  fontSize:13, outline:"none", boxSizing:"border-box" };
-const sel  = { width:"100%", padding:"9px 12px", background:C.bg,
-  border:"2px solid rgba(154,3,30,0.2)", borderRadius:6, color:C.text,
-  fontSize:13, outline:"none", boxSizing:"border-box" };
 
 // ── Categorías agrupadas ──────────────────────────────────────────────────────
 const CATEGORIAS_EXTERNOS = [
@@ -165,41 +140,41 @@ function ModalForm({ inicial, onClose, onSaved, token }) {
   }
 
   return (
-    <div style={ov}>
-      <div style={mBox}>
-        <div style={mHd}>
-          <h3 style={mTit}>{esEdicion ? <> <Pencil size={16} /> Editar Producto Externo</> : <> <Plus size={16} /> Agregar Producto Externo</>}</h3>
-          <button onClick={onClose} style={btnX}><X size={18} /></button>
+    <div className="admin-overlay">
+      <div className="admin-modal" style={{ maxWidth:640, maxHeight:"92vh", display:"flex", flexDirection:"column" }}>
+        <div className="admin-modal__head">
+          <h3 className="admin-modal__title">{esEdicion ? <> <Pencil size={16} /> Editar Producto Externo</> : <> <Plus size={16} /> Agregar Producto Externo</>}</h3>
+          <button onClick={onClose} className="admin-modal__close"><X size={18} /></button>
         </div>
-        <div style={mBd}>
+        <div className="admin-modal__body">
 
           {/* Nombre + Precio */}
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
             <div>
-              <label style={lbl}>Nombre del Producto *</label>
-              <input style={inp} placeholder="Ej: Sony WH-1000XM4"
+              <label className="admin-form-label">Nombre del Producto *</label>
+              <input className="admin-form-input" placeholder="Ej: Sony WH-1000XM4"
                 value={form.nombre} onChange={e=>set("nombre", e.target.value)} />
             </div>
             <div>
-              <label style={lbl}>Precio (USD) *</label>
-              <input style={inp} type="number" step="0.01" placeholder="299.99"
+              <label className="admin-form-label">Precio (USD) *</label>
+              <input className="admin-form-input" type="number" step="0.01" placeholder="299.99"
                 value={form.precio} onChange={e=>set("precio", e.target.value)} />
             </div>
           </div>
 
           {/* Descripción */}
-          <div style={{ marginBottom:14 }}>
-            <label style={lbl}>Descripción *</label>
-            <textarea style={{ ...inp, resize:"vertical", minHeight:72 }}
+          <div className="admin-form-group">
+            <label className="admin-form-label">Descripción *</label>
+            <textarea className="admin-form-input" style={{ resize:"vertical", minHeight:72 }}
               placeholder="Descripción del producto..."
               value={form.descripcion} onChange={e=>set("descripcion", e.target.value)} />
           </div>
 
           {/* Categoría + Peso */}
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
             <div>
-              <label style={lbl}>Categoría *</label>
-              <select style={sel} value={form.categoria} onChange={e=>set("categoria", e.target.value)}>
+              <label className="admin-form-label">Categoría *</label>
+              <select className="admin-form-select" value={form.categoria} onChange={e=>set("categoria", e.target.value)}>
                 <option value="">Selecciona una categoría</option>
                 {CATEGORIAS_EXTERNOS.map(grupo => (
                   <optgroup key={grupo.group} label={grupo.group}>
@@ -211,30 +186,30 @@ function ModalForm({ inicial, onClose, onSaved, token }) {
               </select>
             </div>
             <div>
-              <label style={lbl}>Peso (kg)</label>
-              <input style={inp} type="number" step="0.01" placeholder="0.50"
+              <label className="admin-form-label">Peso (kg)</label>
+              <input className="admin-form-input" type="number" step="0.01" placeholder="0.50"
                 value={form.peso} onChange={e=>set("peso", e.target.value)} />
             </div>
           </div>
 
           {/* Enlace */}
-          <div style={{ marginBottom:14 }}>
-            <label style={lbl}>Enlace del Producto *</label>
-            <input style={inp} type="url"
+          <div className="admin-form-group">
+            <label className="admin-form-label">Enlace del Producto *</label>
+            <input className="admin-form-input" type="url"
               placeholder="https://amazon.com/dp/... o https://ebay.com/itm/..."
               value={form.enlace} onChange={e=>onEnlaceChange(e.target.value)} />
             {form.enlace && (
               <div style={{ marginTop:6, display:"flex", alignItems:"center", gap:8 }}>
                 <PlatBadge plat={platDet} />
-                <span style={{ color:C.muted, fontSize:11 }}>Plataforma detectada automáticamente</span>
+                <span style={{ color:"var(--admin-text-2)", fontSize:11 }}>Plataforma detectada automáticamente</span>
               </div>
             )}
           </div>
 
           {/* Imagen */}
-          <div style={{ marginBottom:14 }}>
-            <label style={lbl}>URL de Imagen</label>
-            <input style={inp} type="url" placeholder="https://..."
+          <div className="admin-form-group">
+            <label className="admin-form-label">URL de Imagen</label>
+            <input className="admin-form-input" type="url" placeholder="https://..."
               value={form.imagen} onChange={e=>onImagenChange(e.target.value)} />
             {preview && (
               <img src={preview} alt="preview"
@@ -248,15 +223,15 @@ function ModalForm({ inicial, onClose, onSaved, token }) {
           <div style={{ display:"flex", alignItems:"center", gap:10 }}>
             <input type="checkbox" id="destacado" checked={form.destacado}
               onChange={e=>set("destacado", e.target.checked)}
-              style={{ accentColor:C.accent, width:16, height:16, cursor:"pointer" }} />
-            <label htmlFor="destacado" style={{ color:C.text, fontSize:13, cursor:"pointer" }}>
+              style={{ accentColor:"var(--admin-accent)", width:16, height:16, cursor:"pointer" }} />
+            <label htmlFor="destacado" style={{ color:"var(--admin-text)", fontSize:13, cursor:"pointer" }}>
               <Star size={14} /> Mostrar como destacado en el dashboard del cliente
             </label>
           </div>
         </div>
-        <div style={mFt}>
-          <button onClick={onClose} style={btnS}>Cancelar</button>
-          <button onClick={guardar} disabled={load} style={{ ...btnP, opacity:load?0.7:1 }}>
+        <div className="admin-modal__foot">
+          <button onClick={onClose} className="admin-btn admin-btn--sec">Cancelar</button>
+          <button onClick={guardar} disabled={load} className="admin-btn admin-btn--pri" style={{ opacity:load?0.7:1 }}>
             {load ? "Guardando..." : (esEdicion ? <> <Save size={14} /> Actualizar</> : <> <Save size={14} /> Guardar</>)}
           </button>
         </div>
@@ -268,23 +243,23 @@ function ModalForm({ inicial, onClose, onSaved, token }) {
 // ── Modal confirmar eliminación ───────────────────────────────────────────────
 function ModalConfirm({ prod, onClose, onConfirm, load }) {
   return (
-    <div style={ov}>
-      <div style={{ ...mBox, maxWidth:400 }}>
-        <div style={mHd}>
-          <h3 style={{ ...mTit, color:C.danger }}><Trash2 size={16} /> Eliminar</h3>
-          <button onClick={onClose} style={btnX}><X size={18} /></button>
+    <div className="admin-overlay">
+      <div className="admin-modal" style={{ maxWidth:400, display:"flex", flexDirection:"column" }}>
+        <div className="admin-modal__head">
+          <h3 className="admin-modal__title" style={{ color:"#ef4444" }}><Trash2 size={16} /> Eliminar</h3>
+          <button onClick={onClose} className="admin-modal__close"><X size={18} /></button>
         </div>
-        <div style={{ ...mBd, textAlign:"center", padding:"28px 20px" }}>
+        <div className="admin-modal__body" style={{ textAlign:"center", padding:"28px 20px" }}>
           <div style={{ marginBottom:12 }}><AlertTriangle size={36} /></div>
-          <p style={{ color:C.text, fontSize:14, lineHeight:1.6 }}>
-            ¿Eliminar <strong style={{ color:C.accent2 }}>{prod?.nombre}</strong>?<br />
-            <span style={{ color:C.muted, fontSize:12 }}>Esta acción no se puede deshacer.</span>
+          <p style={{ color:"var(--admin-text)", fontSize:14, lineHeight:1.6 }}>
+            ¿Eliminar <strong style={{ color:"var(--admin-accent2)" }}>{prod?.nombre}</strong>?<br />
+            <span style={{ color:"var(--admin-text-2)", fontSize:12 }}>Esta acción no se puede deshacer.</span>
           </p>
         </div>
-        <div style={mFt}>
-          <button onClick={onClose} style={btnS}>Cancelar</button>
+        <div className="admin-modal__foot">
+          <button onClick={onClose} className="admin-btn admin-btn--sec">Cancelar</button>
           <button onClick={onConfirm} disabled={load}
-            style={{ ...btnP, background:C.danger, opacity:load?0.7:1 }}>
+            className="admin-btn admin-btn--pri" style={{ background:"#ef4444", opacity:load?0.7:1 }}>
             {load ? "Eliminando..." : "Sí, eliminar"}
           </button>
         </div>
@@ -374,88 +349,77 @@ export default function AdminProductosExternos() {
   };
 
   return (
-    <div style={{ display:"flex", minHeight:"100vh", background:C.bg, color:C.text, fontFamily:"'Lato',sans-serif" }}>
+    <>
       {toast && (
-        <div style={{ position:"fixed", top:20, right:20, background:C.card,
-          border:`1px solid ${C.success}`, borderRadius:10, padding:"12px 20px",
-          color:C.success, fontWeight:600, fontSize:14, zIndex:9999,
-          boxShadow:"0 4px 20px rgba(0,0,0,0.5)" }}>{toast}</div>
+        <div className="admin-toast admin-toast--ok">{toast}</div>
       )}
 
-      <main style={{ flex:1, padding:"24px 28px" }}>
+      <main>
         {/* Header */}
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center",
-          marginBottom:24, paddingBottom:16, borderBottom:`2px solid ${C.accent}`,
-          flexWrap:"wrap", gap:12 }}>
+        <div className="admin-header">
           <div>
-            <h1 style={{ color:C.accent2, fontSize:26, fontWeight:700, margin:0 }}>
+            <h1 className="admin-header__title">
               <ShoppingBag size={20} /> Productos Externos
             </h1>
-            <p style={{ color:C.muted, fontSize:13, margin:"4px 0 0" }}>
+            <p className="admin-header__sub">
               Amazon & eBay — {prods.length} producto{prods.length !== 1 ? "s" : ""} registrado{prods.length !== 1 ? "s" : ""}
             </p>
           </div>
-          <button onClick={() => setMAgregar(true)} style={btnP}>
+          <button onClick={() => setMAgregar(true)} className="admin-btn admin-btn--pri">
             <Plus size={16} /> Agregar Producto Externo
           </button>
         </div>
 
         {/* Tabla */}
-        <div style={{ background:C.card, borderRadius:12, border:"1px solid rgba(154,3,30,0.2)", overflow:"hidden" }}>
+        <div className="admin-card">
           {load ? (
             <div style={{ display:"flex", justifyContent:"center", padding:50 }}>
-              <div style={{ width:36, height:36, border:"3px solid rgba(154,3,30,0.3)",
-                borderTop:`3px solid ${C.accent}`, borderRadius:"50%",
-                animation:"spin 0.8s linear infinite" }} />
-              <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+              <div className="admin-spinner" />
             </div>
           ) : (
             <div style={{ overflowX:"auto" }}>
-              <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
+              <table className="admin-table">
                 <thead>
                   <tr>
                     {["Producto", "Plataforma", "Categoría", "Precio", "Peso", "Destacado", "Estado", "Acciones"].map(h => (
-                      <th key={h} style={{ padding:"12px 14px", textAlign:"left", color:C.muted,
-                        fontWeight:700, fontSize:11, textTransform:"uppercase", letterSpacing:0.8,
-                        background:C.bg, borderBottom:`2px solid rgba(154,3,30,0.3)` }}>{h}</th>
+                      <th key={h}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {prods.length === 0 ? (
                     <tr>
-                      <td colSpan={8} style={{ padding:50, textAlign:"center", color:C.muted }}>
+                      <td colSpan={8} style={{ padding:50, textAlign:"center", color:"var(--admin-text-2)" }}>
                         <div style={{ marginBottom:10 }}><Package size={36} /></div>
                         No hay productos externos registrados.<br />
                         <button onClick={() => setMAgregar(true)}
-                          style={{ ...btnP, marginTop:14, fontSize:12 }}>
+                          className="admin-btn admin-btn--pri" style={{ marginTop:14, fontSize:12 }}>
                           Agregar el primero
                         </button>
                       </td>
                     </tr>
                   ) : prods.map((p, i) => (
                     <tr key={p.id_producto_exterior}
-                      style={{ background: i % 2 === 0 ? "rgba(154,3,30,0.03)" : "transparent",
-                        borderBottom:"1px solid rgba(154,3,30,0.07)" }}>
+                      style={{ background: i % 2 === 0 ? "rgba(154,3,30,0.03)" : "transparent" }}>
 
                       {/* Producto */}
-                      <td style={{ padding:"10px 14px" }}>
+                      <td>
                         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                          <img src={p.imagen || `https://via.placeholder.com/42x42/1f2429/9a031e?text=${encodeURIComponent((p.nombre||"").slice(0,2))}`}
+                          <img src={p.imagen || `https://via.placeholder.com/42x42/3a3f47/9a031e?text=${encodeURIComponent((p.nombre||"").slice(0,2))}`}
                             alt={p.nombre}
                             style={{ width:42, height:42, objectFit:"cover", borderRadius:6,
                               border:"1px solid rgba(154,3,30,0.25)", flexShrink:0 }}
-                            onError={e=>{ e.target.src=`https://via.placeholder.com/42x42/1f2429/9a031e?text=IMG`; }} />
+                            onError={e=>{ e.target.src=`https://via.placeholder.com/42x42/3a3f47/9a031e?text=IMG`; }} />
                           <div>
-                            <div style={{ fontWeight:600, color:C.text }}>
+                            <div style={{ fontWeight:600, color:"var(--admin-text)" }}>
                               {(p.nombre||"").slice(0,42)}{(p.nombre||"").length>42?"...":""}
                             </div>
-                            <div style={{ color:C.muted, fontSize:11, marginTop:2 }}>
+                            <div style={{ color:"var(--admin-text-2)", fontSize:11, marginTop:2 }}>
                               {(p.descripcion||"").slice(0,48)}{(p.descripcion||"").length>48?"...":""}
                             </div>
                             {p.enlace && (
                               <a href={p.enlace} target="_blank" rel="noreferrer"
-                                style={{ color:C.info, fontSize:10, textDecoration:"none" }}>
+                                style={{ color:"#3b82f6", fontSize:10, textDecoration:"none" }}>
                                 <Link size={12} /> Ver original
                               </a>
                             )}
@@ -464,55 +428,47 @@ export default function AdminProductosExternos() {
                       </td>
 
                       {/* Plataforma */}
-                      <td style={{ padding:"10px 14px" }}>
+                      <td>
                         <PlatBadge plat={p.plataforma} />
                       </td>
 
                       {/* Categoría */}
-                      <td style={{ padding:"10px 14px", color:C.text }}>
+                      <td style={{ color:"var(--admin-text)" }}>
                         {CAT_ICONS[p.categoria] || <Package size={14} />} {p.categoria ? p.categoria.charAt(0).toUpperCase() + p.categoria.slice(1).replace("_", " ") : "—"}
                       </td>
 
                       {/* Precio */}
-                      <td style={{ padding:"10px 14px", fontWeight:700, color:C.success }}>
+                      <td style={{ fontWeight:700, color:"#10b981" }}>
                         {formatPrice(p.precio)}
                       </td>
 
                       {/* Peso */}
-                      <td style={{ padding:"10px 14px", color:C.muted }}>
+                      <td style={{ color:"var(--admin-text-2)" }}>
                         {parseFloat(p.peso||0).toFixed(2)} kg
                       </td>
 
                       {/* Destacado */}
-                      <td style={{ padding:"10px 14px" }}>
+                      <td>
                         {p.destacado
-                          ? <span style={{ color:C.warning }}><Star size={14} /></span>
-                          : <span style={{ color:"#444", fontSize:12 }}>—</span>}
+                          ? <span style={{ color:"#f59e0b" }}><Star size={14} /></span>
+                          : <span style={{ color:"var(--admin-text-3)", fontSize:12 }}>—</span>}
                       </td>
 
                       {/* Estado */}
-                      <td style={{ padding:"10px 14px" }}>
+                      <td>
                         {p.estado
-                          ? <span style={{ background:"rgba(16,185,129,0.15)", color:C.success,
-                              padding:"2px 10px", borderRadius:10, fontSize:11, fontWeight:700,
-                              border:"1px solid rgba(16,185,129,0.3)" }}>Activo</span>
-                          : <span style={{ background:"rgba(239,68,68,0.15)", color:C.danger,
-                              padding:"2px 10px", borderRadius:10, fontSize:11, fontWeight:700,
-                              border:"1px solid rgba(239,68,68,0.3)" }}>Inactivo</span>}
+                          ? <span className="admin-badge" style={{ background:"rgba(16,185,129,0.15)", color:"#10b981", border:"1px solid rgba(16,185,129,0.3)" }}>Activo</span>
+                          : <span className="admin-badge" style={{ background:"rgba(239,68,68,0.15)", color:"#ef4444", border:"1px solid rgba(239,68,68,0.3)" }}>Inactivo</span>}
                       </td>
 
                       {/* Acciones */}
-                      <td style={{ padding:"10px 14px" }}>
+                      <td>
                         <div style={{ display:"flex", gap:6 }}>
                           <button onClick={() => setMEditar(p)}
-                            style={{ padding:"5px 10px", background:"rgba(59,130,246,0.12)",
-                              border:"1px solid rgba(59,130,246,0.3)", borderRadius:6,
-                              color:C.info, cursor:"pointer", fontSize:13 }}
+                            className="admin-btn admin-btn--xs admin-btn--sec2"
                             title="Editar"><Pencil size={14} /></button>
                           <button onClick={() => setMElim(p)}
-                            style={{ padding:"5px 10px", background:"rgba(239,68,68,0.12)",
-                              border:"1px solid rgba(239,68,68,0.3)", borderRadius:6,
-                              color:C.danger, cursor:"pointer", fontSize:13 }}
+                            className="admin-btn admin-btn--xs admin-btn--del"
                             title="Eliminar"><Trash2 size={14} /></button>
                         </div>
                       </td>
@@ -541,6 +497,6 @@ export default function AdminProductosExternos() {
         <ModalConfirm prod={mElim} load={elimLoad}
           onClose={() => setMElim(null)} onConfirm={eliminar} />
       )}
-    </div>
+    </>
   );
 }

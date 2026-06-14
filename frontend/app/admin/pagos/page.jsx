@@ -1,5 +1,6 @@
 "use client";
 
+import "@/styles/admin.css";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAdminCurrency } from "@/lib/AdminCurrencyContext";
@@ -89,20 +90,20 @@ export default function AdminPagos() {
   const pagosFiltrados = filtro === "todos" ? pagos : pagos.filter(p => p.estado === filtro);
 
   return (
-    <div style={s.page}>
+    <div>
       {/* TOAST */}
-      {toast && <div style={s.toast}>{toast}</div>}
+      {toast && <div className="admin-toast admin-toast--ok">{toast}</div>}
 
       {/* SIDEBAR */}
       
 
       {/* MAIN */}
-      <main style={s.main}>
+      <main>
         {/* HEADER */}
-        <div style={s.header}>
+        <div className="admin-header">
           <div>
-            <h1 style={s.pageTitle}>Gesti&oacute;n de Pagos</h1>
-            <p style={s.pageSubtitle}>Confirma los comprobantes de pago de los clientes</p>
+            <h1 className="admin-header__title">Gesti&oacute;n de Pagos</h1>
+            <p className="admin-header__sub">Confirma los comprobantes de pago de los clientes</p>
           </div>
         </div>
 
@@ -146,34 +147,34 @@ export default function AdminPagos() {
         </div>
 
         {/* TABLA */}
-        <div style={s.card}>
+        <div className="admin-card" style={{ marginBottom: 16 }}>
           {loading ? (
-            <div style={s.loadingRow}><div style={s.spinner} /></div>
+            <div className="admin-loading"><div className="admin-spinner" /></div>
           ) : (
-            <div style={s.tableWrapper}>
-              <table style={s.table}>
+            <div className="admin-table-wrap">
+              <table className="admin-table">
                 <thead>
                   <tr>
                     {["ID Pago", "Pedido", "Cliente", "Monto", "M&eacute;todo", "Comprobante", "Fecha", "Estado", "Acci&oacute;n"].map(h => (
-                      <th key={h} style={s.th}>{h}</th>
+                      <th key={h}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {pagosFiltrados.length === 0 ? (
-                    <tr><td colSpan={9} style={{ ...s.td, textAlign: "center", color: "#a0a0a0", padding: 40 }}>
+                    <tr><td colSpan={9} style={{ textAlign: "center", color: "var(--admin-text-2)", padding: 40 }}>
                       No hay pagos {filtro !== "todos" ? filtro + "s" : ""}
                     </td></tr>
                   ) : pagosFiltrados.map((p, i) => (
                     <tr key={p.id_pago} style={{ background: i % 2 === 0 ? "rgba(154,3,30,0.04)" : "transparent" }}>
-                      <td style={s.td}>#{p.id_pago}</td>
-                      <td style={s.td}>#{p.id_pedido}</td>
-                      <td style={s.td}>{p.cliente_nombre}</td>
-                       <td style={{ ...s.td, fontWeight: 700, color: "#10b981" }}>{formatPrice(p.monto)}</td>
-                      <td style={s.td}>
+                      <td>#{p.id_pago}</td>
+                      <td>#{p.id_pedido}</td>
+                      <td>{p.cliente_nombre}</td>
+                       <td style={{ fontWeight: 700, color: "#10b981" }}>{formatPrice(p.monto)}</td>
+                      <td>
                         <span style={s.metodoBadge}>{p.metodo}</span>
                       </td>
-                      <td style={s.td}>
+                      <td>
                         {p.comprobante ? (
                           <img
                             src={`http://localhost:8000/uploads/payments/${p.comprobante}`}
@@ -183,14 +184,13 @@ export default function AdminPagos() {
                             onError={e => { e.target.style.display = "none"; e.target.nextSibling.style.display = "block"; }}
                           />
                         ) : (
-                          <span style={{ color: "#a0a0a0", fontSize: 12 }}>Sin comprobante</span>
+                          <span style={{ color: "var(--admin-text-2)", fontSize: 12 }}>Sin comprobante</span>
                         )}
-                        <span style={{ display: "none", color: "#a0a0a0", fontSize: 12 }}>Sin comprobante</span>
+                        <span style={{ display: "none", color: "var(--admin-text-2)", fontSize: 12 }}>Sin comprobante</span>
                       </td>
-                      <td style={{ ...s.td, fontSize: 12, color: "#a0a0a0" }}>{p.fecha_pago}</td>
-                      <td style={s.td}>
-                        <span style={{
-                          ...s.estadoBadge,
+                      <td style={{ fontSize: 12, color: "var(--admin-text-2)" }}>{p.fecha_pago}</td>
+                      <td>
+                        <span className="admin-badge" style={{
                           background: ESTADO_COLORS[p.estado]?.bg,
                           color:      ESTADO_COLORS[p.estado]?.color,
                           border:     `1px solid ${ESTADO_COLORS[p.estado]?.border}`,
@@ -198,7 +198,7 @@ export default function AdminPagos() {
                           {p.estado.charAt(0).toUpperCase() + p.estado.slice(1)}
                         </span>
                       </td>
-                      <td style={s.td}>
+                      <td>
                         {p.estado !== "confirmado" ? (
                           <button
                             onClick={() => handleConfirmar(p.id_pago)}
@@ -222,20 +222,20 @@ export default function AdminPagos() {
 
       {/* MODAL IMAGEN COMPROBANTE */}
       {modalImg && (
-        <div style={s.modalOverlay} onClick={() => setModalImg(null)}>
-          <div style={s.imgModalBox} onClick={e => e.stopPropagation()}>
-            <div style={s.modalHeader}>
-              <h2 style={s.modalTitle}>Comprobante de Pago</h2>
-              <button onClick={() => setModalImg(null)} style={s.closeBtn}><X size={18} /></button>
+        <div className="admin-overlay" onClick={() => setModalImg(null)}>
+          <div className="admin-modal" style={{ maxWidth: 600 }} onClick={e => e.stopPropagation()}>
+            <div className="admin-modal__head">
+              <h2 className="admin-modal__title">Comprobante de Pago</h2>
+              <button onClick={() => setModalImg(null)} className="admin-modal__close"><X size={18} /></button>
             </div>
             <div style={{ padding: 20, textAlign: "center" }}>
               <img src={modalImg} alt="comprobante" style={{ maxWidth: "100%", maxHeight: "70vh", borderRadius: 8, border: "1px solid rgba(154,3,30,0.3)" }} />
             </div>
-            <div style={s.modalFooter}>
-              <a href={modalImg} target="_blank" rel="noopener noreferrer" style={s.btnPrimary}>
+            <div className="admin-modal__foot">
+              <a href={modalImg} target="_blank" rel="noopener noreferrer" className="admin-btn admin-btn--pri" style={{ textDecoration: "none" }}>
                 <Link size={14} /> Abrir en nueva pesta&ntilde;a
               </a>
-              <button onClick={() => setModalImg(null)} style={s.btnSecondary}>Cerrar</button>
+              <button onClick={() => setModalImg(null)} className="admin-btn admin-btn--sec">Cerrar</button>
             </div>
           </div>
         </div>
@@ -245,53 +245,71 @@ export default function AdminPagos() {
 }
 
 const s = {
-  page: { display: "flex", minHeight: "100vh", background: "#121418", fontFamily: "'Lato', sans-serif", color: "#d9d9d9" },
-  toast: { position: "fixed", top: 20, right: 20, background: "#1f2429", border: "1px solid #10b981", borderRadius: 10, padding: "12px 20px", color: "#10b981", fontWeight: 600, fontSize: 14, zIndex: 9999, boxShadow: "0 4px 20px rgba(0,0,0,0.5)" },
-
-  sidebar: { width: 240, background: "#0d0f12", borderRight: "2px solid #9a031e", display: "flex", flexDirection: "column", position: "sticky", top: 0, height: "100vh" },
-  sidebarLogo: { padding: "24px 20px", display: "flex", alignItems: "center", gap: 10, borderBottom: "1px solid rgba(154,3,30,0.3)" },
-  logoText: { color: "#c1121f", fontWeight: 700, fontSize: 16 },
-  nav: { flex: 1, padding: "16px 12px", display: "flex", flexDirection: "column", gap: 4 },
-  navLink: { display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 8, color: "#d9d9d9", textDecoration: "none", fontSize: 14, borderLeft: "3px solid transparent" },
-  navLinkActive: { background: "#9a031e", color: "white", borderLeftColor: "white" },
-  sidebarFooter: { padding: 16, borderTop: "1px solid rgba(154,3,30,0.3)" },
-  userName: { color: "#d9d9d9", fontSize: 13, fontWeight: 600, margin: 0 },
-  userRole: { color: "#9a031e", fontSize: 11, margin: 0 },
-  logoutBtn: { width: "100%", padding: 8, background: "rgba(154,3,30,0.15)", border: "1px solid rgba(154,3,30,0.4)", borderRadius: 8, color: "#d9d9d9", cursor: "pointer", fontSize: 13 },
-
-  main: { flex: 1, padding: "24px 28px" },
-  header: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, paddingBottom: 16, borderBottom: "2px solid #9a031e" },
-  pageTitle: { color: "#c1121f", fontSize: 26, fontWeight: 700, margin: 0 },
-  pageSubtitle: { color: "#a0a0a0", fontSize: 13, margin: "4px 0 0" },
-
-  statsGrid: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 },
-  statCard: { background: "#1f2429", padding: "18px 20px", borderRadius: 12, borderLeft: "4px solid #9a031e" },
-  statLabel: { color: "#a0a0a0", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, margin: 0 },
-  statValue: { fontSize: 26, fontWeight: 700, margin: "4px 0 0" },
-
-  filtros: { display: "flex", gap: 8, marginBottom: 16 },
-  filtroBtn: { padding: "8px 16px", background: "#1f2429", border: "1px solid rgba(154,3,30,0.2)", borderRadius: 8, color: "#a0a0a0", cursor: "pointer", fontSize: 13, display: "flex", alignItems: "center", gap: 6 },
-  filtroBtnActive: { background: "#9a031e", border: "1px solid #9a031e", color: "white" },
-  filtroBadge: { background: "rgba(255,255,255,0.2)", borderRadius: 10, padding: "1px 7px", fontSize: 11, fontWeight: 700 },
-
-  card: { background: "#1f2429", borderRadius: 12, border: "1px solid rgba(154,3,30,0.2)", overflow: "hidden", marginBottom: 16 },
-  tableWrapper: { overflowX: "auto" },
-  table: { width: "100%", borderCollapse: "collapse", fontSize: 13 },
-  th: { padding: "12px 14px", textAlign: "left", color: "#a0a0a0", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.8, background: "#121418", borderBottom: "2px solid rgba(154,3,30,0.3)" },
-  td: { padding: "10px 14px", color: "#d9d9d9", borderBottom: "1px solid rgba(154,3,30,0.08)" },
-  loadingRow: { display: "flex", justifyContent: "center", padding: 40 },
-  spinner: { width: 32, height: 32, border: "3px solid rgba(154,3,30,0.3)", borderTop: "3px solid #9a031e", borderRadius: "50%", animation: "spin 0.8s linear infinite" },
-
-  estadoBadge: { padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700 },
+  statsGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+    gap: 14,
+    marginBottom: 18,
+  },
+  statCard: {
+    background: "var(--admin-card)",
+    border: "1px solid var(--admin-border)",
+    borderRadius: 14,
+    padding: "14px 16px",
+    boxShadow: "0 10px 24px rgba(0,0,0,0.16)",
+  },
+  statLabel: {
+    color: "var(--admin-text-2)",
+    fontFamily: "var(--font-d)",
+    fontSize: 11,
+    fontWeight: 700,
+    textTransform: "uppercase",
+    letterSpacing: "1.2px",
+    margin: "0 0 4px",
+  },
+  statValue: {
+    fontFamily: "var(--font-d)",
+    fontSize: 26,
+    fontWeight: 800,
+    margin: 0,
+  },
+  filtros: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 16,
+  },
+  filtroBtn: {
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: "var(--admin-border)",
+    background: "var(--admin-surface)",
+    color: "var(--admin-text)",
+    borderRadius: 999,
+    padding: "8px 12px",
+    cursor: "pointer",
+    fontFamily: "var(--font-d)",
+    fontSize: 12,
+    fontWeight: 700,
+    textTransform: "uppercase",
+    letterSpacing: "0.8px",
+  },
+  filtroBtnActive: {
+    background: "linear-gradient(135deg, var(--admin-accent), var(--admin-accent2))",
+    color: "#fff",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    borderColor: "var(--admin-accent)",
+    boxShadow: "0 8px 18px rgba(154,3,30,0.25)",
+  },
+  filtroBadge: {
+    marginLeft: 8,
+    padding: "2px 8px",
+    borderRadius: 999,
+    background: "rgba(154,3,30,0.18)",
+    fontSize: 11,
+    fontWeight: 700,
+  },
   metodoBadge: { padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 700, background: "rgba(59,130,246,0.15)", color: "#3b82f6", border: "1px solid rgba(59,130,246,0.3)" },
   btnConfirmar: { padding: "6px 12px", background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.4)", borderRadius: 6, color: "#10b981", cursor: "pointer", fontSize: 12, fontWeight: 600 },
-
-  modalOverlay: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 },
-  imgModalBox: { background: "#1f2429", border: "2px solid #9a031e", borderRadius: 16, width: "100%", maxWidth: 600 },
-  modalHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", borderBottom: "2px solid #9a031e", background: "#121418" },
-  modalTitle: { color: "#c1121f", fontSize: 16, fontWeight: 700, margin: 0 },
-  closeBtn: { background: "none", border: "none", color: "#a0a0a0", fontSize: 18, cursor: "pointer" },
-  modalFooter: { display: "flex", justifyContent: "flex-end", gap: 10, padding: "14px 20px", borderTop: "1px solid rgba(154,3,30,0.2)", background: "#121418" },
-  btnPrimary: { padding: "9px 20px", background: "#9a031e", border: "none", borderRadius: 8, color: "white", fontWeight: 600, fontSize: 13, cursor: "pointer", textDecoration: "none" },
-  btnSecondary: { padding: "9px 20px", background: "rgba(154,3,30,0.1)", border: "1px solid rgba(154,3,30,0.3)", borderRadius: 8, color: "#d9d9d9", fontWeight: 600, fontSize: 13, cursor: "pointer" },
 };

@@ -2,8 +2,11 @@
 import { useState, useEffect } from "react";
 import AdminSidebar from "@/components/AdminSidebar";
 import { AdminCurrencyProvider } from "@/lib/AdminCurrencyContext";
+import { useTheme } from "@/context/ThemeContext";
+import "@/styles/admin.css";
 
 export default function AdminLayout({ children }) {
+  const { theme, mounted } = useTheme();
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -11,20 +14,14 @@ export default function AdminLayout({ children }) {
     if (u) setUser(JSON.parse(u));
   }, []);
 
+  const currentTheme = mounted ? theme : "dark";
+
   return (
     <AdminCurrencyProvider>
-      <div style={{
-        display: "flex",
-        height: "100vh",
-        overflow: "hidden",
-      }}>
+      <div className={`admin-root ${currentTheme}`} suppressHydrationWarning>
         <AdminSidebar user={user} />
 
-        <main style={{
-          flex: 1,
-          overflowY: "auto",
-          background: "#0d0f12",
-        }}>
+        <main className="admin-main">
           {children}
         </main>
       </div>

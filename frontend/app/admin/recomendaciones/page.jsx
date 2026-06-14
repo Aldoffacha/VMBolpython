@@ -1,5 +1,6 @@
 "use client";
 
+import "@/styles/admin.css";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { RefreshCw, TrendingUp, Target, Activity } from "lucide-react";
@@ -87,34 +88,34 @@ const [modelStats, setModelStats] = useState([]);
   };
 
   return (
-    <div style={s.page}>
-      <main style={s.main}>
+    <div>
+      <main>
         {/* HEADER */}
-        <div style={s.header}>
+        <div className="admin-header">
           <div>
-            <h1 style={s.pageTitle}> Recomendaciones ML</h1>
-            <p style={s.pageSubtitle}>Reglas de asociación (Apriori) — Market Basket Analysis</p>
+            <h1 className="admin-header__title"> Recomendaciones ML</h1>
+            <p className="admin-header__sub">Reglas de asociación (Apriori) — Market Basket Analysis</p>
           </div>
-          <button onClick={handleRefresh} disabled={refreshing} style={{ ...s.btnPrimary, opacity: refreshing ? 0.6 : 1 }}>
+          <button onClick={handleRefresh} disabled={refreshing} className="admin-btn admin-btn--pri" style={{ opacity: refreshing ? 0.6 : 1 }}>
             <RefreshCw size={14} style={{ animation: refreshing ? "spin 0.8s linear infinite" : "none" }} /> {refreshing ? "Entrenando..." : "Re-entrenar modelo"}
           </button>
         </div>
 
         {/* STATS */}
         {!loading && reglas.length > 0 && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>
+          <div className="admin-stats" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
             {[
               { icon: <TrendingUp size={22} />, label: "Reglas Generadas", value: total, color: "#9a031e", sub: "Asociaciones encontradas" },
               { icon: <Activity size={22} />, label: "Lift Promedio", value: stats.avgLift.toFixed(2), color: "#10b981", sub: "> 1 = relevante" },
               { icon: <Target size={22} />, label: "Confianza Promedio", value: (stats.avgConfidence * 100).toFixed(1) + "%", color: "#3b82f6", sub: "Probabilidad de acierto" },
               { icon: <Activity size={22} />, label: "Soporte Promedio", value: (stats.avgSupport * 100).toFixed(2) + "%", color: "#f59e0b", sub: "Frecuencia en pedidos" },
             ].map(st => (
-              <div key={st.label} style={{ ...s.statCard, borderLeftColor: st.color }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <div key={st.label} className="admin-stat" style={{ borderLeftColor: st.color }}>
+                <div className="admin-stat__top">
                   <div>
-                    <p style={s.statLabel}>{st.label}</p>
-                    <p style={{ ...s.statValue, color: st.color }}>{st.value}</p>
-                    <p style={{ color: "#a0a0a0", fontSize: 11, margin: 0 }}>{st.sub}</p>
+                    <p className="admin-stat__label">{st.label}</p>
+                    <p className="admin-stat__value" style={{ color: st.color, fontSize: 22 }}>{st.value}</p>
+                    <p className="admin-stat__sub">{st.sub}</p>
                   </div>
                   <span style={{ color: st.color, opacity: 0.5 }}>{st.icon}</span>
                 </div>
@@ -125,14 +126,14 @@ const [modelStats, setModelStats] = useState([]);
 
         {/* MODEL STATS PER CATEGORY */}
         {!loading && modelStats.length > 0 && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12, marginBottom: 20 }}>
+          <div className="admin-stats">
             {modelStats.map(ms => (
-              <div key={`${ms.categoria}-${ms.origen}`} style={{ ...s.statCard, borderLeftColor: ms.origen === "local" ? "#10b981" : "#3b82f6", padding: "12px 14px" }}>
-                <p style={{ margin: "0 0 2px", fontSize: 11, color: "#a0a0a0", textTransform: "uppercase", letterSpacing: 0.5 }}>
+              <div key={`${ms.categoria}-${ms.origen}`} className="admin-stat" style={{ borderLeftColor: ms.origen === "local" ? "#10b981" : "#3b82f6", padding: "12px 14px" }}>
+                <p style={{ margin: "0 0 2px", fontSize: 11, color: "var(--admin-text-2)", textTransform: "uppercase", letterSpacing: 0.5 }}>
                   {ms.categoria} <span style={{ color: ms.origen === "local" ? "#10b981" : "#3b82f6" }}>({ms.origen})</span>
                 </p>
                 <p style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>{ms.total_reglas} reglas</p>
-                <p style={{ margin: 0, fontSize: 10, color: "#a0a0a0" }}>
+                <p style={{ margin: 0, fontSize: 10, color: "var(--admin-text-2)" }}>
                   Lift {ms.avg_lift} · Conf {ms.avg_confidence}
                 </p>
               </div>
@@ -141,27 +142,27 @@ const [modelStats, setModelStats] = useState([]);
         )}
 
         {/* CARD TABLA */}
-        <div style={s.card}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-            <p style={s.cardTitle}>Reglas de Asociación</p>
-            {!loading && <span style={{ color: "#a0a0a0", fontSize: 12 }}>{total} regla{total !== 1 ? "s" : ""}</span>}
+        <div className="admin-card">
+          <div className="admin-card__head">
+            <span className="admin-card__title">Reglas de Asociación</span>
+            {!loading && <span style={{ color: "var(--admin-text-2)", fontSize: 12 }}>{total} regla{total !== 1 ? "s" : ""}</span>}
           </div>
 
           {loading ? (
-            <div style={s.loadingRow}><div style={s.spinner} /></div>
+            <div className="admin-loading"><div className="admin-spinner" /></div>
           ) : reglas.length === 0 ? (
-            <div style={{ textAlign: "center", padding: 40, color: "#a0a0a0" }}>
+            <div className="admin-empty">
               <p style={{ fontSize: 15, marginBottom: 4 }}>No hay reglas de asociación disponibles</p>
-              <p style={{ fontSize: 12 }}>Debe haber al menos 2 productos diferentes en pedidos pagados para generar reglas.</p>
+              <p className="admin-empty__txt">Debe haber al menos 2 productos diferentes en pedidos pagados para generar reglas.</p>
             </div>
           ) : (
             <>
-              <div style={s.tableWrapper}>
-                <table style={s.table}>
+              <div className="admin-table-wrap">
+                <table className="admin-table">
                   <thead>
                     <tr>
                       {["#", "Antecedentes (Si compran...)", "Consecuentes (Recomendar...)", "Categoría", "Origen", "Soporte", "Confianza", "Lift", "Interpretación"].map(h => (
-                        <th key={h} style={s.th}>{h}</th>
+                        <th key={h}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -170,36 +171,35 @@ const [modelStats, setModelStats] = useState([]);
                       const idx = (pagina - 1) * POR_PAGINA + i + 1;
                       return (
                         <tr key={idx} style={{ background: i % 2 === 0 ? "rgba(154,3,30,0.04)" : "transparent" }}>
-                          <td style={s.td}>{idx}</td>
-                          <td style={s.td}>
+                          <td>{idx}</td>
+                          <td>
                             <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
                               {r.antecedentes.map(a => (
-                                <span key={a.id} style={s.badge}>{a.nombre}</span>
+                                <span key={a.id} className="admin-badge">{a.nombre}</span>
                               ))}
                             </div>
                           </td>
-                          <td style={s.td}>
+                          <td>
                             <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
                               {r.consecuentes.map(c => (
-                                <span key={c.id} style={{ ...s.badge, background: "rgba(16,185,129,0.15)", color: "#10b981", border: "1px solid rgba(16,185,129,0.3)" }}>{c.nombre}</span>
+                                <span key={c.id} className="admin-badge" style={{ background: "rgba(16,185,129,0.15)", color: "#10b981", border: "1px solid rgba(16,185,129,0.3)" }}>{c.nombre}</span>
                               ))}
                             </div>
                           </td>
-                          <td style={{ ...s.td, fontSize: 12 }}>
-                            <span style={{ ...s.badge, background: "rgba(245,158,11,0.15)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.3)" }}>{r.categoria}</span>
+                          <td style={{ fontSize: 12 }}>
+                            <span className="admin-badge" style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.3)" }}>{r.categoria}</span>
                           </td>
-                          <td style={{ ...s.td, fontSize: 12 }}>
-                            <span style={{
-                              ...s.badge,
+                          <td style={{ fontSize: 12 }}>
+                            <span className="admin-badge" style={{
                               background: r.origen === "local" ? "rgba(16,185,129,0.15)" : "rgba(59,130,246,0.15)",
                               color: r.origen === "local" ? "#10b981" : "#3b82f6",
                               border: `1px solid ${r.origen === "local" ? "rgba(16,185,129,0.3)" : "rgba(59,130,246,0.3)"}`,
                             }}>{r.origen}</span>
                           </td>
-                          <td style={s.td}>{(r.support * 100).toFixed(2)}%</td>
-                          <td style={s.td}>{(r.confidence * 100).toFixed(1)}%</td>
-                          <td style={{ ...s.td, fontWeight: 700, color: r.lift > 2 ? "#10b981" : r.lift > 1.5 ? "#f59e0b" : "#d9d9d9" }}>{r.lift.toFixed(2)}x</td>
-                          <td style={{ ...s.td, fontSize: 12, color: "#a0a0a0" }}>
+                          <td>{(r.support * 100).toFixed(2)}%</td>
+                          <td>{(r.confidence * 100).toFixed(1)}%</td>
+                          <td style={{ fontWeight: 700, color: r.lift > 2 ? "#10b981" : r.lift > 1.5 ? "#f59e0b" : "var(--admin-text)" }}>{r.lift.toFixed(2)}x</td>
+                          <td style={{ fontSize: 12, color: "var(--admin-text-2)" }}>
                             {r.lift > 2 ? "Fuerte" : r.lift > 1.5 ? "Moderada" : r.lift > 1 ? "Débil" : "—"}
                           </td>
                         </tr>
@@ -211,14 +211,14 @@ const [modelStats, setModelStats] = useState([]);
 
               {/* PAGINACION */}
               {total > POR_PAGINA && (
-                <div style={s.pagination}>
-                  <button onClick={() => setPagina(1)} disabled={pagina === 1} style={{ ...s.pageBtn, opacity: pagina === 1 ? 0.4 : 1 }}>«</button>
-                  <button onClick={() => setPagina(p => Math.max(1, p - 1))} disabled={pagina === 1} style={{ ...s.pageBtn, opacity: pagina === 1 ? 0.4 : 1 }}>‹ Anterior</button>
-                  <span style={{ color: "#a0a0a0", fontSize: 13, padding: "0 8px" }}>
+                <div className="admin-pagination" style={{ padding: "0 20px 20px" }}>
+                  <button onClick={() => setPagina(1)} disabled={pagina === 1} className="admin-page-btn" style={{ opacity: pagina === 1 ? 0.4 : 1 }}>«</button>
+                  <button onClick={() => setPagina(p => Math.max(1, p - 1))} disabled={pagina === 1} className="admin-page-btn" style={{ opacity: pagina === 1 ? 0.4 : 1 }}>‹ Anterior</button>
+                  <span style={{ color: "var(--admin-text-2)", fontSize: 13, padding: "0 8px" }}>
                     Página {pagina} de {Math.ceil(total / POR_PAGINA)}
                   </span>
-                  <button onClick={() => setPagina(p => Math.min(Math.ceil(total / POR_PAGINA), p + 1))} disabled={pagina === Math.ceil(total / POR_PAGINA)} style={{ ...s.pageBtn, opacity: pagina === Math.ceil(total / POR_PAGINA) ? 0.4 : 1 }}>Siguiente ›</button>
-                  <button onClick={() => setPagina(Math.ceil(total / POR_PAGINA))} disabled={pagina === Math.ceil(total / POR_PAGINA)} style={{ ...s.pageBtn, opacity: pagina === Math.ceil(total / POR_PAGINA) ? 0.4 : 1 }}>»</button>
+                  <button onClick={() => setPagina(p => Math.min(Math.ceil(total / POR_PAGINA), p + 1))} disabled={pagina === Math.ceil(total / POR_PAGINA)} className="admin-page-btn" style={{ opacity: pagina === Math.ceil(total / POR_PAGINA) ? 0.4 : 1 }}>Siguiente ›</button>
+                  <button onClick={() => setPagina(Math.ceil(total / POR_PAGINA))} disabled={pagina === Math.ceil(total / POR_PAGINA)} className="admin-page-btn" style={{ opacity: pagina === Math.ceil(total / POR_PAGINA) ? 0.4 : 1 }}>»</button>
                 </div>
               )}
             </>
@@ -227,20 +227,22 @@ const [modelStats, setModelStats] = useState([]);
 
         {/* INFO CARD */}
         {!loading && reglas.length > 0 && (
-          <div style={{ ...s.card, background: "#121418" }}>
-            <p style={s.cardTitle}>¿Cómo interpretar?</p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, color: "#a0a0a0", fontSize: 12, lineHeight: 1.6 }}>
-              <div>
-                <strong style={{ color: "#d9d9d9" }}>Soporte</strong><br />
-                Frecuencia con la que aparece la combinación en todos los pedidos. Ej: 5% = aparece en el 5% de pedidos.
-              </div>
-              <div>
-                <strong style={{ color: "#d9d9d9" }}>Confianza</strong><br />
-                Probabilidad de que se compre el consecuente dado el antecedente. Ej: 80% = 8 de 10 veces.
-              </div>
-              <div>
-                <strong style={{ color: "#d9d9d9" }}>Lift</strong><br />
-                Qué tanto más probable es comprar el consecuente con el antecedente vs sin él. &gt;1 = correlación positiva.
+          <div className="admin-card admin-card--soft">
+            <div className="admin-card__body">
+              <span className="admin-card__title">¿Cómo interpretar?</span>
+              <div className="admin-grid3" style={{ color: "var(--admin-text-2)", fontSize: 12, lineHeight: 1.6 }}>
+                <div>
+                  <strong style={{ color: "var(--admin-text)" }}>Soporte</strong><br />
+                  Frecuencia con la que aparece la combinación en todos los pedidos. Ej: 5% = aparece en el 5% de pedidos.
+                </div>
+                <div>
+                  <strong style={{ color: "var(--admin-text)" }}>Confianza</strong><br />
+                  Probabilidad de que se compre el consecuente dado el antecedente. Ej: 80% = 8 de 10 veces.
+                </div>
+                <div>
+                  <strong style={{ color: "var(--admin-text)" }}>Lift</strong><br />
+                  Qué tanto más probable es comprar el consecuente con el antecedente vs sin él. &gt;1 = correlación positiva.
+                </div>
               </div>
             </div>
           </div>
@@ -251,24 +253,4 @@ const [modelStats, setModelStats] = useState([]);
 }
 
 const s = {
-  page: { display: "flex", minHeight: "100vh", background: "#121418", fontFamily: "'Lato', sans-serif", color: "#d9d9d9" },
-  main: { flex: 1, padding: "24px 28px" },
-  header: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, paddingBottom: 16, borderBottom: "2px solid #9a031e" },
-  pageTitle: { color: "#c1121f", fontSize: 26, fontWeight: 700, margin: 0 },
-  pageSubtitle: { color: "#a0a0a0", fontSize: 13, margin: "4px 0 0" },
-  card: { background: "#1f2429", borderRadius: 12, border: "1px solid rgba(154,3,30,0.2)", padding: 20, marginBottom: 16 },
-  cardTitle: { color: "#c1121f", fontWeight: 700, fontSize: 14, marginBottom: 12, margin: 0 },
-  statCard: { background: "#1f2429", padding: "16px 18px", borderRadius: 12, borderLeft: "4px solid #9a031e" },
-  statLabel: { color: "#a0a0a0", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, margin: 0 },
-  statValue: { fontSize: 22, fontWeight: 700, margin: "4px 0 2px" },
-  tableWrapper: { overflowX: "auto" },
-  table: { width: "100%", borderCollapse: "collapse", fontSize: 13 },
-  th: { padding: "10px 14px", textAlign: "left", color: "#a0a0a0", fontWeight: 700, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.8, background: "#121418", borderBottom: "2px solid rgba(154,3,30,0.3)" },
-  td: { padding: "10px 14px", color: "#d9d9d9", borderBottom: "1px solid rgba(154,3,30,0.08)" },
-  badge: { padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600, background: "rgba(154,3,30,0.15)", color: "#c1121f", border: "1px solid rgba(154,3,30,0.3)" },
-  loadingRow: { display: "flex", justifyContent: "center", padding: 60 },
-  spinner: { width: 36, height: 36, border: "3px solid rgba(154,3,30,0.3)", borderTop: "3px solid #9a031e", borderRadius: "50%", animation: "spin 0.8s linear infinite" },
-  btnPrimary: { padding: "9px 20px", background: "#9a031e", border: "none", borderRadius: 8, color: "white", fontWeight: 600, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 },
-  pagination: { display: "flex", justifyContent: "center", gap: 6, marginTop: 16, flexWrap: "wrap", alignItems: "center" },
-  pageBtn: { padding: "7px 12px", background: "#1f2429", border: "1px solid rgba(154,3,30,0.3)", borderRadius: 6, color: "#d9d9d9", cursor: "pointer", fontSize: 13 },
 };

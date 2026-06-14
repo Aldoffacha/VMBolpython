@@ -2,67 +2,74 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { Bell, BellOff, Megaphone, Info, CheckCircle, AlertTriangle, XCircle, Package, CreditCard, Truck, X } from "lucide-react";
+import {
+  Bell, BellOff, Megaphone, Info, CheckCircle, AlertTriangle, XCircle,
+  Package, CreditCard, Truck, X, Home, ShoppingBag, ClipboardList,
+  Users, BarChart3, Shield, Settings, TrendingUp, PackageOpen, Menu, Moon, Sun,
+} from "lucide-react";
+import { useTheme } from "@/context/ThemeContext";
 
 const API = "http://localhost:8000";
 
-const C = {
-  pageBg:  "#0d0f12",
-  cardBg:  "#161a1d",
-  accent:  "#9a031e",
-  accent2: "#c1121f",
-  text:    "#d9d9d9",
-  muted:   "#a0a0a0",
-  danger:  "#ef4444",
-};
+function getC(isDark) {
+  return {
+    pageBg:  isDark ? "#0d0f12" : "#e8eaed",
+    cardBg:  isDark ? "#161a1d" : "#ffffff",
+    accent:  isDark ? "#9a031e" : "#dc2626",
+    accent2: isDark ? "#c1121f" : "#b91c1c",
+    text:    isDark ? "#d9d9d9" : "#111827",
+    muted:   isDark ? "#a0a0a0" : "#6b7280",
+    danger:  isDark ? "#ef4444" : "#dc2626",
+  };
+}
 
 const SECTIONS = [
   {
     title: "Panel Principal",
     links: [
-      { icon: "", label: "Dashboard", href: "/admin/dashboard" },
+      { icon: <Home size={17} />, label: "Dashboard", href: "/admin/dashboard" },
     ],
   },
   {
     title: "Inventario",
     links: [
-      { icon: "", label: "Productos", href: "/admin/productos" },
-      { icon: "", label: "Prod. Externos", href: "/admin/productos-externos" },
+      { icon: <Package size={17} />, label: "Productos", href: "/admin/productos" },
+      { icon: <PackageOpen size={17} />, label: "Extenos", href: "/admin/productos-externos" },
     ],
   },
   {
     title: "Ventas",
     links: [
-      { icon: "", label: "Pedidos", href: "/admin/pedidos" },
-      { icon: "", label: "Pagos", href: "/admin/pagos" },
+      { icon: <ShoppingBag size={17} />, label: "Pedidos", href: "/admin/pedidos" },
+      { icon: <CreditCard size={17} />, label: "Pagos", href: "/admin/pagos" },
     ],
   },
   {
     title: "Usuarios",
     links: [
-      { icon: "", label: "Clientes", href: "/admin/usuarios" },
-      { icon: "", label: "Empleados", href: "/admin/empleados" },
+      { icon: <Users size={17} />, label: "Clientes", href: "/admin/usuarios" },
+      { icon: <Shield size={17} />, label: "Empleados", href: "/admin/empleados" },
     ],
   },
   {
     title: "Reportes",
     links: [
-      { icon: "", label: "Reportes", href: "/admin/reportes" },
-      { icon: "", label: "Auditoría", href: "/admin/auditoria" },
+      { icon: <BarChart3 size={17} />, label: "Reportes", href: "/admin/reportes" },
+      { icon: <ClipboardList size={17} />, label: "Auditoria", href: "/admin/auditoria" },
     ],
   },
   {
     title: "Machine Learning",
     links: [
-      { icon: "", label: "ML Recomendaciones", href: "/admin/recomendaciones" },
-      { icon: "", label: "Predicción ML", href: "/admin/prediccion-ml" },
-      { icon: "", label: "Reabastecimiento", href: "/admin/reabastecimiento" },
+      { icon: <TrendingUp size={17} />, label: "Recomendaciones", href: "/admin/recomendaciones" },
+      { icon: <BarChart3 size={17} />, label: "Prediccion ML", href: "/admin/prediccion-ml" },
+      { icon: <Package size={17} />, label: "Reabastecimiento", href: "/admin/reabastecimiento" },
     ],
   },
   {
     title: "Sistema",
     links: [
-      { icon: "", label: "Configuración", href: "/admin/configuracion" },
+      { icon: <Settings size={17} />, label: "Configuracion", href: "/admin/configuracion" },
     ],
   },
 ];
@@ -84,8 +91,9 @@ const IconLogout = ({ size = 16 }) => (
   </svg>
 );
 
-// ── Dropdown de notificaciones ────────────────────────────────────────────────
 function NotifDropdown({ token }) {
+  const { theme } = useTheme();
+  const C = getC(theme === "dark");
   const [open,     setOpen]     = useState(false);
   const [notifs,   setNotifs]   = useState([]);
   const [noLeidas, setNoLeidas] = useState(0);
@@ -167,10 +175,9 @@ function NotifDropdown({ token }) {
         title="Notificaciones"
         style={{
           position: "relative", background: "transparent",
-          border: `1px solid rgba(154,3,30,0.4)`, borderRadius: "8px",
+          border: `1px solid ${C.accent}60`, borderRadius: "8px",
           padding: "8px", cursor: "pointer", color: C.muted,
           display: "flex", alignItems: "center", justifyContent: "center",
-          transition: "all 0.2s",
         }}>
         <IconBell size={17} />
         {noLeidas > 0 && (
@@ -188,23 +195,16 @@ function NotifDropdown({ token }) {
         <div
           ref={panelRef}
           style={{
-            position: "fixed",
-            top: pos.top,
-            left: pos.left,
-            width: "320px",
-            background: C.cardBg,
-            borderRadius: "12px",
-            border: `2px solid ${C.accent}`,
-            boxShadow: "0 12px 40px rgba(0,0,0,0.6)",
-            zIndex: 9999,
-            overflow: "hidden",
+            position: "fixed", top: pos.top, left: pos.left,
+            width: "320px", background: C.cardBg, borderRadius: "12px",
+            border: `2px solid ${C.accent}`, boxShadow: "0 12px 40px rgba(0,0,0,0.6)",
+            zIndex: 9999, overflow: "hidden",
           }}>
-          {/* Header */}
           <div style={{
             display: "flex", justifyContent: "space-between", alignItems: "center",
             padding: "12px 16px", borderBottom: `2px solid ${C.accent}`, background: C.pageBg,
           }}>
-            <span style={{ color: C.accent2, fontWeight: "700", fontSize: "13px" }}>
+            <span style={{ color: C.accent2, fontWeight: "700", fontSize: "13px", fontFamily: "'Barlow Condensed', sans-serif" }}>
               <Bell size={14} /> Notificaciones
             </span>
             <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
@@ -224,81 +224,67 @@ function NotifDropdown({ token }) {
             </div>
           </div>
 
-          {/* Lista */}
-          <div style={{
-            maxHeight: "360px",
-            overflowY: "auto",
-            scrollbarWidth: "none",
-            msOverflowStyle: "none",
-          }}>
-            {notifs.length === 0
-              ? (
-                <div style={{ padding: "32px 16px", textAlign: "center" }}>
-                  <div style={{ fontSize: "32px", marginBottom: "8px" }}><BellOff size={32} /></div>
-                  <div style={{ color: C.muted, fontSize: "13px" }}>Sin notificaciones</div>
-                </div>
-              )
-              : notifs.map((n, i) => (
-                <div key={n.id_notificacion}>
-                  <div
-                    onClick={() => { if (!n.leido) marcarLeida(n.id_notificacion); }}
-                    style={{
-                      padding: "12px 16px", cursor: n.leido ? "default" : "pointer",
-                      background: n.leido ? "transparent" : `rgba(154,3,30,0.08)`,
-                      borderLeft: n.leido ? "3px solid transparent" : `3px solid ${C.accent2}`,
-                      transition: "background 0.2s",
-                    }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px" }}>
-                      <div style={{ display: "flex", gap: "8px", flex: 1, minWidth: 0 }}>
-                        <span style={{ fontSize: "16px", flexShrink: 0 }}>
-                          {TIPO_ICON[n.tipo] || <Megaphone size={16} />}
-                        </span>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "3px" }}>
-                            <span style={{
-                              color: C.text, fontSize: "12px", fontWeight: "700",
-                              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                            }}>
-                              {n.titulo}
-                            </span>
-                            {!n.leido && (
-                              <span style={{
-                                background: C.accent2, color: "#fff",
-                                padding: "1px 6px", borderRadius: "8px",
-                                fontSize: "10px", fontWeight: "700", flexShrink: 0,
-                              }}>NUEVO</span>
-                            )}
-                          </div>
-                          <p style={{
-                            color: C.muted, fontSize: "11px", margin: 0,
-                            lineHeight: "1.4", overflow: "hidden",
-                            display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
-                          }}>
-                            {n.mensaje}
-                          </p>
-                        </div>
-                      </div>
-                      <span style={{ color: C.muted, fontSize: "10px", flexShrink: 0, marginTop: "2px" }}>
-                        {timeAgo(n.fecha_creacion)}
+          <div style={{ maxHeight: "360px", overflowY: "auto", scrollbarWidth: "none", msOverflowStyle: "none" }}>
+            {notifs.length === 0 ? (
+              <div style={{ padding: "32px 16px", textAlign: "center" }}>
+                <div style={{ fontSize: "32px", marginBottom: "8px" }}><BellOff size={32} /></div>
+                <div style={{ color: C.muted, fontSize: "13px" }}>Sin notificaciones</div>
+              </div>
+            ) : notifs.map((n, i) => (
+              <div key={n.id_notificacion}>
+                <div
+                  onClick={() => { if (!n.leido) marcarLeida(n.id_notificacion); }}
+                  style={{
+                    padding: "12px 16px", cursor: n.leido ? "default" : "pointer",
+                    background: n.leido ? "transparent" : `${C.accent}14`,
+                    borderLeft: n.leido ? "3px solid transparent" : `3px solid ${C.accent2}`,
+                  }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px" }}>
+                    <div style={{ display: "flex", gap: "8px", flex: 1, minWidth: 0 }}>
+                      <span style={{ fontSize: "16px", flexShrink: 0 }}>
+                        {TIPO_ICON[n.tipo] || <Megaphone size={16} />}
                       </span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "3px" }}>
+                          <span style={{
+                            color: C.text, fontSize: "12px", fontWeight: "700",
+                            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                          }}>{n.titulo}</span>
+                          {!n.leido && (
+                            <span style={{
+                              background: C.accent2, color: "#fff",
+                              padding: "1px 6px", borderRadius: "8px",
+                              fontFamily: "'Barlow Condensed', sans-serif",
+                              fontSize: "9px", fontWeight: "700", flexShrink: 0,
+                            }}>NUEVO</span>
+                          )}
+                        </div>
+                        <p style={{
+                          color: C.muted, fontSize: "11px", margin: 0,
+                          lineHeight: "1.4", overflow: "hidden",
+                          display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+                        }}>{n.mensaje}</p>
+                      </div>
                     </div>
+                    <span style={{ color: C.muted, fontSize: "10px", flexShrink: 0, marginTop: "2px" }}>
+                      {timeAgo(n.fecha_creacion)}
+                    </span>
                   </div>
-                  {i < notifs.length - 1 && (
-                    <div style={{ height: "1px", background: `rgba(154,3,30,0.12)`, margin: "0 16px" }} />
-                  )}
                 </div>
-              ))
-            }
+                {i < notifs.length - 1 && (
+                  <div style={{ height: "1px", background: `${C.accent}20`, margin: "0 16px" }} />
+                )}
+              </div>
+            ))}
           </div>
 
-          {/* Footer */}
-          <div style={{ padding: "10px 16px", borderTop: `1px solid rgba(154,3,30,0.2)`, background: C.pageBg }}>
+          <div style={{ padding: "10px 16px", borderTop: `1px solid ${C.accent}30`, background: C.pageBg }}>
             <a href="/admin/notificaciones" style={{
               display: "block", textAlign: "center", padding: "7px",
-              background: `rgba(154,3,30,0.1)`, border: `1px solid ${C.accent}`,
+              background: `${C.accent}18`, border: `1px solid ${C.accent}`,
               borderRadius: "7px", color: C.accent2, fontSize: "12px",
-              fontWeight: "600", textDecoration: "none",
-            }}>Ver todas las notificaciones →</a>
+              fontWeight: "600", textDecoration: "none", fontFamily: "'Barlow Condensed', sans-serif",
+            }}>Ver todas las notificaciones &rarr;</a>
           </div>
         </div>
       )}
@@ -306,63 +292,100 @@ function NotifDropdown({ token }) {
   );
 }
 
-// ── Sidebar principal ─────────────────────────────────────────────────────────
 export default function AdminSidebar({ user }) {
   const router   = useRouter();
   const pathname = usePathname();
+  const { theme, mounted, toggleTheme } = useTheme();
   const [token, setToken] = useState("");
+  const [collapsed, setCollapsed] = useState(false);
+  const isDark = mounted ? theme === "dark" : true;
+  const C = getC(isDark);
 
   useEffect(() => {
+    const stored = typeof window !== "undefined" ? localStorage.getItem("admin_sidebar_collapsed") === "true" : false;
+    setCollapsed(stored);
+
     const t = document.cookie.split(";")
       .find(c => c.trim().startsWith("access_token="))?.split("=")[1] || "";
     setToken(t);
   }, []);
 
+  useEffect(() => {
+    document.documentElement.style.setProperty("--admin-sidebar-width", collapsed ? "0px" : "260px");
+  }, [collapsed]);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (!collapsed) {
+        const sidebar = document.querySelector(".admin-sidebar");
+        if (sidebar && !sidebar.contains(e.target)) {
+          setCollapsed(true);
+          localStorage.setItem("admin_sidebar_collapsed", "true");
+        }
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [collapsed]);
+
+  function toggleSidebar() {
+    const next = !collapsed;
+    setCollapsed(next);
+    localStorage.setItem("admin_sidebar_collapsed", String(next));
+  }
+
   function logout() {
-    document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-    sessionStorage.removeItem("user");
+    document.cookie = "access_token=; Max-Age=0; path=/";
+    sessionStorage.clear();
     router.push("/login");
   }
 
   return (
     <>
-      {/* ← Este style tag esconde el scrollbar en Chrome/Safari */}
       <style>{`
+        .admin-sidebar { transition: left 0.3s ease; }
         .admin-sidebar::-webkit-scrollbar { display: none; }
+        .admin-toggle-btn:hover { background: ${C.accent}18 !important; }
+        .admin-theme-btn:hover { background: ${C.accent}18 !important; }
+        .admin-nav-link:hover { background: ${C.accent}16 !important; color: ${C.text} !important; }
       `}</style>
 
       <nav
         className="admin-sidebar"
+        suppressHydrationWarning
         style={{
-          width: "260px",
-          height: "100vh",
-          flexShrink: 0,
-          overflowY: "auto",
-          scrollbarWidth: "none",
-          msOverflowStyle: "none",
-          background: `linear-gradient(180deg,#080a0c 0%,${C.pageBg} 100%)`,
+          width: "260px", height: "100vh", flexShrink: 0,
+          position: "fixed", top: 0, left: collapsed ? "-260px" : "0",
+          zIndex: 1000,
+          overflowY: "auto", scrollbarWidth: "none", msOverflowStyle: "none",
+          background: isDark
+            ? `linear-gradient(180deg,#080a0c 0%,${C.pageBg} 100%)`
+            : `linear-gradient(180deg,#dce0e6 0%,${C.pageBg} 100%)`,
           borderRight: `2px solid ${C.accent}`,
-          display: "flex",
-          flexDirection: "column",
+          display: "flex", flexDirection: "column",
         }}>
 
         {/* ── Logo ── */}
         <div style={{
           display: "flex", alignItems: "center", gap: "12px",
-          padding: "22px 20px", borderBottom: `1px solid rgba(154,3,30,0.25)`,
+          padding: "22px 20px", borderBottom: `1px solid ${C.accent}40`,
         }}>
           <div style={{
             width: "42px", height: "42px", flexShrink: 0,
             background: `linear-gradient(135deg,${C.accent},${C.accent2})`,
             borderRadius: "10px", display: "flex", alignItems: "center",
             justifyContent: "center", fontWeight: "700", color: "#fff", fontSize: "13px",
-            boxShadow: `0 2px 8px rgba(154,3,30,0.45)`,
+            boxShadow: `0 2px 8px ${C.accent}75`,
           }}>VM</div>
           <div>
-            <div style={{ fontSize: "13px", fontWeight: "700", color: C.text }}>
+            <div style={{ fontSize: "13px", fontWeight: "700", color: C.text, fontFamily: "'Barlow', sans-serif" }}>
               VMBol en Red
             </div>
-            <div style={{ fontSize: "10px", color: C.accent2, fontWeight: "600", letterSpacing: "1px", textTransform: "uppercase" }}>
+            <div style={{
+              fontSize: "10px", color: C.accent2, fontWeight: "600",
+              letterSpacing: "1px", textTransform: "uppercase",
+              fontFamily: "'Barlow Condensed', sans-serif",
+            }}>
               Panel Admin
             </div>
           </div>
@@ -371,9 +394,8 @@ export default function AdminSidebar({ user }) {
         {/* ── Usuario + Notificaciones ── */}
         {user && (
           <div style={{
-            padding: "14px 16px",
-            background: `rgba(154,3,30,0.07)`,
-            borderBottom: `1px solid rgba(154,3,30,0.18)`,
+            padding: "14px 16px", background: `${C.accent}12`,
+            borderBottom: `1px solid ${C.accent}30`,
             display: "flex", alignItems: "center", gap: "10px",
           }}>
             <div style={{
@@ -384,17 +406,18 @@ export default function AdminSidebar({ user }) {
             }}>
               {(user.nombre || "A")[0].toUpperCase()}
             </div>
-
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{
                 color: C.text, fontSize: "13px", fontWeight: "700",
                 overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                fontFamily: "'Barlow', sans-serif",
               }}>
                 {user.nombre || "Admin"}
               </div>
-              <div style={{ color: C.accent2, fontSize: "11px" }}>Administrador</div>
+              <div style={{ color: C.accent2, fontSize: "11px", fontFamily: "'Barlow Condensed', sans-serif" }}>
+                Administrador
+              </div>
             </div>
-
             <NotifDropdown token={token} />
           </div>
         )}
@@ -406,21 +429,24 @@ export default function AdminSidebar({ user }) {
               <div style={{
                 padding: "16px 18px 6px", fontSize: "10px", fontWeight: "800",
                 color: C.accent2, textTransform: "uppercase", letterSpacing: "1.5px",
+                fontFamily: "'Barlow Condensed', sans-serif",
               }}>
                 {section.title}
               </div>
               {section.links.map(link => {
                 const active = pathname === link.href;
                 return (
-                  <a key={link.href} href={link.href} style={{
+                  <a key={link.href} href={link.href} className="admin-nav-link" style={{
                     display: "flex", alignItems: "center", gap: "12px",
                     padding: "9px 18px", margin: "1px 10px", borderRadius: "8px",
                     textDecoration: "none",
-                    color: active ? "#fff" : C.muted,
-                    background: active ? `rgba(154,3,30,0.25)` : "transparent",
+                    color: active ? "#fff" : C.text,
+                    background: active ? `${C.accent}35` : "transparent",
                     borderLeft: active ? `3px solid ${C.accent2}` : "3px solid transparent",
-                    boxShadow: active ? `0 2px 8px rgba(154,3,30,0.25)` : "none",
+                    boxShadow: active ? `0 2px 8px ${C.accent}40` : "none",
                     fontSize: "13px", fontWeight: active ? "700" : "500",
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    letterSpacing: "0.5px",
                     transition: "all 0.2s",
                   }}>
                     <span style={{ fontSize: "15px", width: "20px", textAlign: "center", flexShrink: 0 }}>
@@ -434,30 +460,60 @@ export default function AdminSidebar({ user }) {
           ))}
         </div>
 
-        {/* ── Cerrar Sesión ── */}
-        <div style={{ padding: "14px 16px", borderTop: `1px solid rgba(154,3,30,0.25)` }}>
+        {/* ── Tema ── */}
+        <div style={{ padding: "8px 16px", borderTop: `1px solid ${C.accent}40` }}>
           <button
-            onClick={logout}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = "rgba(154,3,30,0.18)";
-              e.currentTarget.style.borderColor = C.accent2;
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = "transparent";
-              e.currentTarget.style.borderColor = "rgba(154,3,30,0.4)";
-            }}
+            onClick={toggleTheme}
+            className="admin-theme-btn"
             style={{
               width: "100%", padding: "10px 14px", borderRadius: "8px",
-              background: "transparent", border: `1px solid rgba(154,3,30,0.4)`,
-              color: "#f87171", cursor: "pointer", fontSize: "13px", fontWeight: "600",
+              background: "transparent", border: `1px solid ${C.accent}60`,
+              color: C.text, cursor: "pointer", fontSize: "12px",
               display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+              fontFamily: "'Barlow Condensed', sans-serif",
+              letterSpacing: "1px", textTransform: "uppercase", fontWeight: "600",
+              transition: "all 0.2s",
+            }}>
+            {isDark ? <Sun size={15} /> : <Moon size={15} />}
+            {isDark ? "Modo claro" : "Modo oscuro"}
+          </button>
+        </div>
+
+        {/* ── Cerrar Sesión ── */}
+        <div style={{ padding: "8px 16px 14px" }}>
+          <button
+            onClick={logout}
+            className="admin-toggle-btn"
+            style={{
+              width: "100%", padding: "10px 14px", borderRadius: "8px",
+              background: "transparent", border: `1px solid ${C.accent}60`,
+              color: isDark ? "#f87171" : C.danger, cursor: "pointer", fontSize: "12px",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+              fontFamily: "'Barlow Condensed', sans-serif",
+              letterSpacing: "1px", textTransform: "uppercase", fontWeight: "600",
               transition: "all 0.2s",
             }}>
             <IconLogout size={15} />
-            Cerrar Sesión
+            Cerrar Sesion
           </button>
         </div>
       </nav>
+
+      {/* Toggle button when collapsed */}
+      {collapsed && (
+        <button
+          onClick={toggleSidebar}
+          style={{
+            position: "fixed", top: "14px", left: "14px", zIndex: 999,
+            width: "42px", height: "42px", borderRadius: "10px",
+            background: `linear-gradient(135deg,${C.accent},${C.accent2})`,
+            border: "none", color: "#fff", cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: `0 2px 10px ${C.accent}60`,
+          }}>
+          <Menu size={20} />
+        </button>
+      )}
     </>
   );
 }
