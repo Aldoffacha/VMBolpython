@@ -351,6 +351,7 @@ function ModalAgregarLink({ tc, token, onClose, onSuccess }) {
               ...f,
               nombre: d.nombre || f.nombre,
               precio: d.precio > 0 ? String(d.precio) : f.precio,
+              peso: d.peso > 0 ? String(d.peso) : f.peso,
             }));
           }
         }).catch(() => {}).finally(() => setScraping(false));

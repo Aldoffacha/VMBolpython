@@ -712,8 +712,35 @@ _HEADERS = {
     "Accept-Language": "en-US,en;q=0.9",
 }
 
+def _amazon_peso(html: str) -> float | None:
+    m = re.search(
+        r'<th[^>]*>.*?(?:peso|weight).*?</th>\s*<td[^>]*>(.*?)</td>',
+        html, re.DOTALL | re.IGNORECASE
+    )
+    if m:
+        txt = re.sub(r'<[^>]+>', ' ', m.group(1)).strip()
+        txt = re.sub(r'\s+', ' ', txt)
+        n = re.search(r'([\d,]+\.?\d*)\s*(kg|kilo|kilogramos?|g\b|gramos?|libras?|pounds?|lbs?|oz|onzas?)', txt, re.IGNORECASE)
+        if n:
+            val = float(n.group(1).replace(",", "."))
+            unit = n.group(2).lower()
+            if unit in ("g", "gramo", "gramos"):
+                val /= 1000
+            elif unit in ("lb", "lbs", "libra", "libras", "pound", "pounds"):
+                val *= 0.453592
+            elif unit in ("oz", "onza", "onzas"):
+                val *= 0.0283495
+            return round(val, 2)
+        n2 = re.search(r'([\d,]+\.?\d*)', txt)
+        if n2:
+            try:
+                return round(float(n2.group(1).replace(",", ".")), 2)
+            except ValueError:
+                pass
+    return None
+
 def _extract_amazon(html: str) -> dict:
-    r = {"nombre": "", "precio": 0.0}
+    r = {"nombre": "", "precio": 0.0, "peso": None}
     # Title: #productTitle or og:title
     m = re.search(r'<span[^>]*id="productTitle"[^>]*>(.*?)</span>', html, re.DOTALL)
     if m:
@@ -747,6 +774,10 @@ def _extract_amazon(html: str) -> dict:
                 m = re.search(r'id="priceblock_ourprice"[^>]*>\$?([\d,]+\.?\d*)', html)
                 if m:
                     r["precio"] = float(m.group(1).replace(",", ""))
+    # Weight
+    peso = _amazon_peso(html)
+    if peso:
+        r["peso"] = peso
     return r
 
 def _extract_ebay(html: str) -> dict:
@@ -811,7 +842,7 @@ def scrape_producto(
     if not info["precio"] or info["precio"] <= 0:
         info["precio"] = 0.0
 
-    return {"nombre": info["nombre"], "precio": info["precio"], "plataforma": plataforma}
+    return {"nombre": info["nombre"], "precio": info["precio"], "peso": info.get("peso"), "plataforma": plataforma}
 
 # ─── CARRITO: AGREGAR ──────────────────────────────────────────────────────────
 
