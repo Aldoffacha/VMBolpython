@@ -713,30 +713,33 @@ _HEADERS = {
 }
 
 def _amazon_peso(html: str) -> float | None:
-    m = re.search(
-        r'<th[^>]*>.*?(?:peso|weight).*?</th>\s*<td[^>]*>(.*?)</td>',
+    # Extract all th/td pairs from product detail tables (prodDetTable)
+    for m in re.finditer(
+        r'<tr[^>]*>\s*<th[^>]*>(.*?)</th>\s*<td[^>]*>(.*?)</td>',
         html, re.DOTALL | re.IGNORECASE
-    )
-    if m:
-        txt = re.sub(r'<[^>]+>', ' ', m.group(1)).strip()
-        txt = re.sub(r'\s+', ' ', txt)
-        n = re.search(r'([\d,]+\.?\d*)\s*(kg|kilo|kilogramos?|g\b|gramos?|libras?|pounds?|lbs?|oz|onzas?)', txt, re.IGNORECASE)
-        if n:
-            val = float(n.group(1).replace(",", "."))
-            unit = n.group(2).lower()
-            if unit in ("g", "gramo", "gramos"):
-                val /= 1000
-            elif unit in ("lb", "lbs", "libra", "libras", "pound", "pounds"):
-                val *= 0.453592
-            elif unit in ("oz", "onza", "onzas"):
-                val *= 0.0283495
-            return round(val, 2)
-        n2 = re.search(r'([\d,]+\.?\d*)', txt)
-        if n2:
-            try:
-                return round(float(n2.group(1).replace(",", ".")), 2)
-            except ValueError:
-                pass
+    ):
+        label = re.sub(r'<[^>]+>', '', m.group(1)).strip()
+        label = re.sub(r'\s+', ' ', label).lower()
+        if 'peso' in label or 'weight' in label:
+            txt = re.sub(r'<[^>]+>', ' ', m.group(2)).strip()
+            txt = re.sub(r'\s+', ' ', txt)
+            n = re.search(r'([\d,]+\.?\d*)\s*(kg|kilo|kilogramos?|g\b|gramos?|libras?|pounds?|lbs?|oz|onzas?)', txt, re.IGNORECASE)
+            if n:
+                val = float(n.group(1).replace(",", "."))
+                unit = n.group(2).lower()
+                if unit in ("g", "gramo", "gramos"):
+                    val /= 1000
+                elif unit in ("lb", "lbs", "libra", "libras", "pound", "pounds"):
+                    val *= 0.453592
+                elif unit in ("oz", "onza", "onzas"):
+                    val *= 0.0283495
+                return round(val, 2)
+            n2 = re.search(r'([\d,]+\.?\d*)', txt)
+            if n2:
+                try:
+                    return round(float(n2.group(1).replace(",", ".")), 2)
+                except ValueError:
+                    pass
     return None
 
 def _extract_amazon(html: str) -> dict:
