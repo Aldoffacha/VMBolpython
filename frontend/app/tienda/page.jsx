@@ -36,7 +36,8 @@ const PLAT = {
 };
 
 function ProdCard({ prod, tc, onAdd }) {
-  const cot  = calcImport(parseFloat(prod.precio||0), prod.peso||.5, prod.categoria||"otros", 20, 15, 1, tc);
+  const prodTc = prod.tipo_cambio || tc;
+  const cot  = calcImport(parseFloat(prod.precio||0), prod.peso||.5, prod.categoria||"otros", 20, 15, 1, prodTc);
   const plat = PLAT[prod.plataforma] || { bg:"#10b981", col:"#fff", txt:"Local" };
   const img  = prod.imagen_url || prod.imagen || "";
   const key  = prod.id_producto || prod.id_producto_externo || prod.id_producto_exterior;
@@ -148,7 +149,8 @@ function GuestModalAddCart({ prod, tc, onClose, onOk }) {
   if (!prod) return null;
 
   const esExt = prod.plataforma && prod.plataforma !== "local";
-  const cot   = calcImport(parseFloat(prod.precio||0), prod.peso||.5, prod.categoria||"otros", 20, 15, 1, tc);
+  const prodTc = prod.tipo_cambio || tc;
+  const cot   = calcImport(parseFloat(prod.precio||0), prod.peso||.5, prod.categoria||"otros", 20, 15, 1, prodTc);
   const img   = prod.imagen_url || prod.imagen || "";
 
   const confirmar = () => {
@@ -209,7 +211,7 @@ function GuestModalAddCart({ prod, tc, onClose, onOk }) {
           <span className="sum-total__v">{fmt(cot.total * qty)}</span>
         </div>
         <div style={{ textAlign:"right", fontSize:"10px", color:"var(--text-3)", marginTop:6 }}>
-          T/C: Bs. {tc.toFixed(2)}
+          T/C: Bs. {(prod.tipo_cambio || tc).toFixed(2)}
         </div>
       </div>
     </Modal>

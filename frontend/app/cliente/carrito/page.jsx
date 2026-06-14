@@ -65,6 +65,7 @@ function ItemRow({ item, tipo, onCantidad, onEliminar, updating }) {
         </div>
         <div className="crt-item__meta">
           {item.categoria ? `${item.categoria} · ` : ""}precio unitario: {formatPrice(item.precio)}
+          {item.tipo_cambio ? ` · T/C: Bs. ${parseFloat(item.tipo_cambio).toFixed(2)}` : ""}
         </div>
       </div>
 

@@ -78,6 +78,7 @@ class Producto(Base):
     estado          = Column(SmallInteger, default=1)
     fecha_registro  = Column(DateTime, server_default=func.now())
     categoria       = Column(String(50), default="otros")
+    tipo_cambio     = Column(Float, default=9.17)
 
     carrito         = relationship("Carrito", back_populates="producto")
     inventario      = relationship("Inventario", back_populates="producto")
@@ -102,6 +103,7 @@ class ProductoExterior(Base):
     destacado            = Column(Integer, default=1)
     fecha_agregado       = Column(DateTime, server_default=func.now())
     fecha_actualizacion  = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    tipo_cambio          = Column(Float, default=9.17)
 
 
 class ProductoExterno(Base):
@@ -247,6 +249,7 @@ class Pedido(Base):
     fecha           = Column(DateTime, server_default=func.now())
     tipo_pedido     = Column(String(10), default="local")
     estado_entrega  = Column(String(20), default="sin_asignar")
+    tipo_cambio     = Column(Float, default=9.17)
 
     cliente             = relationship("Cliente", back_populates="pedidos")
     detalles            = relationship("PedidoDetalle", back_populates="pedido")

@@ -7,6 +7,7 @@ from typing import Optional
 from app.database import get_db
 from app.models.user import Producto
 from app.utils.dependencies import require_role
+from app.utils.tipo_cambio import get_tipo_cambio
 
 router = APIRouter(prefix="/admin/productos", tags=["admin-productos"])
 
@@ -51,6 +52,7 @@ def get_productos(
                 "imagen":         p.imagen or "",
                 "categoria":      p.categoria,
                 "fecha_registro": p.fecha_registro.strftime("%d/%m/%Y"),
+                "tipo_cambio":    float(p.tipo_cambio or 9.17),
             }
             for p in productos
         ],
@@ -81,10 +83,12 @@ async def crear_producto(
         with open(ruta, "wb") as f:
             shutil.copyfileobj(imagen.file, f)
 
+    tc = get_tipo_cambio(db)
     nuevo = Producto(
         nombre=nombre, descripcion=descripcion,
         precio=precio, stock=stock,
         imagen=nombre_imagen, categoria=categoria,
+        tipo_cambio=tc,
     )
     db.add(nuevo)
     registrar_auditoria(db, current_user)  # ← auditoría
@@ -121,6 +125,9 @@ async def editar_producto(
         ruta = os.path.join(UPLOAD_DIR, nombre_imagen)
         with open(ruta, "wb") as f:
             shutil.copyfileobj(imagen.file, f)
+
+    if stock > producto.stock:
+        producto.tipo_cambio = get_tipo_cambio(db)
 
     producto.nombre      = nombre
     producto.descripcion = descripcion

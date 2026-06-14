@@ -48,6 +48,7 @@ def productos_publicos(db: Session = Depends(get_db)):
                 "imagen": p.imagen or "",
                 "imagen_url": _img_url(p.imagen, p.nombre),
                 "categoria": p.categoria or "otros",
+                "tipo_cambio": float(p.tipo_cambio or 9.17),
             }
             for p in productos_locales
         ],

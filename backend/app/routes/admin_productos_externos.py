@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from typing import Optional
 from app.database import get_db
 from app.utils.dependencies import require_role
+from app.utils.tipo_cambio import get_tipo_cambio
 
 router = APIRouter(prefix="/admin/productos-externos", tags=["admin-productos-externos"])
 
@@ -36,7 +37,7 @@ def listar_productos_externos(
     rows = db.execute(text("""
         SELECT id_producto_exterior, nombre, descripcion, precio, peso,
                categoria, plataforma, enlace, imagen, destacado, estado,
-               fecha_agregado
+               fecha_agregado, tipo_cambio
         FROM productos_exterior
         ORDER BY fecha_agregado DESC
         LIMIT 100
@@ -63,13 +64,14 @@ def crear_producto_externo(
         if "amazon" in body.enlace.lower():   plataforma = "amazon"
         elif "ebay" in body.enlace.lower():   plataforma = "ebay"
 
+    tc = get_tipo_cambio(db)
     result = db.execute(text("""
         INSERT INTO productos_exterior
             (nombre, descripcion, precio, peso, categoria, plataforma,
-             enlace, imagen, destacado, estado, fecha_agregado)
+             enlace, imagen, destacado, estado, fecha_agregado, tipo_cambio)
         VALUES
             (:nombre, :descripcion, :precio, :peso, :categoria, :plataforma,
-             :enlace, :imagen, :destacado, :estado, NOW())
+             :enlace, :imagen, :destacado, :estado, NOW(), :tc)
         RETURNING id_producto_exterior
     """), {
         "nombre": body.nombre, "descripcion": body.descripcion,
@@ -78,6 +80,7 @@ def crear_producto_externo(
         "enlace": body.enlace, "imagen": body.imagen or "",
         "destacado": body.destacado if body.destacado is not None else 1,
         "estado": body.estado if body.estado is not None else 1,
+        "tc": tc,
     }).fetchone()
 
     registrar_auditoria(db, current_user)  # ← auditoría
@@ -106,12 +109,13 @@ def actualizar_producto_externo(
         if "amazon" in body.enlace.lower():   plataforma = "amazon"
         elif "ebay" in body.enlace.lower():   plataforma = "ebay"
 
+    tc = get_tipo_cambio(db)
     db.execute(text("""
         UPDATE productos_exterior SET
             nombre=:nombre, descripcion=:descripcion, precio=:precio,
             peso=:peso, categoria=:categoria, plataforma=:plataforma,
             enlace=:enlace, imagen=:imagen, destacado=:destacado,
-            estado=:estado, fecha_actualizacion=NOW()
+            estado=:estado, fecha_actualizacion=NOW(), tipo_cambio=:tc
         WHERE id_producto_exterior = :id
     """), {
         "id": id_producto_exterior,
@@ -121,6 +125,7 @@ def actualizar_producto_externo(
         "enlace": body.enlace, "imagen": body.imagen or "",
         "destacado": body.destacado if body.destacado is not None else 1,
         "estado": body.estado if body.estado is not None else 1,
+        "tc": tc,
     })
 
     registrar_auditoria(db, current_user)  # ← auditoría

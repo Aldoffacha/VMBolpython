@@ -9,6 +9,7 @@ import io, csv
 from app.database import get_db
 from app.models.user import Pedido, PedidoDetalle, Producto, Cliente
 from app.utils.dependencies import require_role
+from app.utils.tipo_cambio import get_tipo_cambio
 
 router = APIRouter(prefix="/admin/reportes", tags=["admin-reportes"])
 
@@ -160,6 +161,7 @@ def get_reportes(
         ],
         "lista_productos": [{"id": p.id_producto, "nombre": p.nombre} for p in lista_productos],
         "lista_clientes":  [{"id": c.id_cliente,  "nombre": c.nombre} for c in lista_clientes],
+        "tipo_cambio_actual": get_tipo_cambio(db),
     }
 
 

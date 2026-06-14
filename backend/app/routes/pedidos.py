@@ -67,6 +67,7 @@ def get_pedidos(
                 "estado":            p.Pedido.estado,
                 "fecha":             p.Pedido.fecha.strftime("%d/%m/%Y %H:%M:%S"),
                 "siguientes_estados": TRANSICIONES_VALIDAS.get(p.Pedido.estado, []),
+                "tipo_cambio":       float(p.Pedido.tipo_cambio or 9.17),
             }
             for p in pedidos_raw
         ]
@@ -155,6 +156,7 @@ def get_detalle_pedido(
             "total":          float(pedido.Pedido.total),
             "estado":         pedido.Pedido.estado,
             "fecha":          pedido.Pedido.fecha.strftime("%d/%m/%Y %H:%M:%S"),
+            "tipo_cambio":    float(pedido.Pedido.tipo_cambio or 9.17),
         },
         "productos": productos_lista,
     }

@@ -162,7 +162,8 @@ function SelectCategoriasLink({ value, onChange, className }) {
 /* ── Card de producto ─────────────────────────────────────────────────── */
 function ProdCard({ prod, tc, onVer }) {
   const { formatPrice } = useClienteMoneda();
-  const total = calcImport(parseFloat(prod.precio || 0), prod.peso || 0.5, prod.categoria || "otros", tc);
+  const prodTc = prod.tipo_cambio || tc;
+  const total = calcImport(parseFloat(prod.precio || 0), prod.peso || 0.5, prod.categoria || "otros", prodTc);
   const img   = prod.imagen_url || prod.imagen || "";
   const PLAT  = {
     amazon: { bg: "#f59e0b", col: "#000", txt: "Amazon" },
@@ -198,7 +199,7 @@ function ProdCard({ prod, tc, onVer }) {
 
 /* ── Modal Detalle ────────────────────────────────────────────────────── */
 function ModalDetalle({ prod, tc, token, onClose, onSuccess }) {
-  const { formatPrice, formatPriceUSD, formatPriceBOB, tipoCambio } = useClienteMoneda();
+  const { formatPrice, formatPriceUSD, formatPriceBOB } = useClienteMoneda();
   const [qty,  setQty]  = useState(1);
   const [load, setLoad] = useState(false);
   if (!prod) return null;
@@ -209,10 +210,11 @@ function ModalDetalle({ prod, tc, token, onClose, onSuccess }) {
   const catDB  = SUBCAT_TO_CAT[cat] ?? cat;
   const peso   = prod.peso || 0.5;
   const precio = parseFloat(prod.precio || 0);
+  const prodTc = prod.tipo_cambio || tc;
   const flete  = Math.max(15, peso * 3);
   const seguro = precio * 0.02;
   const aduana = precio * (IMPUESTOS[catDB] ?? 0.18);
-  const alm    = 135 / tc;
+  const alm    = 135 / prodTc;
   const tot1   = precio + flete + seguro + aduana + alm;
 
   async function agregar() {
@@ -287,7 +289,7 @@ function ModalDetalle({ prod, tc, token, onClose, onSuccess }) {
               </span>
             </div>
             <div style={{ textAlign: "right", fontSize: 10, color: "var(--text-3)", marginTop: 6 }}>
-              T/C: Bs. {tipoCambio.toFixed(2)}
+              T/C: Bs. {prodTc.toFixed(2)}
             </div>
           </div>
 

@@ -213,7 +213,7 @@ export default function AdminPedidos() {
                 <table className="admin-table">
                   <thead>
                     <tr>
-                      {["ID Pedido", "Cliente", "Total", "Estado", "Fecha y Hora", "Acciones"].map(h => (
+                      {["ID Pedido", "Cliente", "Total", "T/Cambio", "Estado", "Fecha y Hora", "Acciones"].map(h => (
                         <th key={h}>{h}</th>
                       ))}
                     </tr>
@@ -221,7 +221,7 @@ export default function AdminPedidos() {
                   <tbody>
                     {pedidos.length === 0 ? (
                       <tr>
-                          <td colSpan={6} style={{ textAlign: "center", color: "var(--admin-text-2)", padding: 40 }}>
+                          <td colSpan={7} style={{ textAlign: "center", color: "var(--admin-text-2)", padding: 40 }}>
                           No hay pedidos {filtro !== "todos" ? `con estado "${filtro}"` : ""}
                         </td>
                       </tr>
@@ -238,6 +238,7 @@ export default function AdminPedidos() {
                             <div style={{ color: "var(--admin-text-2)", fontSize: 12 }}>{p.cliente_email}</div>
                           </td>
                           <td style={{ fontWeight: 700, color: "#10b981" }}>{formatPrice(p.total)}</td>
+                          <td style={{ color: "var(--admin-text-2)", fontSize: 12 }}>{p.tipo_cambio ?? 9.17}</td>
                           <td>
                             <span className="admin-badge" style={{ background: est.bg, color: est.color, border: `1px solid ${est.border}` }}>
                               {est.label}
@@ -334,6 +335,7 @@ export default function AdminPedidos() {
                           {formatPrice(detalle.pedido.total)}
                         </span>
                       </p>
+                      <p style={s.infoRow}><b>T/Cambio:</b> {detalle.pedido.tipo_cambio ?? 9.17}</p>
                     </div>
                   </div>
 

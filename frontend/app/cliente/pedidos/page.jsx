@@ -853,7 +853,7 @@ export default function MisPedidos() {
                   <div className="ped-card__meta">
                     <span className="ped-card__date"><Calendar size={14} /> {fDate(p.fecha)}</span>
                     <span className="ped-card__total">{formatPriceUSD(p.total)}
-                      <span style={{fontSize:"11px",fontWeight:"400",fontFamily:"var(--font-c)",letterSpacing:"1px",color:"var(--text-3)",display:"block",marginTop:"2px"}}>{formatPriceBOB(p.total)} · TC {tipoCambio}</span></span>
+                      <span style={{fontSize:"11px",fontWeight:"400",fontFamily:"var(--font-c)",letterSpacing:"1px",color:"var(--text-3)",display:"block",marginTop:"2px"}}>{formatPriceBOB(p.total)} · TC {p.tipo_cambio ?? tipoCambio}</span></span>
                   </div>
 
                   <div className="ped-card__details">

@@ -644,7 +644,7 @@ def tienda(
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    tc = get_tipo_cambio(db)
+    tc_actual = get_tipo_cambio(db)
 
     q = "SELECT * FROM productos WHERE estado=1"
     params = {}
@@ -660,7 +660,9 @@ def tienda(
     productos_locales = []
     for r in rows:
         d = dict(r._mapping)
-        cot = calcular_importacion(float(d["precio"]), 0.5, d.get("categoria","otros"), tipo_cambio=tc)
+        ptc = float(d.get("tipo_cambio") or tc_actual)
+        cot = calcular_importacion(float(d["precio"]), 0.5, d.get("categoria","otros"), tipo_cambio=ptc)
+        d["tipo_cambio"] = ptc
         d["imagen_url"] = imagen_url(d.get("imagen"), d.get("nombre",""))
         d["plataforma"] = "local"
         d["costo_total_importacion"] = cot["total"]
@@ -683,7 +685,9 @@ def tienda(
     productos_externos = []
     for r in ext_rows:
         d = dict(r._mapping)
-        cot = calcular_importacion(float(d["precio"]), float(d.get("peso") or 0.5), d.get("categoria","otros"), tipo_cambio=tc)
+        ptc = float(d.get("tipo_cambio") or tc_actual)
+        cot = calcular_importacion(float(d["precio"]), float(d.get("peso") or 0.5), d.get("categoria","otros"), tipo_cambio=ptc)
+        d["tipo_cambio"] = ptc
         d["costo_total_importacion"] = cot["total"]
         d["id_producto"] = f"ext_{d['id_producto_exterior']}"
         if d.get("fecha_agregado"): d["fecha_agregado"] = d["fecha_agregado"].isoformat()
@@ -698,7 +702,7 @@ def tienda(
         "productos_externos": productos_externos,
         "total_locales": len(productos_locales),
         "total_externos": len(productos_externos),
-        "tipo_cambio": get_tipo_cambio(db),
+        "tipo_cambio": tc_actual,
     }
 # ─── CARRITO: AGREGAR ──────────────────────────────────────────────────────────
 
@@ -784,11 +788,12 @@ def obtener_carrito(
     db: Session = Depends(get_db)
 ):
     uid = get_uid(current_user)
-    tc = get_tipo_cambio(db)
+    tc_actual = get_tipo_cambio(db)
 
     rows = db.execute(
         text("""SELECT c.id_carrito, c.cantidad, c.tipo_producto,
-                       p.id_producto, p.nombre, p.precio, p.imagen, p.categoria
+                       p.id_producto, p.nombre, p.precio, p.imagen, p.categoria,
+                       p.tipo_cambio
                 FROM carrito c
                 JOIN productos p ON c.id_producto=p.id_producto
                 WHERE c.id_cliente=:u"""),
@@ -797,9 +802,11 @@ def obtener_carrito(
     items_locales = []
     for r in rows:
         d = dict(r._mapping)
+        ptc = float(d.get("tipo_cambio") or tc_actual)
+        d["tipo_cambio"] = ptc
         d["imagen_url"] = imagen_url(d.get("imagen"), d.get("nombre",""))
         d["plataforma"] = "local"
-        cot = calcular_importacion(float(d["precio"]), 0.5, d.get("categoria","otros"), tipo_cambio=tc)
+        cot = calcular_importacion(float(d["precio"]), 0.5, d.get("categoria","otros"), tipo_cambio=ptc)
         d["costo_total_importacion"] = cot["total"]
         items_locales.append(d)
 
@@ -812,7 +819,8 @@ def obtener_carrito(
     for r in ext_rows:
         d = dict(r._mapping)
         if d.get("fecha_agregado"): d["fecha_agregado"] = d["fecha_agregado"].isoformat()
-        cot = calcular_importacion(float(d["precio"]), float(d.get("peso") or 0.5), d.get("categoria","otros"), tipo_cambio=tc)
+        cot = calcular_importacion(float(d["precio"]), float(d.get("peso") or 0.5), d.get("categoria","otros"), tipo_cambio=tc_actual)
+        d["tipo_cambio"] = tc_actual
         d["costo_total_importacion"] = cot["total"]
         items_externos.append(d)
 
@@ -913,7 +921,7 @@ def pedidos_cliente(
 
     rows = db.execute(
         text("""SELECT p.id_pedido, p.total, p.estado, p.fecha,
-                       p.estado_entrega, p.tipo_pedido,
+                       p.estado_entrega, p.tipo_pedido, p.tipo_cambio,
                        COALESCE(pg.estado, 'sin_pago') as estado_pago,
                        pg.fecha_pago,
                        ue.direccion_entrega, ue.latitud, ue.longitud,
@@ -1268,11 +1276,12 @@ def crear_pedido(
     total += sum(float(r.precio) * int(r.cantidad) for r in externos)
     tipo = "import"  # ✅ VARCHAR(10) — no cambiar, "importacion" tiene 11 chars
 
+    tc = get_tipo_cambio(db)
     result = db.execute(
-        text("""INSERT INTO pedidos (id_cliente, total, estado, fecha, tipo_pedido, estado_entrega)
-                VALUES (:u, :t, 'pendiente', NOW(), :tp, 'pendiente')
+        text("""INSERT INTO pedidos (id_cliente, total, estado, fecha, tipo_pedido, estado_entrega, tipo_cambio)
+                VALUES (:u, :t, 'pendiente', NOW(), :tp, 'pendiente', :tc)
                 RETURNING id_pedido"""),
-        {"u": uid, "t": round(total, 2), "tp": tipo}
+        {"u": uid, "t": round(total, 2), "tp": tipo, "tc": tc}
     ).fetchone()
     id_pedido = result.id_pedido
 

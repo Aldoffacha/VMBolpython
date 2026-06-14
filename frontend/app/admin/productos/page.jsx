@@ -234,6 +234,7 @@ export default function AdminProductos() {
                       { field: "nombre", label: "Nombre" },
                       { field: null, label: "Descripción" },
                       { field: "precio", label: "Precio" },
+                      { field: null, label: "T/Cambio" },
                       { field: "stock", label: "Stock" },
                       { field: "categoria", label: "Categoría" },
                       { field: "fecha_registro", label: "Registro" },
@@ -249,7 +250,7 @@ export default function AdminProductos() {
                 </thead>
                 <tbody>
                   {ordenados.length === 0 ? (
-                    <tr>                      <td colSpan={9} style={{ textAlign: "center", color: "var(--admin-text-2)", padding: 40 }}>
+                    <tr>                      <td colSpan={10} style={{ textAlign: "center", color: "var(--admin-text-2)", padding: 40 }}>
                       No hay productos activos
                     </td></tr>
                   ) : ordenados.map((p, i) => (
@@ -272,6 +273,7 @@ export default function AdminProductos() {
                         {p.descripcion ? p.descripcion.substring(0, 50) + "..." : "—"}
                       </td>
                       <td>{formatPrice(p.precio)}</td>
+                      <td style={{ color: "var(--admin-text-2)", fontSize: 12 }}>{p.tipo_cambio ?? 9.17}</td>
                       <td style={{ color: p.stock <= 5 ? "#ef4444" : "var(--admin-text)", fontWeight: p.stock <= 5 ? 700 : 400 }}>
                         {p.stock} {p.stock <= 5 && <span style={{ fontSize: 10 }}> bajo</span>}
                       </td>

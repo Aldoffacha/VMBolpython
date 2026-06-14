@@ -168,12 +168,13 @@ export default function AdminReportes() {
         ) : data && (
           <>
             {/* STATS */}
-            <div className="admin-stats" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
+            <div className="admin-stats" style={{ gridTemplateColumns: "repeat(5, 1fr)" }}>
               {[
                 { icon: "", label: "Ventas Totales",   value: formatPrice(data.stats.total_ventas), color: "var(--admin-accent)",  sub: "Período seleccionado" },
                 { icon: "", label: "Pedidos Activos",  value: data.stats.total_pedidos,     color: "#10b981", sub: "Excluye cancelados" },
                 { icon: "", label: "Clientes Nuevos",  value: data.stats.clientes_nuevos,   color: "#3b82f6", sub: "En el período" },
                 { icon: "", label: "Ticket Promedio",  value: formatPrice(data.stats.ticket_promedio), color: "#f59e0b", sub: "Por pedido" },
+                { icon: "", label: "T/Cambio Actual",  value: data.tipo_cambio_actual ?? 9.17, color: "#9a031e", sub: "BOB/USD" },
               ].map(st => (
                 <div key={st.label} className="admin-stat" style={{ borderLeftColor: st.color }}>
                   <div className="admin-stat__top">

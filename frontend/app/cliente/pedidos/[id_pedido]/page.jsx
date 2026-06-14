@@ -412,7 +412,7 @@ export default function DetallePedido() {
   );
   if (!pedido) return null;
 
-  const { detalles=[], envio, ubicacion, estado, estado_pago="sin_pago", estado_entrega, total, fecha } = pedido;
+  const { detalles=[], envio, ubicacion, estado, estado_pago="sin_pago", estado_entrega, total, fecha, tipo_cambio } = pedido;
   const estaPagado  = estado==="pagado"||estado_pago==="pagado"||estado_pago==="confirmado";
   const tieneUbic   = !!ubicacion?.latitud;
   const puedeConf   = estado_entrega==="en_destino"||estado_entrega==="enviado";
@@ -667,7 +667,7 @@ export default function DetallePedido() {
             </div>
             <div className="det-hero__right">
               <div className="det-hero__total">{formatPriceUSD(total)}
-                    <span style={{fontSize:"12px",fontWeight:"400",fontFamily:"var(--font-c)",letterSpacing:"1px",color:"var(--text-3)",display:"block",marginTop:"4px"}}>{formatPriceBOB(total)} · TC {tipoCambio}</span></div>
+                    <span style={{fontSize:"12px",fontWeight:"400",fontFamily:"var(--font-c)",letterSpacing:"1px",color:"var(--text-3)",display:"block",marginTop:"4px"}}>{formatPriceBOB(total)} · TC {tipo_cambio ?? tipoCambio}</span></div>
               <div className="det-hero__date"><Calendar size={14} /> {fDate(fecha)}</div>
             </div>
           </div>
@@ -759,7 +759,7 @@ export default function DetallePedido() {
               <div className="det-total-row">
                 <span className="det-total-lbl">Total</span>
                 <span className="det-total-val">{formatPriceUSD(total)}
-                      <span style={{fontSize:"12px",fontWeight:"400",fontFamily:"var(--font-c)",letterSpacing:"1px",color:"var(--text-3)",display:"block",marginTop:"2px"}}>{formatPriceBOB(total)} · TC {tipoCambio}</span></span>
+                      <span style={{fontSize:"12px",fontWeight:"400",fontFamily:"var(--font-c)",letterSpacing:"1px",color:"var(--text-3)",display:"block",marginTop:"2px"}}>{formatPriceBOB(total)} · TC {tipo_cambio ?? tipoCambio}</span></span>
               </div>
             </div>
           </div>
