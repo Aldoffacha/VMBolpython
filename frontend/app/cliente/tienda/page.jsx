@@ -385,6 +385,7 @@ function ModalAgregarLink({ tc, token, onClose, onSuccess }) {
     if (!form.url) { alert("Ingresa la URL del producto"); return; }
     const catDB = SUBCAT_TO_CAT[form.categoria] ?? form.categoria;
     setLoad(true);
+    const [largo, ancho, alto] = form.tamano.split("x").map(Number);
     const body = {
       tipo: "externo",
       id_producto_externo: `link_${Date.now()}`,
@@ -392,6 +393,7 @@ function ModalAgregarLink({ tc, token, onClose, onSuccess }) {
       precio: parseFloat(form.precio), peso: parseFloat(form.peso),
       categoria: catDB, plataforma,
       url: form.url, cantidad: 1,
+      largo, ancho, alto,
     };
     const r = await fetch(`${API}/cliente/carrito/agregar`, {
       method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },

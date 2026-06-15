@@ -264,6 +264,25 @@
   vertical-align: middle;
 }
 
+.crt-item__costs { margin-top: 6px; }
+.crt-item__costs-toggle {
+  background: transparent; border: none;
+  color: var(--blue); cursor: pointer;
+  font-family: var(--font-c);
+  font-size: 10px; letter-spacing: 1px;
+  padding: 0; text-transform: uppercase;
+}
+.crt-item__costs-toggle:hover { text-decoration: underline; }
+.crt-item__costs-detalle {
+  margin-top: 6px; padding: 8px 10px;
+  background: var(--blue-soft);
+  border-radius: var(--r-s);
+  font-family: var(--font-c);
+  font-size: 10px; letter-spacing: 1px;
+  color: var(--text-2);
+  line-height: 1.7;
+}
+
 .crt-item__subtotal {
   min-width: 72px; text-align: right;
 }

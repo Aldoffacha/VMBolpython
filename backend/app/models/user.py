@@ -231,6 +231,9 @@ class CarritoExterno(Base):
     cantidad            = Column(Integer, nullable=False, default=1)
     estado              = Column(String(9), default="pendiente")
     fecha_agregado      = Column(DateTime, server_default=func.now())
+    largo               = Column(Numeric(5, 2), default=20.0)
+    ancho               = Column(Numeric(5, 2), default=15.0)
+    alto                = Column(Numeric(5, 2), default=1.0)
 
     cliente = relationship("Cliente", back_populates="carrito_externo")
 

@@ -42,7 +42,11 @@ function ItemRow({ item, tipo, onCantidad, onEliminar, updating }) {
   const { formatPrice } = useClienteMoneda();
   const plat       = PLAT[item.plataforma || "local"] || PLAT.local;
   const [confirmDel, setConfirmDel] = useState(false);
+  const [showCosts, setShowCosts] = useState(false);
   const id         = tipo === "externo" ? item.id_carrito_externo : item.id_carrito;
+  const imp        = item.costo_total_importacion || 0;
+  const dg         = item.costo_desglose || {};
+  const totalLinea = imp > 0 ? imp * item.cantidad : parseFloat(item.precio) * item.cantidad;
 
   return (
     <div className={`crt-item${updating ? " crt-item--updating" : ""}`}>
@@ -64,9 +68,26 @@ function ItemRow({ item, tipo, onCantidad, onEliminar, updating }) {
           </span>
         </div>
         <div className="crt-item__meta">
-          {item.categoria ? `${item.categoria} · ` : ""}precio unitario: {formatPrice(item.precio)}
+          {item.categoria ? `${item.categoria} · ` : ""}precio base: {formatPrice(item.precio)}
           {item.tipo_cambio ? ` · T/C: Bs. ${parseFloat(item.tipo_cambio).toFixed(2)}` : ""}
         </div>
+        {tipo === "externo" && imp > 0 && (
+          <div className="crt-item__costs">
+            <button className="crt-item__costs-toggle" onClick={() => setShowCosts(!showCosts)}>
+              {showCosts ? "▲" : "▼"} Costos de importación incluidos
+            </button>
+            {showCosts && (
+              <div className="crt-item__costs-detalle">
+                <div>Producto: {formatPrice(dg.producto || item.precio)}</div>
+                <div>Flete: {formatPrice(dg.flete || 0)}</div>
+                <div>Seguro: {formatPrice(dg.seguro || 0)}</div>
+                <div>Arancel: {formatPrice(dg.aduana || 0)}</div>
+                <div>Almacén: {formatPrice(dg.almacen || 0)}</div>
+                <div><strong>Total x unidad: {formatPrice(imp)}</strong></div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Cantidad */}
@@ -78,8 +99,8 @@ function ItemRow({ item, tipo, onCantidad, onEliminar, updating }) {
 
       {/* Subtotal */}
       <div className="crt-item__subtotal">
-        <div className="crt-item__subtotal-val">{formatPrice(parseFloat(item.precio) * item.cantidad)}</div>
-        <div className="crt-item__subtotal-lbl">subtotal</div>
+        <div className="crt-item__subtotal-val">{formatPrice(totalLinea)}</div>
+        <div className="crt-item__subtotal-lbl">total c/importación</div>
       </div>
 
       {/* Eliminar */}
@@ -305,6 +326,11 @@ export default function CarritoPage() {
   );
 
   const items  = [...(carrito?.items_locales || []), ...(carrito?.items_externos || [])];
+  const totalConImport = items.reduce((sum, item) => {
+    const imp = parseFloat(item.costo_total_importacion) || 0;
+    const base = parseFloat(item.precio) * item.cantidad;
+    return sum + (imp > 0 ? imp * item.cantidad : base);
+  }, 0);
   const total  = carrito?.total_monto || 0;
   const nItems = carrito?.total_items  || 0;
 
@@ -334,8 +360,8 @@ export default function CarritoPage() {
                 Mi <span>Carrito</span>
               </h1>
               <p className="crt-hero__sub">
-                {nItems} producto{nItems !== 1 ? "s" : ""} · Total:{" "}
-                <span style={{ color: "var(--green)", fontWeight: 700 }}>{formatPrice(total)}</span>
+                {nItems} producto{nItems !== 1 ? "s" : ""} · Total c/importación:{" "}
+                <span style={{ color: "var(--green)", fontWeight: 700 }}>{formatPrice(totalConImport)}</span>
               </p>
             </div>
 
@@ -424,13 +450,15 @@ export default function CarritoPage() {
                     <div className="crt-summary__items">
                       {items.map(item => {
                         const id = item.id_carrito || item.id_carrito_externo;
+                        const imp = parseFloat(item.costo_total_importacion) || 0;
+                        const totalItem = imp > 0 ? imp * item.cantidad : parseFloat(item.precio) * item.cantidad;
                         return (
                           <div key={id} className="crt-summary__row">
                             <span className="crt-summary__lbl">
                               {(item.nombre || "").slice(0, 28)}… ×{item.cantidad}
                             </span>
                             <span className="crt-summary__val">
-                              {formatPrice(parseFloat(item.precio) * item.cantidad)}
+                              {formatPrice(totalItem)}
                             </span>
                           </div>
                         );
@@ -440,14 +468,17 @@ export default function CarritoPage() {
                     {/* Total */}
                     <div className="crt-summary__total">
                       <div className="crt-summary__total-row">
-                        <span className="crt-summary__total-lbl">Total (USD)</span>
+                        <span className="crt-summary__total-lbl">Subtotal (base)</span>
                         <span className="crt-summary__total-val">{formatPriceUSD(total)}</span>
                       </div>
                       <div className="crt-summary__total-row">
-                        <span className="crt-summary__total-lbl">Total (BOB)</span>
-                        <span className="crt-summary__total-val">{formatPriceBOB(total)}</span>
+                        <span className="crt-summary__total-lbl">Total c/importación (USD)</span>
+                        <span className="crt-summary__total-val">{formatPriceUSD(totalConImport)}</span>
                       </div>
-                      <div className="crt-summary__hint">* Costos de importación estimados por ítem</div>
+                      <div className="crt-summary__total-row">
+                        <span className="crt-summary__total-lbl">Total c/importación (BOB)</span>
+                        <span className="crt-summary__total-val">{formatPriceBOB(totalConImport)}</span>
+                      </div>
                     </div>
 
                     {/* Botón pedido */}

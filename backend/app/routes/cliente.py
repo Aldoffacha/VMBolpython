@@ -5,7 +5,7 @@ from sqlalchemy import text
 from app.database import get_db
 from app.utils.dependencies import get_current_user, require_role
 from typing import Optional
-import json, os, shutil, re, requests
+import json, os, shutil, re
 from fastapi import UploadFile, File, Form
 from pydantic import BaseModel as _Base
 from typing import Optional as _Opt
@@ -707,11 +707,6 @@ def tienda(
 
 # ─── SCRAPE: DETECTAR NOMBRE Y PRECIO DESDE URL ────────────────────────────────
 
-_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
-    "Accept-Language": "en-US,en;q=0.9",
-}
-
 def _amazon_peso(html: str) -> float | None:
     for m in re.finditer(
         r'<tr[^>]*>\s*<th[^>]*>(.*?)</th>\s*<td[^>]*>(.*?)</td>',
@@ -934,9 +929,8 @@ def scrape_producto(
         raise HTTPException(400, "Solo se soportan URLs de Amazon o eBay")
 
     try:
-        resp = requests.get(url, headers=_HEADERS, timeout=15)
-        resp.raise_for_status()
-        html = resp.text
+        from app.utils.browser import fetch_page
+        html = fetch_page(url, timeout=25)
     except Exception as e:
         raise HTTPException(502, f"No se pudo obtener la página: {str(e)[:80]}")
 
@@ -1013,6 +1007,9 @@ def agregar_carrito(
         url = data.get("url", "")
         id_prod_ext = str(data.get("id_producto_externo", ""))
         cantidad = int(data.get("cantidad", 1))
+        largo = float(data.get("largo", 20.0))
+        ancho = float(data.get("ancho", 15.0))
+        alto = float(data.get("alto", 1.0))
 
         existe = db.execute(
             text("""SELECT * FROM carrito_externo
@@ -1022,16 +1019,19 @@ def agregar_carrito(
 
         if existe:
             db.execute(
-                text("UPDATE carrito_externo SET cantidad=cantidad+:c WHERE id_carrito_externo=:id"),
-                {"c": cantidad, "id": existe.id_carrito_externo}
+                text("""UPDATE carrito_externo
+                        SET cantidad=cantidad+:c, largo=:l, ancho=:a, alto=:h
+                        WHERE id_carrito_externo=:id"""),
+                {"c": cantidad, "l": largo, "a": ancho, "h": alto, "id": existe.id_carrito_externo}
             )
         else:
             db.execute(
                 text("""INSERT INTO carrito_externo
-                        (id_cliente, id_producto_externo, nombre, precio, peso, categoria, plataforma, url, cantidad)
-                        VALUES (:u, :id, :n, :pr, :pe, :cat, :plat, :url, :c)"""),
+                        (id_cliente, id_producto_externo, nombre, precio, peso, categoria, plataforma, url, cantidad, largo, ancho, alto)
+                        VALUES (:u, :id, :n, :pr, :pe, :cat, :plat, :url, :c, :l, :a, :h)"""),
                 {"u": uid, "id": id_prod_ext, "n": nombre, "pr": precio,
-                 "pe": peso, "cat": categoria, "plat": plataforma, "url": url, "c": cantidad}
+                 "pe": peso, "cat": categoria, "plat": plataforma, "url": url,
+                 "c": cantidad, "l": largo, "a": ancho, "h": alto}
             )
         db.commit()
         return {"success": True, "message": "Producto externo agregado al carrito"}
@@ -1078,9 +1078,18 @@ def obtener_carrito(
     for r in ext_rows:
         d = dict(r._mapping)
         if d.get("fecha_agregado"): d["fecha_agregado"] = d["fecha_agregado"].isoformat()
-        cot = calcular_importacion(float(d["precio"]), float(d.get("peso") or 0.5), d.get("categoria","otros"), tipo_cambio=tc_actual)
+        cot = calcular_importacion(
+            float(d["precio"]),
+            float(d.get("peso") or 0.5),
+            d.get("categoria","otros"),
+            largo=float(d.get("largo") or 20),
+            ancho=float(d.get("ancho") or 15),
+            alto=float(d.get("alto") or 1),
+            tipo_cambio=tc_actual,
+        )
         d["tipo_cambio"] = tc_actual
         d["costo_total_importacion"] = cot["total"]
+        d["costo_desglose"] = cot["desglose"]
         items_externos.append(d)
 
     total_items = len(items_locales) + len(items_externos)
@@ -1531,16 +1540,26 @@ def crear_pedido(
     if not locales and not externos:
         raise HTTPException(status_code=400, detail="El carrito está vacío")
 
+    tc_orden = get_tipo_cambio(db)
     total = sum(float(r.precio) * int(r.cantidad) for r in locales)
-    total += sum(float(r.precio) * int(r.cantidad) for r in externos)
+    for r in externos:
+        cot = calcular_importacion(
+            float(r.precio),
+            float(getattr(r, "peso", 0.5) or 0.5),
+            r.categoria,
+            largo=float(getattr(r, "largo", 20) or 20),
+            ancho=float(getattr(r, "ancho", 15) or 15),
+            alto=float(getattr(r, "alto", 1) or 1),
+            tipo_cambio=tc_orden,
+        )
+        total += cot["total"] * int(r.cantidad)
     tipo = "import"  # ✅ VARCHAR(10) — no cambiar, "importacion" tiene 11 chars
 
-    tc = get_tipo_cambio(db)
     result = db.execute(
         text("""INSERT INTO pedidos (id_cliente, total, estado, fecha, tipo_pedido, estado_entrega, tipo_cambio)
                 VALUES (:u, :t, 'pendiente', NOW(), :tp, 'pendiente', :tc)
                 RETURNING id_pedido"""),
-        {"u": uid, "t": round(total, 2), "tp": tipo, "tc": tc}
+        {"u": uid, "t": round(total, 2), "tp": tipo, "tc": tc_orden}
     ).fetchone()
     id_pedido = result.id_pedido
 
