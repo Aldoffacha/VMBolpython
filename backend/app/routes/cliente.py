@@ -430,9 +430,11 @@ def dashboard_cliente(
         lista = []
         for r in prods:
             d = dict(r._mapping)
-            cot = calcular_importacion(float(d["precio"]), 0.5, d.get("categoria", "otros"), tipo_cambio=tc)
+            ptc = float(d.get("tipo_cambio") or tc)
+            cot = calcular_importacion(float(d["precio"]), 0.5, d.get("categoria", "otros"), tipo_cambio=ptc)
             d["imagen_url"] = imagen_url(d.get("imagen"), d.get("nombre", ""))
             d["costo_total_importacion"] = cot["total"]
+            d["tipo_cambio"] = ptc
 
             if d.get("fecha_registro"):
                 d["fecha_registro"] = d["fecha_registro"].isoformat()
@@ -452,6 +454,7 @@ def dashboard_cliente(
         d = dict(r._mapping)
         cot = calcular_importacion(float(d["precio"]), float(d.get("peso") or 0.5), d.get("categoria", "otros"), tipo_cambio=tc)
         d["costo_total_importacion"] = cot["total"]
+        d["tipo_cambio"] = tc
 
         if d.get("fecha_agregado"):
             d["fecha_agregado"] = d["fecha_agregado"].isoformat()
@@ -468,9 +471,11 @@ def dashboard_cliente(
     productos_destacados = []
     for r in dest_rows:
         d = dict(r._mapping)
-        cot = calcular_importacion(float(d["precio"]), 0.5, d.get("categoria", "otros"), tipo_cambio=tc)
+        ptc = float(d.get("tipo_cambio") or tc)
+        cot = calcular_importacion(float(d["precio"]), 0.5, d.get("categoria", "otros"), tipo_cambio=ptc)
         d["imagen_url"] = imagen_url(d.get("imagen"), d.get("nombre", ""))
         d["costo_total_importacion"] = cot["total"]
+        d["tipo_cambio"] = ptc
 
         if d.get("fecha_registro"):
             d["fecha_registro"] = d["fecha_registro"].isoformat()
@@ -685,9 +690,8 @@ def tienda(
     productos_externos = []
     for r in ext_rows:
         d = dict(r._mapping)
-        ptc = float(d.get("tipo_cambio") or tc_actual)
-        cot = calcular_importacion(float(d["precio"]), float(d.get("peso") or 0.5), d.get("categoria","otros"), tipo_cambio=ptc)
-        d["tipo_cambio"] = ptc
+        cot = calcular_importacion(float(d["precio"]), float(d.get("peso") or 0.5), d.get("categoria","otros"), tipo_cambio=tc_actual)
+        d["tipo_cambio"] = tc_actual
         d["costo_total_importacion"] = cot["total"]
         d["id_producto"] = f"ext_{d['id_producto_exterior']}"
         if d.get("fecha_agregado"): d["fecha_agregado"] = d["fecha_agregado"].isoformat()

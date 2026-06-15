@@ -162,8 +162,7 @@ function SelectCategoriasLink({ value, onChange, className }) {
 /* ── Card de producto ─────────────────────────────────────────────────── */
 function ProdCard({ prod, tc, onVer }) {
   const { formatPrice } = useClienteMoneda();
-  const prodTc = prod.tipo_cambio || tc;
-  const total = calcImport(parseFloat(prod.precio || 0), prod.peso || 0.5, prod.categoria || "otros", prodTc);
+  const esExt = prod.plataforma && prod.plataforma !== "local";
   const img   = prod.imagen_url || prod.imagen || "";
   const PLAT  = {
     amazon: { bg: "#f59e0b", col: "#000", txt: "Amazon" },
@@ -171,6 +170,11 @@ function ProdCard({ prod, tc, onVer }) {
     local:  { bg: "#10b981", col: "#fff", txt: "Local"  },
   };
   const plat = PLAT[prod.plataforma || "local"] || PLAT.local;
+  let total = null;
+  if (esExt) {
+    const prodTc = prod.tipo_cambio || tc;
+    total = calcImport(parseFloat(prod.precio || 0), prod.peso || 0.5, prod.categoria || "otros", prodTc);
+  }
 
   return (
     <div className="p-card">
@@ -188,10 +192,17 @@ function ProdCard({ prod, tc, onVer }) {
       </div>
       <div className="p-card__body">
         <p className="p-card__name">{prod.nombre || "Producto"}</p>
-        <div className="p-card__foot">
-          <span className="p-card__imp-lbl">Con importación</span>
-          <span className="p-card__imp-val">{formatPrice(total)}</span>
-        </div>
+        {esExt ? (
+          <div className="p-card__foot">
+            <span className="p-card__imp-lbl">Con importación</span>
+            <span className="p-card__imp-val">{formatPrice(total)}</span>
+          </div>
+        ) : (
+          <div className="p-card__foot">
+            <span className="p-card__imp-lbl">Precio local</span>
+            <span className="p-card__imp-val">{formatPrice(prod.precio)}</span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -264,34 +275,44 @@ function ModalDetalle({ prod, tc, token, onClose, onSuccess }) {
             </div>
           </div>
 
-          <div className="det-breakdown">
-            <div className="det-breakdown__title"><BarChart3 size={16} /> Costo de Importación</div>
-            {[
-              ["Precio del producto",    precio],
-              ["Flete internacional",    flete],
-              ["Seguro (2%)",            seguro],
-              ["Arancel aduanal",        aduana],
-              ["Almacén Miami (Bs.135)", alm],
-            ].map(([k, v]) => (
-              <div className="cot-row" key={k}>
-                <span className="cot-row__k">{k}</span>
-                <span className="cot-row__v cot-row__v--dual">
-                  <span>{formatPriceUSD(v)}</span>
-                  <span style={{ marginLeft: 16 }}>{formatPriceBOB(v)}</span>
+          {esExt ? (
+            <div className="det-breakdown">
+              <div className="det-breakdown__title"><BarChart3 size={16} /> Costo de Importación</div>
+              {[
+                ["Precio del producto",    precio],
+                ["Flete internacional",    flete],
+                ["Seguro (2%)",            seguro],
+                ["Arancel aduanal",        aduana],
+                ["Almacén Miami (Bs.135)", alm],
+              ].map(([k, v]) => (
+                <div className="cot-row" key={k}>
+                  <span className="cot-row__k">{k}</span>
+                  <span className="cot-row__v cot-row__v--dual">
+                    <span>{formatPriceUSD(v)}</span>
+                    <span style={{ marginLeft: 16 }}>{formatPriceBOB(v)}</span>
+                  </span>
+                </div>
+              ))}
+              <div className="cot-total">
+                <span className="cot-total__k">Total × {qty}</span>
+                <span className="cot-total__v cot-total__v--dual">
+                  <span>{formatPriceUSD(tot1 * qty)}</span>
+                  <span style={{ marginLeft: 16 }}>{formatPriceBOB(tot1 * qty)}</span>
                 </span>
               </div>
-            ))}
-            <div className="cot-total">
+              <div style={{ textAlign: "right", fontSize: 10, color: "var(--text-3)", marginTop: 6 }}>
+                T/C: Bs. {prodTc.toFixed(2)}
+              </div>
+            </div>
+          ) : (
+            <div className="cot-total" style={{ justifyContent:"flex-end", marginTop:16 }}>
               <span className="cot-total__k">Total × {qty}</span>
               <span className="cot-total__v cot-total__v--dual">
-                <span>{formatPriceUSD(tot1 * qty)}</span>
-                <span style={{ marginLeft: 16 }}>{formatPriceBOB(tot1 * qty)}</span>
+                <span>{formatPriceUSD(precio * qty)}</span>
+                <span style={{ marginLeft: 16 }}>{formatPriceBOB(precio * qty)}</span>
               </span>
             </div>
-            <div style={{ textAlign: "right", fontSize: 10, color: "var(--text-3)", marginTop: 6 }}>
-              T/C: Bs. {prodTc.toFixed(2)}
-            </div>
-          </div>
+          )}
 
           <div className="qty-row">
             <span style={{ fontFamily: "var(--font-c)", fontSize: 11, letterSpacing: 2, textTransform: "uppercase", color: "var(--text-3)" }}>Cantidad</span>

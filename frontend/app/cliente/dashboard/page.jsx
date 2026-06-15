@@ -10,11 +10,20 @@ const API = "http://localhost:8000";
 
 /* ─── Importación ──────────────────────────────────────────────────────── */
 const IMPUESTOS = { electronico:.30, ropa:.20, hogar:.15, deportes:.25, otros:.18 };
+const SC2C = {
+  gaming:"electronico", audio:"electronico", celulares:"electronico",
+  computadoras:"electronico", fotografia:"electronico",
+  ropa_hombre:"ropa", ropa_mujer:"ropa", calzado:"ropa", accesorios:"ropa",
+  cocina:"hogar", dormitorio:"hogar", decoracion:"hogar",
+  fitness:"deportes", futbol:"deportes", outdoor:"deportes",
+  juguetes:"otros", libros:"otros",
+};
 
 function calcImport(precio, peso=.5, cat="otros", l=20, a=15, h=1, tc=9.17) {
+  const c = SC2C[cat] ?? cat;
   const flete  = Math.max(15, peso*3);
   const seguro = precio*.02;
-  const aduana = precio*(IMPUESTOS[cat]??0.18);
+  const aduana = precio*(IMPUESTOS[c]??0.18);
   const tabla  = [
     [20,20,15,15,1,1,100,135],[20,20,15,15,15,15,100,180],[25,25,15,15,15,15,100,225],
     [30,30,20,20,20,20,100,270],[35,35,20,20,20,20,100,360],[50,50,40,40,10,10,10,450],
@@ -39,10 +48,15 @@ const PLAT = {
 /* ─── ProdCard ─────────────────────────────────────────────────────────── */
 function ProdCard({ prod, tc, onAdd }) {
   const { formatPrice, formatPriceUSD, formatPriceBOB } = useClienteMoneda();
-  const cot  = calcImport(parseFloat(prod.precio||0), prod.peso||.5, prod.categoria||"otros", 20, 15, 1, tc);
+  const esExt = prod.plataforma && prod.plataforma !== "local";
   const plat = PLAT[prod.plataforma] || { bg:"#10b981", col:"#fff", txt:"Local" };
   const img  = prod.imagen_url || prod.imagen || "";
   const key  = prod.id_producto || prod.id_producto_exterior || prod.id_producto_externo;
+  let cot = null;
+  if (esExt) {
+    const prodTc = prod.tipo_cambio || tc;
+    cot = calcImport(parseFloat(prod.precio||0), prod.peso||.5, prod.categoria||"otros", 20, 15, 1, prodTc);
+  }
 
   return (
     <div className="p-card" key={key}>
@@ -61,11 +75,18 @@ function ProdCard({ prod, tc, onAdd }) {
 
       <div className="p-card__body">
         <p className="p-card__name">{prod.nombre || "Producto"}</p>
-        <div className="p-card__foot">
-          <span className="p-card__imp-lbl">Con importación</span>
-          <span className="p-card__imp-val">{formatPrice(cot.total)}</span>
-          <span className="p-card__imp-val" style={{ fontSize:10, opacity:0.7 }}>{formatPriceBOB(cot.total)}</span>
-        </div>
+        {esExt ? (
+          <div className="p-card__foot">
+            <span className="p-card__imp-lbl">Con importación</span>
+            <span className="p-card__imp-val">{formatPrice(cot.total)}</span>
+            <span className="p-card__imp-val" style={{ fontSize:10, opacity:0.7 }}>{formatPriceBOB(cot.total)}</span>
+          </div>
+        ) : (
+          <div className="p-card__foot">
+            <span className="p-card__imp-lbl">Precio local</span>
+            <span className="p-card__imp-val">{formatPrice(prod.precio)}</span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -172,7 +193,11 @@ function ModalAddCart({ prod, tc, token, onClose, onOk }) {
   if (!prod) return null;
 
   const esExt = prod.plataforma && prod.plataforma !== "local";
-  const cot   = calcImport(parseFloat(prod.precio||0), prod.peso||.5, prod.categoria||"otros", 20, 15, 1, tc);
+  const prodTc = prod.tipo_cambio || tc;
+  let cot = null;
+  if (esExt) {
+    cot = calcImport(parseFloat(prod.precio||0), prod.peso||.5, prod.categoria||"otros", 20, 15, 1, prodTc);
+  }
   const img   = prod.imagen_url || prod.imagen || "";
 
   const confirmar = async () => {
@@ -211,27 +236,36 @@ function ModalAddCart({ prod, tc, token, onClose, onOk }) {
           </div>
         </div>
       </div>
-      <div className="summary">
-        <div className="sum-row" style={{ borderBottom:"1px solid rgba(255,255,255,0.06)", paddingBottom:8, marginBottom:8 }}>
-          <span className="sum-k">Importación</span>
-          <span className="sum-v">{formatPrice((cot.total - parseFloat(prod.precio||0)) * qty)}</span>
+      {esExt ? (
+        <div className="summary">
+          <div className="sum-row" style={{ borderBottom:"1px solid rgba(255,255,255,0.06)", paddingBottom:8, marginBottom:8 }}>
+            <span className="sum-k">Importación</span>
+            <span className="sum-v">{formatPrice((cot.total - parseFloat(prod.precio||0)) * qty)}</span>
+          </div>
+          <div className="sum-row">
+            <span className="sum-k">En USD</span>
+            <span className="sum-v">{formatPriceUSD(cot.total * qty)}</span>
+          </div>
+          <div className="sum-row">
+            <span className="sum-k">En BOB</span>
+            <span className="sum-v">{formatPriceBOB(cot.total * qty)}</span>
+          </div>
+          <div className="sum-total">
+            <span className="sum-total__k">Total ×{qty}</span>
+            <span className="sum-total__v">{formatPrice(cot.total * qty)}</span>
+          </div>
+          <div style={{ textAlign:"right", fontSize:"10px", color:"var(--text-3)", marginTop:6 }}>
+            T/C: Bs. {prodTc.toFixed(2)}
+          </div>
         </div>
-        <div className="sum-row">
-          <span className="sum-k">En USD</span>
-          <span className="sum-v">{formatPrice(cot.total * qty)}</span>
+      ) : (
+        <div className="summary">
+          <div className="sum-total">
+            <span className="sum-total__k">Total ×{qty}</span>
+            <span className="sum-total__v">{formatPrice(parseFloat(prod.precio||0) * qty)}</span>
+          </div>
         </div>
-        <div className="sum-row">
-          <span className="sum-k">En BOB</span>
-          <span className="sum-v">{formatPriceBOB(cot.total * qty)}</span>
-        </div>
-        <div className="sum-total">
-          <span className="sum-total__k">Total ×{qty}</span>
-          <span className="sum-total__v">{formatPrice(cot.total * qty)}</span>
-        </div>
-        <div style={{ textAlign:"right", fontSize:"10px", color:"var(--text-3)", marginTop:6 }}>
-          T/C: Bs. {tc.toFixed(2)}
-        </div>
-      </div>
+      )}
     </Modal>
   );
 }
