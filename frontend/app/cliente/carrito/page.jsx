@@ -251,7 +251,7 @@ function ModalPago({ idPedido, total, token, onClose, onSuccess }) {
 export default function CarritoPage() {
   const router    = useRouter();
   const { theme } = useTheme();
-  const { formatPrice, formatPriceUSD, formatPriceBOB } = useClienteMoneda();
+  const { formatPrice, formatPriceUSD, formatPriceBOB, temaCliente } = useClienteMoneda();
 
   const [user,     setUser]     = useState(null);
   const [token,    setToken]    = useState("");
@@ -335,7 +335,7 @@ export default function CarritoPage() {
   const nItems = carrito?.total_items  || 0;
 
   return (
-    <div className={`crt-root ${theme}`}>
+    <div className={`crt-root ${theme} tema-${temaCliente}`}>
       <ClienteSidebar user={user} carritoCount={nItems} />
 
       <main className="crt-main">

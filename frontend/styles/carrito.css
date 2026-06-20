@@ -4,6 +4,22 @@
    Import: import "@/styles/carrito.css"   (después de dashboard.css)
    ══════════════════════════════════════════════════════════════════════════ */
 
+/* ── Tema Rojo (dark) ──────────────────────────────────────────────────── */
+.crt-root.tema-rojo {
+  --blue:        #dc4a4a;
+  --blue-bright: #ef5a5a;
+  --blue-soft:   rgba(220,74,74,0.14);
+  --blue-glow:   rgba(220,74,74,0.32);
+  --border-blue: rgba(220,74,74,0.22);
+}
+.crt-root.light.tema-rojo {
+  --blue:        #dc4a4a;
+  --blue-bright: #c03939;
+  --blue-soft:   rgba(220,74,74,0.10);
+  --blue-glow:   rgba(220,74,74,0.20);
+  --border-blue: rgba(220,74,74,0.18);
+}
+
 /* ── Variables Light ──────────────────────────────────────────────────── */
 .crt-root.light {
   --bg:          #f0f2f5;

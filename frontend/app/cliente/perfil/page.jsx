@@ -104,7 +104,7 @@ export default function ClientePerfil() {
   const [previewFoto, setPreviewFoto] = useState(null);
   const fileRef = useRef(null);
 
-  const { moneda, tipoCambio, toggleMoneda } = useClienteMoneda();
+  const { moneda, tipoCambio, toggleMoneda, temaCliente } = useClienteMoneda();
 
   /* ── Cargar datos ──────────────────────────────────────────────────────── */
   useEffect(() => {
@@ -280,7 +280,7 @@ export default function ClientePerfil() {
     : "—";
 
   return (
-    <div className={`vmb-root ${theme}`}>
+    <div className={`vmb-root ${theme} tema-${temaCliente}`}>
       <ClienteSidebar user={user} carritoCount={0} />
 
       <main className="vmb-main">

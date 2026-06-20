@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, Body
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import text
@@ -68,6 +68,7 @@ def get_configuracion(
             "tipo_cambio":       config.tipo_cambio or 9.17,
             "tipo_cambio_actualizacion": config.tipo_cambio_actualizacion.isoformat() if config.tipo_cambio_actualizacion else None,
             "qr_filename":       config.qr_filename or "",
+            "tema_cliente":      config.tema_cliente or "azul",
         },
         "depositos": [
             {
@@ -135,6 +136,40 @@ def guardar_general(
         print("Error auditoria:", e)
 
     return {"ok": True, "mensaje": "Configuración guardada correctamente"}
+
+
+# ─────────────────────────────────────────────
+#  PUT - Cambiar tema del cliente
+# ─────────────────────────────────────────────
+
+@router.put("/tema-cliente")
+def cambiar_tema_cliente(
+    body: dict = Body(...),
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(require_role("administrador"))
+):
+    tema = body.get("tema_cliente", "")
+    if tema not in ("azul", "rojo"):
+        raise HTTPException(400, "Tema no válido. Use 'azul' o 'rojo'")
+
+    config = db.query(Configuracion).filter(Configuracion.id == 1).first()
+    if not config:
+        raise HTTPException(404, "Configuración no encontrada")
+
+    anterior = config.tema_cliente
+    config.tema_cliente = tema
+    db.commit()
+
+    try:
+        registrar_auditoria(db, "configuracion", 1, "UPDATE",
+            datos_nuevos={"tema_cliente": tema},
+            datos_anteriores={"tema_cliente": anterior},
+            id_usuario=current_user.get("id") or 0
+        )
+    except Exception as e:
+        print("Error auditoria:", e)
+
+    return {"ok": True, "tema_cliente": tema, "mensaje": f"Tema del cliente cambiado a '{tema}'"}
 
 
 # ─────────────────────────────────────────────

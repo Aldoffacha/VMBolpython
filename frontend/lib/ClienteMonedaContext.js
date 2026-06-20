@@ -19,6 +19,7 @@ function setStoredMoneda(m) {
 export function ClienteMonedaProvider({ children }) {
   const [moneda, setMoneda] = useState("USD");
   const [tipoCambio, setTipoCambio] = useState(9.17);
+  const [temaCliente, setTemaCliente] = useState("azul");
 
   useEffect(() => {
     setMoneda(getStoredMoneda());
@@ -33,6 +34,7 @@ export function ClienteMonedaProvider({ children }) {
       .then((r) => r.json())
       .then((d) => {
         if (d?.tipo_cambio) setTipoCambio(d.tipo_cambio);
+        if (d?.tema_cliente) setTemaCliente(d.tema_cliente);
       })
       .catch(() => {});
   }, []);
@@ -76,6 +78,7 @@ export function ClienteMonedaProvider({ children }) {
       value={{
         moneda,
         tipoCambio,
+        temaCliente,
         formatPrice,
         formatPriceUSD,
         formatPriceBOB,
@@ -94,6 +97,7 @@ export function useClienteMoneda() {
     return {
       moneda: "USD",
       tipoCambio: 9.17,
+      temaCliente: "azul",
       formatPrice: (p) => `$${(parseFloat(p) || 0).toFixed(2)}`,
       formatPriceUSD: (p) => `$${(parseFloat(p) || 0).toFixed(2)}`,
       formatPriceBOB: (p) => `Bs ${((parseFloat(p) || 0) * 9.17).toFixed(2)}`,

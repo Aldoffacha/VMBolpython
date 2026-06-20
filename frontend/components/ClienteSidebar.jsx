@@ -2,21 +2,26 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useTheme } from "@/context/ThemeContext";
+import { useClienteMoneda } from "@/lib/ClienteMonedaContext";
 import { Bell, BellOff, Megaphone, Info, CheckCircle, AlertTriangle, XCircle, Package, CreditCard, Truck, X, Home, ShoppingBag, ShoppingCart, DollarSign, User, Menu, Moon, Sun } from "lucide-react";
 
 const API = "http://localhost:8000";
 
-function getColors(isDark) {
+function getColors(isDark, temaCliente = "azul") {
+  const isRed = temaCliente === "rojo";
   return {
     pageBg:  isDark ? "#121418" : "#f0f2f5",
     cardBg:  isDark ? "#1f2429" : "#ffffff",
-    accent:  "#2563eb",
-    accent2: isDark ? "#3b82f6" : "#1d4ed8",
+    accent:  isRed ? "#dc4a4a" : "#2563eb",
+    accent2: isRed ? (isDark ? "#e06b6b" : "#b33a3a") : (isDark ? "#3b82f6" : "#1d4ed8"),
     text:    isDark ? "#d9d9d9" : "#111827",
     muted:   isDark ? "#a0a0a0" : "#6b7280",
     success: isDark ? "#10b981" : "#059669",
     warning: "#f59e0b",
     danger:  "#ef4444",
+    accentR: isRed ? 220 : 37,
+    accentG: isRed ? 74  : 99,
+    accentB: isRed ? 74  : 235,
   };
 }
 
@@ -47,9 +52,10 @@ const IconLogout = ({ size = 16 }) => (
 );
 
 // ── Dropdown de notificaciones ────────────────────────────────────────────────
-function NotifDropdown({ token}) { 
-  const { theme } = useTheme();   
-  const C = getColors(theme === "dark");
+function NotifDropdown({ token }) { 
+  const { theme } = useTheme();
+  const { temaCliente } = useClienteMoneda();
+  const C = getColors(theme === "dark", temaCliente);
   const [open,     setOpen]     = useState(false);
   const [notifs,   setNotifs]   = useState([]);
   const [noLeidas, setNoLeidas] = useState(0);
@@ -131,7 +137,7 @@ function NotifDropdown({ token}) {
         title="Notificaciones"
         style={{
           position: "relative", background: "transparent",
-          border: `1px solid rgba(37,99,235,0.35)`, borderRadius: "8px",
+          border: `1px solid rgba(${C.accentR},${C.accentG},${C.accentB},0.35)`, borderRadius: "8px",
           padding: "8px", cursor: "pointer", color: C.muted,
           display: "flex", alignItems: "center", justifyContent: "center",
           transition: "all 0.2s",
@@ -190,7 +196,7 @@ function NotifDropdown({ token}) {
                 <div key={n.id_notificacion}>
                   <div onClick={() => { if (!n.leido) marcarLeida(n.id_notificacion); }} style={{
                     padding: "12px 16px", cursor: n.leido ? "default" : "pointer",
-                    background: n.leido ? "transparent" : `rgba(37,99,235,0.07)`,
+                    background: n.leido ? "transparent" : `rgba(${C.accentR},${C.accentG},${C.accentB},0.07)`,
                     borderLeft: n.leido ? "3px solid transparent" : `3px solid ${C.accent}`,
                     transition: "background 0.2s",
                   }}>
@@ -224,17 +230,17 @@ function NotifDropdown({ token}) {
                     </div>
                   </div>
                   {i < notifs.length - 1 && (
-                    <div style={{ height: "1px", background: `rgba(37,99,235,0.1)`, margin: "0 16px" }} />
+                    <div style={{ height: "1px", background: `rgba(${C.accentR},${C.accentG},${C.accentB},0.1)`, margin: "0 16px" }} />
                   )}
                 </div>
               ))
             }
           </div>
 
-          <div style={{ padding: "10px 16px", borderTop: `1px solid rgba(37,99,235,0.15)`, background: C.pageBg }}>
+          <div style={{ padding: "10px 16px", borderTop: `1px solid rgba(${C.accentR},${C.accentG},${C.accentB},0.15)`, background: C.pageBg }}>
             <a href="/cliente/notificaciones" style={{
               display: "block", textAlign: "center", padding: "7px",
-              background: `rgba(37,99,235,0.1)`, border: `1px solid ${C.accent}`,
+              background: `rgba(${C.accentR},${C.accentG},${C.accentB},0.1)`, border: `1px solid ${C.accent}`,
               borderRadius: "7px", color: C.accent, fontSize: "12px",
               fontWeight: "600", textDecoration: "none",
             }}>Ver todas las notificaciones →</a>
@@ -250,7 +256,8 @@ export default function ClienteSidebar({ user, carritoCount = 0 }) {
   const router   = useRouter();
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
-  const C = getColors(theme === "dark");
+  const { temaCliente } = useClienteMoneda();
+  const C = getColors(theme === "dark", temaCliente);
 
   const [token,     setToken]     = useState("");
   const [collapsed, setCollapsed] = useState(() => {
@@ -307,10 +314,10 @@ export default function ClienteSidebar({ user, carritoCount = 0 }) {
           overflow: hidden;
         }
         .sidebar-toggle-btn:hover {
-          background: rgba(37,99,235,0.15) !important;
+          background: rgba(${C.accentR},${C.accentG},${C.accentB},0.15) !important;
         }
         .theme-btn:hover {
-          background: rgba(37,99,235,0.12) !important;
+          background: rgba(${C.accentR},${C.accentG},${C.accentB},0.12) !important;
         }
       `}</style>
 
@@ -353,7 +360,7 @@ export default function ClienteSidebar({ user, carritoCount = 0 }) {
           display: "flex", alignItems: "center",
           justifyContent: collapsed ? "center" : "space-between",
           gap: "12px", padding: collapsed ? "22px 10px" : "22px 20px",
-          borderBottom: `1px solid rgba(37,99,235,0.2)`,
+          borderBottom: `1px solid rgba(${C.accentR},${C.accentG},${C.accentB},0.2)`,
           transition: "padding 0.3s",
         }}>
           <div style={{
@@ -362,7 +369,7 @@ export default function ClienteSidebar({ user, carritoCount = 0 }) {
             borderRadius: "10px", display: "flex", alignItems: "center",
             justifyContent: "center", fontFamily: "Cinzel,serif",
             fontWeight: "700", color: "#fff", fontSize: "14px",
-            boxShadow: `0 2px 8px rgba(37,99,235,0.4)`,
+            boxShadow: `0 2px 8px rgba(${C.accentR},${C.accentG},${C.accentB},0.4)`,
           }}>VM</div>
 
           {!collapsed && (
@@ -382,7 +389,7 @@ export default function ClienteSidebar({ user, carritoCount = 0 }) {
             title={collapsed ? "Expandir sidebar" : "Colapsar sidebar"}
             style={{
               background: "transparent",
-              border: `1px solid rgba(37,99,235,0.3)`,
+              border: `1px solid rgba(${C.accentR},${C.accentG},${C.accentB},0.3)`,
               borderRadius: "7px", padding: "5px 7px",
               cursor: "pointer", color: C.accent2,
               fontSize: "14px", lineHeight: 1, flexShrink: 0,
@@ -396,8 +403,8 @@ export default function ClienteSidebar({ user, carritoCount = 0 }) {
         {user && (
           <div style={{
             padding: collapsed ? "14px 10px" : "14px 16px",
-            background: `rgba(37,99,235,0.07)`,
-            borderBottom: `1px solid rgba(37,99,235,0.15)`,
+            background: `rgba(${C.accentR},${C.accentG},${C.accentB},0.07)`,
+            borderBottom: `1px solid rgba(${C.accentR},${C.accentG},${C.accentB},0.15)`,
             display: "flex", alignItems: "center",
             justifyContent: collapsed ? "center" : "flex-start",
             gap: "10px", transition: "padding 0.3s",
@@ -447,9 +454,9 @@ export default function ClienteSidebar({ user, carritoCount = 0 }) {
       borderRadius: "8px",
       textDecoration: "none",
       color: active ? "#fff" : C.muted,
-      background: active ? `rgba(37,99,235,0.2)` : "transparent",
+      background: active ? `rgba(${C.accentR},${C.accentG},${C.accentB},0.2)` : "transparent",
       borderLeft: active ? `3px solid ${C.accent2}` : "3px solid transparent",
-      boxShadow: active ? `0 2px 8px rgba(37,99,235,0.2)` : "none",
+      boxShadow: active ? `0 2px 8px rgba(${C.accentR},${C.accentG},${C.accentB},0.2)` : "none",
       fontSize: "13px",
       fontWeight: active ? "700" : "500",
       transition: "all 0.2s",
@@ -488,7 +495,7 @@ export default function ClienteSidebar({ user, carritoCount = 0 }) {
         {/* ── Botón tema + Cerrar sesión ── */}
         <div style={{
           padding: collapsed ? "14px 10px" : "14px 16px",
-          borderTop: `1px solid rgba(37,99,235,0.2)`,
+          borderTop: `1px solid rgba(${C.accentR},${C.accentG},${C.accentB},0.2)`,
           display: "flex", flexDirection: "column", gap: "8px",
           transition: "padding 0.3s",
         }}>
@@ -502,7 +509,7 @@ export default function ClienteSidebar({ user, carritoCount = 0 }) {
               padding: collapsed ? "10px 8px" : "10px 14px",
               borderRadius: "8px",
               background: "transparent",
-              border: `1px solid rgba(37,99,235,0.3)`,
+              border: `1px solid rgba(${C.accentR},${C.accentG},${C.accentB},0.3)`,
               color: C.muted, cursor: "pointer", fontSize: "13px", fontWeight: "600",
               display: "flex", alignItems: "center",
               justifyContent: "center",

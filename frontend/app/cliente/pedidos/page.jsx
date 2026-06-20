@@ -478,7 +478,7 @@ const FILTROS = ["todos","sin_pago","pagado","enviado","en_camino","entregado"];
 export default function MisPedidos() {
   const { theme } = useTheme();
   const router = useRouter();
-  const { formatPrice, formatPriceUSD, formatPriceBOB, tipoCambio } = useClienteMoneda();
+  const { formatPrice, formatPriceUSD, formatPriceBOB, tipoCambio, temaCliente } = useClienteMoneda();
   const [user,    setUser]    = useState(null);
   const [token,   setToken]   = useState("");
   const [pedidos, setPedidos] = useState([]);
@@ -531,7 +531,7 @@ export default function MisPedidos() {
   );
 
   return (
-    <div className={`vmb-root ${theme}`}>
+    <div className={`vmb-root ${theme} tema-${temaCliente}`}>
       <style>{`
         /* ── Pedidos-specific styles ── */
         .ped-main {

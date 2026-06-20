@@ -571,6 +571,7 @@ function ClienteTiendaContent() {
   const router       = useRouter();
   const searchParams = useSearchParams();
   const { theme }    = useTheme();
+  const { temaCliente } = useClienteMoneda();
 
   const [user,    setUser]    = useState(null);
   const [token,   setToken]   = useState("");
@@ -629,7 +630,7 @@ function ClienteTiendaContent() {
   );
 
   return (
-    <div className={`tnd-root ${theme}`}>
+    <div className={`tnd-root ${theme} tema-${temaCliente}`}>
       <ClienteSidebar user={user} />
 
       <main className="tnd-main">

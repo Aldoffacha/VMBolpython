@@ -31,6 +31,7 @@ export default function AdminConfiguracion() {
   });
   const [formDeposito, setFormDeposito] = useState({ nombre_deposito: "", direccion: "", telefono: "", contacto: "" });
   const [formTienda,   setFormTienda]   = useState({ nombre_tienda: "", url_tienda: "", tipo: "amazon", api_key: "" });
+  const [temaCliente, setTemaCliente] = useState("azul");
 
   useEffect(() => {
     const stored = sessionStorage.getItem("user");
@@ -57,6 +58,7 @@ export default function AdminConfiguracion() {
         tipo_cambio: json.config.tipo_cambio,
         actualizacion: json.config.tipo_cambio_actualizacion,
       });
+      setTemaCliente(json.config.tema_cliente || "azul");
     } catch (e) {
       console.error("Error fetching config:", e);
     }
@@ -97,6 +99,19 @@ export default function AdminConfiguracion() {
     } else {
       showToast(json.mensaje || "Error al actualizar tipo de cambio", false);
     }
+  };
+
+  // ── Alternar tema del cliente ──
+  const toggleTemaCliente = async () => {
+    const nuevo = temaCliente === "azul" ? "rojo" : "azul";
+    const token = getToken();
+    setTemaCliente(nuevo);
+    const res = await fetch(`${API}/admin/configuracion/tema-cliente`, {
+      method: "PUT", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ tema_cliente: nuevo }),
+    });
+    if (!res.ok) { setTemaCliente(temaCliente); showToast("Error al cambiar tema", false); }
+    else showToast(`Tema cambiado a "${nuevo}"`, true);
   };
 
   // ── Subir QR ──
@@ -239,6 +254,17 @@ export default function AdminConfiguracion() {
                 </div>
                 <button onClick={guardarGeneral} disabled={saving} className="admin-btn admin-btn--pri">
                   {saving ? "Guardando..." : <><Save size={14} /> Guardar Configuración</>}
+                </button>
+              </div>
+            </div>
+
+            {/* Tema del cliente */}
+            <div className="admin-card">
+              <div className="admin-card__head"><span className="admin-card__title">Tema del Portal Cliente</span></div>
+              <div className="admin-card__body">
+                <p className="admin-form-label">Tema actual: <strong>{temaCliente === "azul" ? "Azul" : "Rojo"}</strong></p>
+                <button onClick={toggleTemaCliente} className="admin-btn admin-btn--sec">
+                  Cambiar a {temaCliente === "azul" ? "Rojo" : "Azul"}
                 </button>
               </div>
             </div>

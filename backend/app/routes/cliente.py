@@ -499,6 +499,7 @@ def dashboard_cliente(
         "productos_destacados": productos_destacados,
         "pedidos_ids": [p["id_pedido"] for p in pedidos_recientes],
         "tipo_cambio": get_tipo_cambio(db),
+        "tema_cliente": db.execute(text("SELECT tema_cliente FROM configuracion LIMIT 1")).scalar() or "azul",
     }
 
 

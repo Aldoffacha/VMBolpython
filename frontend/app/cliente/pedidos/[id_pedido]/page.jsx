@@ -309,7 +309,7 @@ export default function DetallePedido() {
   const params = useParams();
   const idPed  = params?.id_pedido;
   const { theme } = useTheme();
-  const { formatPrice, formatPriceUSD, formatPriceBOB, tipoCambio } = useClienteMoneda();
+  const { formatPrice, formatPriceUSD, formatPriceBOB, tipoCambio, temaCliente } = useClienteMoneda();
 
   const [user,     setUser]     = useState(null);
   const [token,    setToken]    = useState("");
@@ -420,7 +420,7 @@ export default function DetallePedido() {
   const puedeEditar = estaPagado && estado_entrega!=="entregado" && estado!=="cancelado";
 
   return (
-    <div className={`vmb-root ${theme}`}>
+    <div className={`vmb-root ${theme} tema-${temaCliente}`}>
       <style>{`
         /* ── Detalle-specific ── */
         .det-main {

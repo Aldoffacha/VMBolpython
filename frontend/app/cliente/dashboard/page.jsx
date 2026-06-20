@@ -485,8 +485,8 @@ function ModalCarrito({ items, total, onClose }) {
 ══════════════════════════════════════════════════════════════════════════ */
 export default function ClienteDashboard() {
   const router = useRouter();
-  // useTheme integrado — aplica clase "light" o "dark" al root
   const { theme } = useTheme();
+  const { temaCliente } = useClienteMoneda();
 
   const [user,    setUser]    = useState(null);
   const [token,   setToken]   = useState("");
@@ -558,7 +558,7 @@ export default function ClienteDashboard() {
 
   return (
     // Clase "dark" o "light" en el root — dashboard.css debe usar estas clases para sus variables
-    <div className={`vmb-root ${theme}`}>
+    <div className={`vmb-root ${theme} tema-${temaCliente}`}>
       <ClienteSidebar user={user} carritoCount={stats?.total_carrito || 0} />
 
       <main className="vmb-main">

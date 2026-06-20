@@ -33,6 +33,24 @@
   --r-s: 8px;  --r-m: 14px;  --r-l: 20px;  --r-p: 999px;
 }
 
+/* ── Variables Tema Rojo (dark) ──────────────────────────────────────────── */
+.vmb-root.tema-rojo {
+  --blue:        #dc4a4a;
+  --blue-bright: #ef5a5a;
+  --blue-soft:   rgba(220,74,74,0.14);
+  --blue-glow:   rgba(220,74,74,0.32);
+  --border-blue: rgba(220,74,74,0.22);
+}
+
+/* ── Variables Tema Rojo (light) ─────────────────────────────────────────── */
+.vmb-root.light.tema-rojo {
+  --blue:        #dc4a4a;
+  --blue-bright: #c03939;
+  --blue-soft:   rgba(220,74,74,0.10);
+  --blue-glow:   rgba(220,74,74,0.20);
+  --border-blue: rgba(220,74,74,0.18);
+}
+
 /* ── Variables Light (cuando .vmb-root tiene clase "light") ────────────── */
 .vmb-root.light {
   --bg:          #f0f2f5;

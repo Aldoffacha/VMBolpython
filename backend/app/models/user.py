@@ -510,3 +510,4 @@ class Configuracion(Base):
     tipo_cambio_actualizacion = Column(DateTime, nullable=True)
     fecha_actualizacion = Column(DateTime, server_default=func.now(), onupdate=func.now())
     qr_filename         = Column(String(255))
+    tema_cliente        = Column(String(10), nullable=False, default="azul")
