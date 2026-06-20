@@ -114,15 +114,19 @@ export default function UbicanosPage() {
       "#7ba87a", "#c4a87a", "#9b8fb3", "#7a9bb3", "#9a9a9a",
       "#7aab9a", "#b37a7a", "#abab7a", "#b37a9b"
     ];
+    const colores_br = [
+      "#a8d4a8", "#d4b88a", "#b8a8d4", "#8ab8d4", "#b8b8b8",
+      "#8ad4b8", "#d48a8a", "#d4d48a", "#d48ab8"
+    ];
 
     deptosLayer.current = L.geoJSON(deptosGeo, {
       style: (feature) => {
         const idx = deptosGeo.features.indexOf(feature);
         return {
           fillColor: colores[idx % colores.length],
-          fillOpacity: 0.75,
-          color: "#3a3a3a",
-          weight: 1,
+          fillOpacity: 0.15,
+          color: colores_br[idx % colores_br.length],
+          weight: 2,
         };
       },
       onEachFeature: (feature, layer) => {
@@ -329,13 +333,15 @@ export default function UbicanosPage() {
         .ub-ip__btn--pri:hover{background:#2563eb}
         .ub-overlay-btn{
           position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9998;
-          padding:10px 24px;border-radius:10px;
-          background:#161a1d;border:1px solid rgba(37,99,235,0.3);
+          padding:6px 16px;border-radius:8px;
+          background:#161a1d;border:1px solid rgba(37,99,235,0.4);
           color:#94a3b8;cursor:pointer;font-family:'Barlow Condensed',sans-serif;
-          font-size:13px;font-weight:600;letter-spacing:.5px;
-          transition:all 0.2s;box-shadow:0 4px 16px rgba(0,0,0,0.4);
+          font-size:12px;font-weight:600;letter-spacing:.5px;
+          box-shadow:0 4px 16px rgba(0,0,0,0.4);
+          animation:ub-pulse-btn 1.2s ease-in-out infinite;
         }
-        .ub-overlay-btn:hover{border-color:#3b82f6;color:#3b82f6;background:#1a1e24}
+        .ub-overlay-btn:hover{animation:none;border-color:#3b82f6;color:#3b82f6;background:#1a1e24}
+        @keyframes ub-pulse-btn{0%,100%{box-shadow:0 4px 16px rgba(0,0,0,0.4)}50%{box-shadow:0 4px 24px rgba(37,99,235,0.5),0 0 40px rgba(37,99,235,0.15)}}
         .ub-marker__pulse{
           position:absolute;inset:-6px;border-radius:50%;
           border:2px solid rgba(37,99,235,0.4);
