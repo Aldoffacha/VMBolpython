@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import {
   Bell, BellOff, Megaphone, Info, CheckCircle, AlertTriangle, XCircle,
   Package, CreditCard, Truck, X, Home, ShoppingBag, ClipboardList,
-  Users, BarChart3, Shield, Settings, TrendingUp, PackageOpen, Menu, Moon, Sun,
+  Users, BarChart3, Shield, Settings, TrendingUp, PackageOpen, Menu, Moon, Sun, MapPin,
 } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 
@@ -64,6 +64,12 @@ const SECTIONS = [
       { icon: <TrendingUp size={17} />, label: "Recomendaciones", href: "/admin/recomendaciones" },
       { icon: <BarChart3 size={17} />, label: "Prediccion ML", href: "/admin/prediccion-ml" },
       { icon: <Package size={17} />, label: "Reabastecimiento", href: "/admin/reabastecimiento" },
+    ],
+  },
+  {
+    title: "Sucursales",
+    links: [
+      { icon: <MapPin size={17} />, label: "Sucursales", href: "/admin/sucursales" },
     ],
   },
   {

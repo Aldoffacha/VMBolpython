@@ -115,6 +115,7 @@ export default function LandingNav() {
           <Link href="/" className={`lp-nav__link ${isActive("/") ? "active" : ""}`}>Dashboard</Link>
           <Link href="/tienda" className={`lp-nav__link ${isActive("/tienda") ? "active" : ""}`}>Tienda</Link>
           <Link href="/conocenos" className={`lp-nav__link ${isActive("/conocenos") ? "active" : ""}`}>Conócenos</Link>
+          <Link href="/ubicanos" className={`lp-nav__link ${isActive("/ubicanos") ? "active" : ""}`}>Ubícanos</Link>
           <Link href="/contactanos" className={`lp-nav__link ${isActive("/contactanos") ? "active" : ""}`}>Contáctanos</Link>
         </div>
 

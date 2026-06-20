@@ -18,6 +18,7 @@ from app.routes.recomendaciones import router as recomendaciones_router
 from app.routes.publico import router as publico_router
 from app.routes.empleado import router as empleado_router
 from app.routes.chat import router as chat_router
+from app.routes.sucursales import router as sucursales_router
 
 # ✅ SOLO UNA VEZ
 app = FastAPI(title="VMBol en Red API")
@@ -45,11 +46,13 @@ app.include_router(recomendaciones_router)
 app.include_router(publico_router)
 app.include_router(empleado_router)
 app.include_router(chat_router)
+app.include_router(sucursales_router)
 
 # ✅ archivos estáticos
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 app.mount("/uploads/payments", StaticFiles(directory="uploads/payments"), name="payments")
 app.mount("/uploads/qr", StaticFiles(directory="uploads/qr"), name="qr")
+app.mount("/uploads/sucursales", StaticFiles(directory="uploads/sucursales"), name="sucursales")
 
 # ✅ test
 @app.get("/")
