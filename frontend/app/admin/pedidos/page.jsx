@@ -4,6 +4,7 @@ import "@/styles/admin.css";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAdminCurrency } from "@/lib/AdminCurrencyContext";
+import { ShoppingCart, Clock, CreditCard, Truck, X, Eye, Package, Home, Globe, ExternalLink, ShoppingBag, MessageSquare, Lightbulb, Undo2 } from "lucide-react";
 
 
 const API = "http://localhost:8000";
@@ -20,28 +21,41 @@ const ESTADO_STYLE = {
 };
 
 const ACCION_STYLE = {
-  pagado:    { bg: "rgba(59,130,246,0.15)",  color: "#3b82f6", border: "rgba(59,130,246,0.4)",  icon: "💳", label: "Marcar Pagado"  },
-  enviado:   { bg: "rgba(16,185,129,0.15)",  color: "#10b981", border: "rgba(16,185,129,0.4)",  icon: "🚚", label: "Marcar Enviado" },
-  cancelado: { bg: "rgba(239,68,68,0.15)",   color: "#ef4444", border: "rgba(239,68,68,0.4)",   icon: "❌", label: "Cancelar"       },
-  pendiente: { bg: "rgba(245,158,11,0.15)",  color: "#f59e0b", border: "rgba(245,158,11,0.4)",  icon: "↩️", label: "Reactivar"      },
+  pagado:    { bg: "rgba(59,130,246,0.15)",  color: "#3b82f6", border: "rgba(59,130,246,0.4)",  icon: CreditCard, label: "Marcar Pagado"  },
+  enviado:   { bg: "rgba(16,185,129,0.15)",  color: "#10b981", border: "rgba(16,185,129,0.4)",  icon: Truck,      label: "Marcar Enviado" },
+  cancelado: { bg: "rgba(239,68,68,0.15)",   color: "#ef4444", border: "rgba(239,68,68,0.4)",   icon: X,          label: "Cancelar"       },
+  pendiente: { bg: "rgba(245,158,11,0.15)",  color: "#f59e0b", border: "rgba(245,158,11,0.4)",  icon: Undo2,      label: "Reactivar"      },
+};
+
+const ENTREGA_STYLE = {
+  sin_asignar: { bg: "rgba(107,114,128,0.15)", color: "#6b7280", border: "rgba(107,114,128,0.4)", label: "Sin asignar" },
+  aceptado:    { bg: "rgba(59,130,246,0.15)",  color: "#3b82f6", border: "rgba(59,130,246,0.4)",  label: "Aceptado"    },
+  en_camino:   { bg: "rgba(245,158,11,0.15)",  color: "#f59e0b", border: "rgba(245,158,11,0.4)",  label: "En camino"   },
+  en_destino:  { bg: "rgba(139,92,246,0.15)",  color: "#8b5cf6", border: "rgba(139,92,246,0.4)",  label: "En destino"  },
+  entregado:   { bg: "rgba(16,185,129,0.15)",  color: "#10b981", border: "rgba(16,185,129,0.4)",  label: "Entregado"   },
 };
 
 // ── Badge de plataforma ───────────────────────────────────────────────────────
 function PlatBadge({ plat }) {
   const m = {
-    amazon: { bg: "rgba(245,158,11,0.2)", color: "#f59e0b", txt: "📦 Amazon" },
-    ebay:   { bg: "rgba(59,130,246,0.2)", color: "#3b82f6", txt: "🛒 eBay"   },
-    local:  { bg: "rgba(16,185,129,0.2)", color: "#10b981", txt: "🏠 Local"  },
-    otros:  { bg: "rgba(160,160,160,0.2)",color: "#a0a0a0", txt: "🌐 Externo"},
+    amazon: { bg: "rgba(245,158,11,0.2)", color: "#f59e0b", icon: Package, txt: "Amazon" },
+    ebay:   { bg: "rgba(59,130,246,0.2)", color: "#3b82f6", icon: ShoppingCart, txt: "eBay" },
+    local:  { bg: "rgba(16,185,129,0.2)", color: "#10b981", icon: Home, txt: "Local" },
+    otros:  { bg: "rgba(160,160,160,0.2)",color: "#a0a0a0", icon: Globe, txt: "Externo"},
   };
   const p = m[plat] || m.otros;
+  const Icon = p.icon;
   return (
     <span style={{
       background: p.bg, color: p.color,
       padding: "2px 8px", borderRadius: 10,
       fontSize: 11, fontWeight: 700,
       border: `1px solid ${p.color}40`,
-    }}>{p.txt}</span>
+      display: "inline-flex", alignItems: "center", gap: 4,
+    }}>
+      <Icon size={12} />
+      {p.txt}
+    </span>
   );
 }
 
@@ -52,6 +66,7 @@ export default function AdminPedidos() {
   const { formatPrice } = useAdminCurrency();
   const [pedidos, setPedidos] = useState([]);
   const [contadores, setContadores] = useState({ total: 0, pendiente: 0, pagado: 0, enviado: 0, cancelado: 0 });
+  const [contadoresEntrega, setContadoresEntrega] = useState({ sin_asignar: 0, aceptado: 0, en_camino: 0, en_destino: 0, entregado: 0 });
   const [filtro, setFiltro] = useState("todos");
   const [loading, setLoading] = useState(true);
   const [detalle, setDetalle] = useState(null);
@@ -79,6 +94,7 @@ export default function AdminPedidos() {
       const data = await res.json();
       setPedidos(data.pedidos);
       setContadores(data.contadores);
+      setContadoresEntrega(data.contadores_entrega);
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
   }, [filtro]);
@@ -117,7 +133,7 @@ export default function AdminPedidos() {
       showToast(data.mensaje);
       setConfirm(null);
       fetchPedidos();
-    } catch (e) { showToast("❌ Error de conexión"); }
+    } catch (e) { showToast("Error de conexión"); }
     finally { setProcesando(null); }
   };
 
@@ -169,12 +185,14 @@ export default function AdminPedidos() {
         {/* STAT CARDS */}
         <div style={s.statsGrid}>
           {[
-            { icon: "🛒", label: "Total",      value: contadores.total,     color: "#9a031e",  filtro: "todos"     },
-            { icon: "⏳", label: "Pendientes", value: contadores.pendiente, color: "#f59e0b",  filtro: "pendiente" },
-            { icon: "💳", label: "Pagados",    value: contadores.pagado,    color: "#3b82f6",  filtro: "pagado"    },
-            { icon: "🚚", label: "Enviados",   value: contadores.enviado,   color: "#10b981",  filtro: "enviado"   },
-            { icon: "❌", label: "Cancelados", value: contadores.cancelado, color: "#ef4444",  filtro: "cancelado" },
-          ].map(st => (
+            { icon: ShoppingCart, label: "Total",      value: contadores.total,     color: "#9a031e",  filtro: "todos"     },
+            { icon: Clock,        label: "Pendientes", value: contadores.pendiente, color: "#f59e0b",  filtro: "pendiente" },
+            { icon: CreditCard,   label: "Pagados",    value: contadores.pagado,    color: "#3b82f6",  filtro: "pagado"    },
+            { icon: Truck,        label: "Enviados",   value: contadores.enviado,   color: "#10b981",  filtro: "enviado"   },
+            { icon: X,            label: "Cancelados", value: contadores.cancelado, color: "#ef4444",  filtro: "cancelado" },
+          ].map(st => {
+            const Icon = st.icon;
+            return (
             <div key={st.label}
               style={{ ...s.statCard, borderLeftColor: st.color, cursor: "pointer" }}
               onClick={() => setFiltro(st.filtro)}>
@@ -183,22 +201,27 @@ export default function AdminPedidos() {
                   <p style={s.statLabel}>{st.label}</p>
                   <p style={{ ...s.statValue, color: st.color }}>{st.value}</p>
                 </div>
-                <span style={{ fontSize: 28 }}>{st.icon}</span>
+                <Icon size={28} style={{ opacity: 0.5 }} />
               </div>
             </div>
-          ))}
+          );})}
         </div>
 
         {/* FILTROS */}
-        <div style={s.filtros}>
-          {["todos", "pendiente", "pagado", "enviado", "cancelado"].map(f => (
-            <button key={f} onClick={() => setFiltro(f)} style={{
+        <div style={{ ...s.filtros, marginBottom: 16 }}>
+          {[
+            { key: "todos",      label: "Todos",         count: contadores.total },
+            { key: "pendiente",  label: "Pendiente",     count: contadores.pendiente },
+            { key: "pagado",     label: "Pagado",        count: contadores.pagado },
+            { key: "enviado",    label: "Enviado",       count: contadores.enviado },
+            { key: "cancelado",  label: "Cancelado",     count: contadores.cancelado },
+            { key: "en_camino",  label: "En camino",     count: contadoresEntrega.en_camino },
+          ].map(({ key, label, count }) => (
+            <button key={key} onClick={() => setFiltro(key)} style={{
               ...s.filtroBtn,
-              ...(filtro === f ? s.filtroBtnActive : {})
+              ...(filtro === key ? s.filtroBtnActive : {})
             }}>
-              {f === "todos"
-                ? `Todos (${contadores.total})`
-                : `${f.charAt(0).toUpperCase() + f.slice(1)} (${contadores[f] ?? 0})`}
+              {label} ({count})
             </button>
           ))}
         </div>
@@ -213,7 +236,7 @@ export default function AdminPedidos() {
                 <table className="admin-table">
                   <thead>
                     <tr>
-                      {["ID Pedido", "Cliente", "Total", "T/Cambio", "Estado", "Fecha y Hora", "Acciones"].map(h => (
+                      {["ID Pedido", "Cliente", "Total", "T/Cambio", "Estado", "Entrega", "Fecha y Hora", "Acciones"].map(h => (
                         <th key={h}>{h}</th>
                       ))}
                     </tr>
@@ -221,8 +244,8 @@ export default function AdminPedidos() {
                   <tbody>
                     {pedidos.length === 0 ? (
                       <tr>
-                          <td colSpan={7} style={{ textAlign: "center", color: "var(--admin-text-2)", padding: 40 }}>
-                          No hay pedidos {filtro !== "todos" ? `con estado "${filtro}"` : ""}
+                          <td colSpan={8} style={{ textAlign: "center", color: "var(--admin-text-2)", padding: 40 }}>
+                          No hay pedidos {filtro !== "todos" ? `con filtro "${filtro}"` : ""}
                         </td>
                       </tr>
                     ) : pedidos.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA).map((p, i) => {
@@ -245,13 +268,22 @@ export default function AdminPedidos() {
                             </span>
                           </td>
                           <td>
+                            <span className="admin-badge" style={{
+                              background: (ENTREGA_STYLE[p.estado_entrega] || ENTREGA_STYLE.sin_asignar).bg,
+                              color: (ENTREGA_STYLE[p.estado_entrega] || ENTREGA_STYLE.sin_asignar).color,
+                              border: `1px solid ${(ENTREGA_STYLE[p.estado_entrega] || ENTREGA_STYLE.sin_asignar).border}`
+                            }}>
+                              {(ENTREGA_STYLE[p.estado_entrega] || ENTREGA_STYLE.sin_asignar).label}
+                            </span>
+                          </td>
+                          <td>
                             <div style={{ fontSize: 13 }}>{p.fecha.split(" ")[0]}</div>
                             <div style={{ color: "var(--admin-text-2)", fontSize: 11 }}>{p.fecha.split(" ")[1]}</div>
                           </td>
                           <td>
                             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                               <button onClick={() => verDetalle(p.id_pedido)} style={s.btnAccion} title="Ver detalle">
-                                👁️
+                                <Eye size={16} />
                               </button>
                               {p.siguientes_estados?.map(sig => {
                                 const ac = ACCION_STYLE[sig];
@@ -261,7 +293,7 @@ export default function AdminPedidos() {
                                     disabled={procesando === p.id_pedido}
                                     style={{ ...s.btnAccion, background: ac.bg, color: ac.color, border: `1px solid ${ac.border}` }}
                                     title={ac.label}>
-                                    {ac.icon}
+                                    <ac.icon size={14} />
                                   </button>
                                 );
                               })}
@@ -297,7 +329,7 @@ export default function AdminPedidos() {
           <div className="admin-modal admin-modal--wide" onClick={e => e.stopPropagation()}>
             <div className="admin-modal__head">
               <h2 className="admin-modal__title">
-                📦 Detalle del Pedido #{detalle.pedido?.id_pedido}
+                <Package size={20} style={{ marginRight: 8 }} /> Detalle del Pedido #{detalle.pedido?.id_pedido}
               </h2>
               <button onClick={() => setDetalle(null)} className="admin-modal__close">✕</button>
             </div>
@@ -310,14 +342,14 @@ export default function AdminPedidos() {
                   {/* Info cliente y pedido */}
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
                     <div style={s.infoBox}>
-                      <p style={s.infoTitle}> Cliente</p>
+                      <p style={s.infoTitle}>Cliente</p>
                       <p style={s.infoRow}><b>Nombre:</b> {detalle.pedido.cliente_nombre}</p>
                       <p style={s.infoRow}><b>Email:</b> {detalle.pedido.cliente_email}</p>
                       <p style={s.infoRow}><b>Teléfono:</b> {detalle.pedido.telefono}</p>
                       <p style={s.infoRow}><b>Dirección:</b> {detalle.pedido.direccion}</p>
                     </div>
                     <div style={s.infoBox}>
-                      <p style={s.infoTitle}> Pedido</p>
+                      <p style={s.infoTitle}>Pedido</p>
                       <p style={s.infoRow}><b>ID:</b> #{detalle.pedido.id_pedido}</p>
                       <p style={s.infoRow}><b>Fecha:</b> {detalle.pedido.fecha}</p>
                       <p style={s.infoRow}><b>Estado:</b>{" "}
@@ -335,12 +367,21 @@ export default function AdminPedidos() {
                           {formatPrice(detalle.pedido.total)}
                         </span>
                       </p>
+                      <p style={s.infoRow}><b>Entrega:</b>{" "}
+                        <span className="admin-badge" style={{
+                          background: (ENTREGA_STYLE[detalle.pedido.estado_entrega] || ENTREGA_STYLE.sin_asignar).bg,
+                          color: (ENTREGA_STYLE[detalle.pedido.estado_entrega] || ENTREGA_STYLE.sin_asignar).color,
+                          border: `1px solid ${(ENTREGA_STYLE[detalle.pedido.estado_entrega] || ENTREGA_STYLE.sin_asignar).border}`
+                        }}>
+                          {(ENTREGA_STYLE[detalle.pedido.estado_entrega] || ENTREGA_STYLE.sin_asignar).label}
+                        </span>
+                      </p>
                       <p style={s.infoRow}><b>T/Cambio:</b> {detalle.pedido.tipo_cambio ?? 9.17}</p>
                     </div>
                   </div>
 
                   {/* ── Tabla de productos con link para externos ─────────── */}
-                  <p style={s.sectionLabel}>🛍️ Productos del Pedido</p>
+                  <p style={{ ...s.sectionLabel, display: "flex", alignItems: "center", gap: 6 }}><ShoppingBag size={14} />Productos del Pedido</p>
 
                   <table className="admin-table" style={{ fontSize: 13 }}>
                     <thead>
@@ -383,7 +424,7 @@ export default function AdminPedidos() {
                                     border: "1px solid rgba(59,130,246,0.25)",
                                   }}
                                 >
-                                  🔗 Ver en tienda original
+                                  <ExternalLink size={12} /> Ver en tienda original
                                 </a>
                               )}
                             </td>
@@ -420,10 +461,65 @@ export default function AdminPedidos() {
                       border: "1px solid rgba(59,130,246,0.2)",
                       borderRadius: 8, padding: "10px 14px",
                       fontSize: 12, color: "var(--admin-text-2)",
+                      display: "flex", alignItems: "flex-start", gap: 6,
                     }}>
-                      💡 Este pedido contiene productos de importación (Amazon/eBay).
-                      Haz click en <strong style={{ color: "#3b82f6" }}>🔗 Ver en tienda original</strong> para
-                      ver el producto exacto que el cliente quiere importar.
+                      <Lightbulb size={14} style={{ flexShrink: 0, marginTop: 1 }} />
+                      <span>Este pedido contiene productos de importación (Amazon/eBay).
+                      Haz click en <strong style={{ color: "#3b82f6", display: "inline-flex", alignItems: "center", gap: 4 }}><ExternalLink size={12} /> Ver en tienda original</strong> para
+                      ver el producto exacto que el cliente quiere importar.</span>
+                    </div>
+                  )}
+
+                  {/* ── Chat mensajes ──────────────────────────────── */}
+                  {detalle.mensajes && detalle.mensajes.length > 0 && (
+                    <div style={{ marginTop: 20 }}>
+                      <p style={{ ...s.sectionLabel, display: "flex", alignItems: "center", gap: 6 }}><MessageSquare size={14} />Chat: Cliente ↔ Repartidor</p>
+                      <div style={{
+                        background: "var(--admin-surface)",
+                        border: "1px solid var(--admin-border)",
+                        borderRadius: 10, padding: 12,
+                        maxHeight: 300, overflowY: "auto",
+                      }}>
+                        {detalle.mensajes.map((msg, i) => (
+                          <div key={msg.id} style={{
+                            display: "flex",
+                            flexDirection: msg.remitente_tipo === "cliente" ? "row" : "row-reverse",
+                            marginBottom: 10,
+                          }}>
+                            <div style={{
+                              maxWidth: "75%",
+                              background: msg.remitente_tipo === "cliente"
+                                ? "rgba(59,130,246,0.1)"
+                                : "rgba(16,185,129,0.1)",
+                              border: `1px solid ${msg.remitente_tipo === "cliente"
+                                ? "rgba(59,130,246,0.25)"
+                                : "rgba(16,185,129,0.25)"}`,
+                              borderRadius: 10,
+                              padding: "8px 12px",
+                            }}>
+                              <div style={{
+                                fontSize: 11, fontWeight: 700,
+                                color: msg.remitente_tipo === "cliente" ? "#3b82f6" : "#10b981",
+                                marginBottom: 4,
+                              }}>
+                                {msg.remitente_nombre} ({msg.remitente_tipo === "cliente" ? "Cliente" : "Repartidor"})
+                              </div>
+                              <div style={{ fontSize: 13, color: "var(--admin-text)", whiteSpace: "pre-wrap" }}>
+                                {msg.mensaje}
+                              </div>
+                              <div style={{
+                                fontSize: 10, color: "var(--admin-text-2)", marginTop: 4,
+                                textAlign: msg.remitente_tipo === "cliente" ? "left" : "right",
+                              }}>
+                                {msg.fecha_creacion}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <p style={{ fontSize: 11, color: "var(--admin-text-2)", marginTop: 6, fontStyle: "italic" }}>
+                        Vista de solo lectura · Los mensajes aparecen en tiempo real para el cliente y repartidor
+                      </p>
                     </div>
                   )}
                 </>

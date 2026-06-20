@@ -5,12 +5,14 @@ from pydantic import BaseModel
 from datetime import datetime
 import json
 from app.database import get_db
-from app.models.user import Pedido, PedidoDetalle, Cliente, Producto, Auditoria, Notificacion
+from app.models.user import Pedido, PedidoDetalle, Cliente, Empleado, Producto, Auditoria, Notificacion, MensajeChat
 from app.utils.dependencies import require_role
 
 router = APIRouter(prefix="/admin/pedidos", tags=["admin-pedidos"])
 
 ESTADOS_VALIDOS = ["pendiente", "pagado", "enviado", "cancelado"]
+
+ESTADOS_ENTREGA_VALIDOS = ["sin_asignar", "aceptado", "en_camino", "en_destino", "entregado"]
 
 TRANSICIONES_VALIDAS = {
     "pendiente":  ["pagado", "cancelado"],
@@ -38,12 +40,15 @@ def get_pedidos(
         .join(Cliente, Pedido.id_cliente == Cliente.id_cliente)
     )
 
-    if estado != "todos" and estado in ESTADOS_VALIDOS:
-        query = query.filter(Pedido.estado == estado)
+    if estado != "todos":
+        if estado == "en_camino":
+            query = query.filter(Pedido.estado_entrega == "en_camino")
+        elif estado in ESTADOS_VALIDOS:
+            query = query.filter(Pedido.estado == estado)
 
     pedidos_raw = query.order_by(Pedido.fecha.desc(), Pedido.id_pedido.desc()).all()
 
-    # Contadores
+    # Contadores para estado (pago)
     contadores_raw = (
         db.query(Pedido.estado, func.count(Pedido.id_pedido))
         .group_by(Pedido.estado)
@@ -55,19 +60,35 @@ def get_pedidos(
             contadores[est] = cnt
             contadores["total"] += cnt
 
+    # Contadores para estado_entrega
+    contadores_entrega_raw = (
+        db.query(Pedido.estado_entrega, func.count(Pedido.id_pedido))
+        .group_by(Pedido.estado_entrega)
+        .all()
+    )
+    contadores_entrega = {
+        "sin_asignar": 0, "aceptado": 0, "en_camino": 0,
+        "en_destino": 0, "entregado": 0
+    }
+    for est, cnt in contadores_entrega_raw:
+        if est in contadores_entrega:
+            contadores_entrega[est] = cnt
+
     return {
         "contadores": contadores,
+        "contadores_entrega": contadores_entrega,
         "pedidos": [
             {
-                "id_pedido":         p.Pedido.id_pedido,
-                "id_cliente":        p.Pedido.id_cliente,
-                "cliente_nombre":    p.cliente_nombre,
-                "cliente_email":     p.cliente_email,
-                "total":             float(p.Pedido.total),
-                "estado":            p.Pedido.estado,
-                "fecha":             p.Pedido.fecha.strftime("%d/%m/%Y %H:%M:%S"),
+                "id_pedido":          p.Pedido.id_pedido,
+                "id_cliente":         p.Pedido.id_cliente,
+                "cliente_nombre":     p.cliente_nombre,
+                "cliente_email":      p.cliente_email,
+                "total":              float(p.Pedido.total),
+                "estado":             p.Pedido.estado,
+                "estado_entrega":     p.Pedido.estado_entrega or "sin_asignar",
+                "fecha":              p.Pedido.fecha.strftime("%d/%m/%Y %H:%M:%S"),
                 "siguientes_estados": TRANSICIONES_VALIDAS.get(p.Pedido.estado, []),
-                "tipo_cambio":       float(p.Pedido.tipo_cambio or 9.17),
+                "tipo_cambio":        float(p.Pedido.tipo_cambio or 9.17),
             }
             for p in pedidos_raw
         ]
@@ -145,6 +166,35 @@ def get_detalle_pedido(
             "plataforma":      datos_ext.get("plataforma") or ("local" if tipo == "local" else "otros"),
         })
 
+    # Chat messages
+    mensajes_raw = (
+        db.query(MensajeChat)
+        .filter(MensajeChat.id_pedido == id_pedido)
+        .order_by(MensajeChat.fecha_creacion.asc())
+        .all()
+    )
+    mensajes_lista = []
+    for m in mensajes_raw:
+        nombre_remitente = ""
+        if m.remitente_tipo == "cliente":
+            cl = db.query(Cliente).filter(Cliente.id_cliente == m.remitente_id).first()
+            nombre_remitente = cl.nombre if cl else f"Cliente #{m.remitente_id}"
+        elif m.remitente_tipo == "empleado":
+            em = db.query(Empleado).filter(Empleado.id_empleado == m.remitente_id).first()
+            nombre_remitente = em.nombre if em else f"Empleado #{m.remitente_id}"
+        else:
+            nombre_remitente = f"Usuario #{m.remitente_id}"
+
+        mensajes_lista.append({
+            "id": m.id,
+            "remitente_id": m.remitente_id,
+            "remitente_tipo": m.remitente_tipo,
+            "remitente_nombre": nombre_remitente,
+            "mensaje": m.mensaje,
+            "fecha_creacion": m.fecha_creacion.strftime("%d/%m/%Y %H:%M:%S"),
+            "leido": m.leido,
+        })
+
     return {
         "pedido": {
             "id_pedido":      pedido.Pedido.id_pedido,
@@ -155,10 +205,12 @@ def get_detalle_pedido(
             "direccion":      pedido.direccion or "No especificada",
             "total":          float(pedido.Pedido.total),
             "estado":         pedido.Pedido.estado,
+            "estado_entrega": pedido.Pedido.estado_entrega or "sin_asignar",
             "fecha":          pedido.Pedido.fecha.strftime("%d/%m/%Y %H:%M:%S"),
             "tipo_cambio":    float(pedido.Pedido.tipo_cambio or 9.17),
         },
         "productos": productos_lista,
+        "mensajes": mensajes_lista,
     }
 
 
