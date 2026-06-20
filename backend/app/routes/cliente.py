@@ -1501,8 +1501,8 @@ def guardar_cotizacion(
     db.execute(
         text("""INSERT INTO cotizaciones
                 (id_cliente, nombre_producto, precio_base, peso, categoria, tamano,
-                 costo_flete, costo_aduana, costo_almacen, costo_seguro, costo_total)
-                VALUES (:u, :n, :pr, :pe, :cat, :tam, :fl, :ad, :alm, :seg, :tot)"""),
+                 costo_flete, costo_aduana, costo_almacen, costo_seguro, costo_total, tipo_cambio)
+                VALUES (:u, :n, :pr, :pe, :cat, :tam, :fl, :ad, :alm, :seg, :tot, :tc)"""),
         {
             "u": uid, "n": nombre_producto, "pr": precio, "pe": peso,
             "cat": categoria, "tam": tamano,
@@ -1511,10 +1511,33 @@ def guardar_cotizacion(
             "alm": cot["desglose"]["almacen"],
             "seg": cot["desglose"]["seguro"],
             "tot": cot["total"],
+            "tc": tc,
         }
     )
     db.commit()
     return {"success": True, "message": "Cotización guardada", "cotizacion": cot}
+
+
+@router.get("/cotizaciones")
+def listar_cotizaciones(
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    uid = get_uid(current_user)
+    rows = db.execute(
+        text("""SELECT id_cotizacion, nombre_producto, precio_base, peso, categoria,
+                       tamano, costo_flete, costo_aduana, costo_seguro, costo_almacen,
+                       costo_total, estado, fecha, tipo_cambio
+                FROM cotizaciones WHERE id_cliente=:u
+                ORDER BY fecha DESC"""),
+        {"u": uid}
+    ).fetchall()
+    lista = []
+    for r in rows:
+        d = dict(r._mapping)
+        if d.get("fecha"): d["fecha"] = d["fecha"].isoformat()
+        lista.append(d)
+    return {"success": True, "cotizaciones": lista, "total": len(lista)}
 
 
 # ─── PEDIDO: CREAR DESDE CARRITO ──────────────────────────────────────────────
