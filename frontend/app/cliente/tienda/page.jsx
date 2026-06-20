@@ -608,7 +608,7 @@ function ClienteTiendaContent() {
         const externosFiltrados = platFil && platFil !== "local"
           ? externosFinal.filter(p => p.plataforma === platFil) : externosFinal;
         const mostrarExternos = platFil === "local" ? [] : externosFiltrados;
-        setProds([...locales, ...mostrarExternos]);
+        setProds(platFil === "local" ? locales : platFil ? mostrarExternos : [...locales, ...mostrarExternos]);
         setTc(d.tipo_cambio || 9.17);
         setLoad(false);
       }).catch(() => setLoad(false));
