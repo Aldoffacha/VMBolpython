@@ -95,7 +95,7 @@ export default function HomePage() {
         .lp-hero__slide::before {
           content: '';
           position: absolute; inset: 0;
-          background: radial-gradient(ellipse 60% 50% at 50% 40%, ${c.glow} 0%, transparent 70%);
+          background: radial-gradient(ellipse 85% 75% at 50% 40%, ${c.glow} 0%, transparent 80%);
           pointer-events: none;
           transition: background 0.4s;
         }
